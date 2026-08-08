@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>{{ $title ?? 'DIKSERA - Digitalisasi Kompetensi, Sertifikasi & Evaluasi Perawat' }}</title>
+    <title>{{ $title ?? 'DIKSERA - Digitalisasi Kompetensi, Sertifikasi & Evaluasi Bidan dan Perawat' }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link rel="icon" type="image/png" href="{{ asset('icon.png') }}">
@@ -25,6 +25,7 @@
             display: flex;
             flex-direction: column;
         }
+        
 
         .landing-nav {
             padding: 14px 32px;
@@ -130,7 +131,7 @@
             <div>
                 <div class="nav-title">DIKSERA</div>
                 <div class="nav-subtitle">
-                    Digitalisasi Kompetensi, Sertifikasi &amp; Evaluasi Perawat
+                    Digitalisasi Kompetensi, Sertifikasi &amp; Evaluasi Bidan dan Perawat
                 </div>
             </div>
         </div>
@@ -140,7 +141,7 @@
                 Masuk
             </a>
             <a href="{{ route('register.perawat') }}" class="btn btn-solid-blue">
-                Registrasi Perawat
+                Registrasi
             </a>
         </div>
     </header>

@@ -15,7 +15,8 @@ class PerawatPelatihan extends Model
         'tanggal_mulai',    // <-- TAMBAH
         'tanggal_selesai',  // <-- TAMBAH
         'dokumen_path',     // <-- TAMBAH
-        'tahun',            // Tetap ada (unused)
+        'tahun',    
+        'skp',// Tetap ada (unused)
     ];
 
     public function user()

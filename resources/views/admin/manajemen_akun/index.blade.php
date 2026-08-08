@@ -205,7 +205,7 @@
 @endpush
 
 @section('content')
-    <div class="container py-4">
+    <div class=" py-4">
 
         {{-- HEADER --}}
         <div class="page-header">

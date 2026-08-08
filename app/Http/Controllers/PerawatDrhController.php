@@ -22,6 +22,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str;
 use App\Services\TelegramService;
 use Illuminate\Support\Facades\Log;
+use App\Services\PkRecommendationService; 
+use App\Models\PerawatKunjungan;
 
 class PerawatDrhController extends Controller
 {
@@ -33,9 +35,36 @@ class PerawatDrhController extends Controller
         }
         return $user;
     }
+public function downloadPdf()
+{
+    $user = $this->currentPerawat();
+    if (!$user) return redirect('/');
 
+    // Ambil data lengkap
+    $profile    = PerawatProfile::where('user_id', $user->id)->first();
+    $pendidikan = PerawatPendidikan::where('user_id', $user->id)->orderBy('tahun_lulus', 'desc')->get();
+    $pelatihan  = PerawatPelatihan::where('user_id', $user->id)->orderBy('tanggal_mulai', 'desc')->get();
+    $pekerjaan  = PerawatPekerjaan::where('user_id', $user->id)->orderBy('tahun_mulai', 'desc')->get();
+    $keluarga   = PerawatKeluarga::where('user_id', $user->id)->get();
+    $organisasi = PerawatOrganisasi::where('user_id', $user->id)->orderBy('tahun_mulai', 'desc')->get();
+    $tandajasa  = PerawatTandaJasa::where('user_id', $user->id)->orderBy('tahun', 'desc')->get();
+    $kunjungan  = PerawatKunjungan::where('user_id', $user->id)->get(); // Data baru
+    $str        = PerawatStr::where('user_id', $user->id)->orderBy('tgl_terbit', 'desc')->get();
+    $sip        = PerawatSip::where('user_id', $user->id)->orderBy('tgl_terbit', 'desc')->get();
+
+    $data = compact(
+        'user', 'profile', 'pendidikan', 'pelatihan', 'pekerjaan', 
+        'keluarga', 'organisasi', 'tandajasa', 'kunjungan', 'str', 'sip'
+    );
+
+    $pdf = Pdf::loadView('perawat.drh.pdf', $data);
+    $pdf->setPaper('legal', 'portrait');
+
+    $fileName = 'DRH_BKN_' . str_replace(' ', '_', $profile->nama_lengkap ?? $user->name) . '.pdf';
+    return $pdf->download($fileName);
+}
     /* ============ DRH SUMMARY (READ ONLY) ============ */
-    public function index()
+   public function index(PkRecommendationService $pkService) // <-- Inject Service di sini
     {
         $user = $this->currentPerawat();
         if (!$user) return redirect('/');
@@ -48,6 +77,9 @@ class PerawatDrhController extends Controller
         $organisasi  = PerawatOrganisasi::where('user_id', $user->id)->orderBy('tahun_mulai', 'desc')->get();
         $tandajasa   = PerawatTandaJasa::where('user_id', $user->id)->orderBy('tahun', 'desc')->get();
 
+        // Panggil Service Rekomendasi PK
+        $rekomendasiPk = $pkService->getRecommendation($user->id);
+
         return view('perawat.drh.index', compact(
             'user',
             'profile',
@@ -56,10 +88,10 @@ class PerawatDrhController extends Controller
             'pekerjaan',
             'keluarga',
             'organisasi',
-            'tandajasa'
+            'tandajasa',
+            'rekomendasiPk' // <-- Passing variabel ini ke view
         ));
     }
-
     /* ============ IDENTITAS (Updated) ============ */
     public function editIdentitas()
     {
@@ -84,10 +116,12 @@ class PerawatDrhController extends Controller
         $request->validate([
             // Identitas Utama
             'nama_lengkap'      => 'required|string|max:150',
+            'email'        => 'required|email|unique:users,email,' . $user->id,
+            'type_perawat' => 'required|array|min:2',
             'nik'               => 'nullable|string|max:30',
             'nip'               => 'nullable|string|max:50',
             'nirp'              => 'nullable|string|max:50',
-
+'jabatan_struktural' => 'required|string',
             // Biodata
             'tempat_lahir'      => 'nullable|string|max:100',
             'tanggal_lahir'     => 'nullable|date',
@@ -95,7 +129,23 @@ class PerawatDrhController extends Controller
             'agama'             => 'nullable|string|max:30',
             'aliran_kepercayaan' => 'nullable|string|max:100', // Added
             'status_perkawinan' => 'nullable|string|max:50',
-
+            'npwp' => 'nullable|string|max:50',
+'tmt_cpns' => 'nullable|date',
+'tmt_pns' => 'nullable|date',
+'tmt_jabatan' => 'nullable|date',
+'masa_kerja_tahun' => 'nullable|integer',
+'masa_kerja_bulan' => 'nullable|integer',
+'kelurahan_desa' => 'nullable|string|max:100',
+'kecamatan' => 'nullable|string|max:100',
+'skck_pejabat' => 'nullable|string|max:150',
+'skck_nomor' => 'nullable|string|max:100',
+'skck_tanggal' => 'nullable|date',
+'sehat_pejabat' => 'nullable|string|max:150',
+'sehat_nomor' => 'nullable|string|max:100',
+'sehat_tanggal' => 'nullable|date',
+'ket_lain_pejabat' => 'nullable|string|max:150',
+'ket_lain_nomor' => 'nullable|string|max:100',
+'ket_lain_tanggal' => 'nullable|date',
             // Kontak
             'no_hp'             => 'nullable|string|max:30',
             'alamat'            => 'nullable|string|max:255',
@@ -120,14 +170,32 @@ class PerawatDrhController extends Controller
             'hobby'             => 'nullable|string|max:150', // Added
             'foto_3x4'          => 'nullable|image|max:2048', // Max 2MB
         ]);
-
+$user->update([
+        'email' => $request->email,
+        'name'  => $request->nama_lengkap // Opsional: sinkronkan nama di tabel users
+    ]);
         $profile = PerawatProfile::firstOrCreate(
             ['user_id' => $user->id],
             ['nama_lengkap' => $user->name]
         );
+    $types = $request->type_perawat;
+    $hasKfk = false;
+    $hasJenjang = false;
 
+    foreach ($types as $item) {
+        if (str_contains($item, 'KFK')) $hasKfk = true;
+        if (str_contains($item, 'PK') || str_contains($item, 'BK')) $hasJenjang = true;
+    }
+
+    if (!$hasKfk || !$hasJenjang) {
+        return back()->withInput()->with('swal', [
+            'icon' => 'error',
+            'title' => 'Kombinasi Tidak Valid',
+            'text' => 'Jenjang Klinis harus terdiri dari 1 KFK dan 1 Level (PK/BK).'
+        ]);
+    }
         // Ambil semua input kecuali foto & token
-        $data = $request->except(['foto_3x4', '_token', '_method']);
+        $data = $request->except(['email', 'foto_3x4', '_token', '_method']);
 
         // Handle Upload Foto
         if ($request->hasFile('foto_3x4')) {
@@ -199,12 +267,13 @@ class PerawatDrhController extends Controller
         $request->validate([
             'jenjang'        => 'required|string|max:50',
             'nama_institusi' => 'required|string|max:150',
-            'akreditasi'     => 'nullable|string|max:10',
+            'akreditasi'     => 'nullable|string|max:50',
             'tempat'         => 'nullable|string|max:100',
             'tahun_lulus'    => 'nullable|string|max:10',
             'jurusan'        => 'nullable|string|max:150',
             'tahun_masuk'    => 'nullable|string|max:10',
             'dokumen'        => 'nullable|mimes:pdf,jpg,jpeg,png|max:4096',
+            'nomor_ijazah'   => 'nullable|string|max:100',
         ]);
 
         $data = $request->except(['dokumen', '_token']);
@@ -240,12 +309,13 @@ class PerawatDrhController extends Controller
         $request->validate([
             'jenjang'        => 'required|string|max:50',
             'nama_institusi' => 'required|string|max:150',
-            'akreditasi'     => 'nullable|string|max:10',
+            'akreditasi'     => 'nullable|string|max:50',
             'tempat'         => 'nullable|string|max:100',
             'tahun_lulus'    => 'nullable|string|max:10',
             'jurusan'        => 'nullable|string|max:150',
             'tahun_masuk'    => 'nullable|string|max:10',
             'dokumen'        => 'nullable|mimes:pdf,jpg,jpeg,png|max:4096',
+            'nomor_ijazah'   => 'nullable|string|max:100',
         ]);
 
         $data = $request->except(['dokumen', '_token', '_method']);
@@ -285,12 +355,37 @@ class PerawatDrhController extends Controller
     }
 
     /* ============ PELATIHAN ============ */
-    public function pelatihanIndex()
+public function pelatihanIndex()
     {
         $user = $this->currentPerawat();
         if (!$user) return redirect('/');
-        $pelatihan = PerawatPelatihan::where('user_id', $user->id)->orderBy('tanggal_mulai', 'desc')->get();
-        return view('perawat.pelatihan.index', compact('user', 'pelatihan'));
+        
+        $pelatihan = PerawatPelatihan::where('user_id', $user->id)
+                        ->orderBy('tanggal_mulai', 'desc')
+                        ->get();
+        
+        $skpAktif = 0;
+        $skpNonAktif = 0;
+
+        foreach ($pelatihan as $item) {
+            // 1. Jadikan tanggal_selesai sebagai patokan. 
+            // Jika kosong (misal pelatihan cuma 1 hari), gunakan tanggal_mulai.
+            $tanggalPatokan = $item->tanggal_selesai ?? $item->tanggal_mulai;
+
+            if ($tanggalPatokan) {
+                // 2. Masa berlaku SKP umumnya 5 tahun dari tanggal selesai pelatihan
+                $batasKadaluarsa = \Carbon\Carbon::parse($tanggalPatokan)->addYears(5);
+
+                // 3. Jika hari ini (now) masih kurang dari atau sama dengan batas kadaluarsa -> AKTIF
+                if (now()->lessThanOrEqualTo($batasKadaluarsa)) {
+                    $skpAktif += (float) $item->skp;
+                } else {
+                    $skpNonAktif += (float) $item->skp;
+                }
+            }
+        }
+
+        return view('perawat.pelatihan.index', compact('user', 'pelatihan', 'skpAktif', 'skpNonAktif'));
     }
 
     public function pelatihanCreate()
@@ -305,15 +400,17 @@ class PerawatDrhController extends Controller
         $user = $this->currentPerawat();
         if (!$user) return redirect('/');
 
-        $request->validate([
-            'nama_pelatihan' => 'required|string|max:150',
-            'penyelenggara'  => 'nullable|string|max:150',
-            'tempat'         => 'nullable|string|max:100',
-            'durasi'         => 'nullable|string|max:50',
-            'tanggal_mulai'  => 'nullable|date',
-            'tanggal_selesai' => 'nullable|date',
-            'dokumen'        => 'nullable|mimes:pdf,jpg,jpeg,png|max:4096',
-        ]);
+       // Di dalam method pelatihanStore & pelatihanUpdate
+$request->validate([
+    'nama_pelatihan'  => 'required|string|max:150',
+    'penyelenggara'   => 'nullable|string|max:150',
+    'tempat'          => 'nullable|string|max:100',
+    'durasi'          => 'nullable|string|max:50',
+    'tanggal_mulai'   => 'nullable|date',
+    'tanggal_selesai' => 'nullable|date',
+    'skp'             => 'nullable|integer|min:0', // <-- Validasi SKP
+    'dokumen'         => 'nullable|mimes:pdf,jpg,jpeg,png|max:4096',
+]);
 
         $data = $request->except(['dokumen', '_token']);
         $data['user_id'] = $user->id;
@@ -345,15 +442,17 @@ class PerawatDrhController extends Controller
         if (!$user) return redirect('/');
         $pelatihan = PerawatPelatihan::where('user_id', $user->id)->findOrFail($id);
 
-        $request->validate([
-            'nama_pelatihan' => 'required|string|max:150',
-            'penyelenggara'  => 'nullable|string|max:150',
-            'tempat'         => 'nullable|string|max:100',
-            'durasi'         => 'nullable|string|max:50',
-            'tanggal_mulai'  => 'nullable|date',
-            'tanggal_selesai' => 'nullable|date',
-            'dokumen'        => 'nullable|mimes:pdf,jpg,jpeg,png|max:4096',
-        ]);
+      // Di dalam method pelatihanStore & pelatihanUpdate
+$request->validate([
+    'nama_pelatihan'  => 'required|string|max:150',
+    'penyelenggara'   => 'nullable|string|max:150',
+    'tempat'          => 'nullable|string|max:100',
+    'durasi'          => 'nullable|string|max:50',
+    'tanggal_mulai'   => 'nullable|date',
+    'tanggal_selesai' => 'nullable|date',
+    'skp'             => 'nullable|integer|min:0', // <-- Validasi SKP
+    'dokumen'         => 'nullable|mimes:pdf,jpg,jpeg,png|max:4096',
+]);
 
         $data = $request->except(['dokumen', '_token', '_method']);
 
@@ -419,7 +518,15 @@ class PerawatDrhController extends Controller
             'tahun_mulai'   => 'nullable|string|max:4',
             'tahun_selesai' => 'nullable|string|max:4',
             'keterangan'    => 'nullable|string|max:255',
+            'level_pk' => 'nullable|string|max:50',
+            'gol_ruang' => 'nullable|string|max:50',
+'gaji_pokok' => 'nullable|string|max:100',
+'pejabat_sk' => 'nullable|string|max:150',
+'nomor_sk' => 'nullable|string|max:100',
+'tanggal_sk' => 'nullable|date',
             'dokumen'       => 'nullable|mimes:pdf,jpg,jpeg,png|max:4096',
+            'pangkat' => 'nullable|string|max:50',
+            'status_kepegawaian' => 'required|string',
         ]);
 
         $data = $request->except(['dokumen', '_token']);
@@ -460,6 +567,14 @@ class PerawatDrhController extends Controller
             'tahun_selesai' => 'nullable|string|max:4',
             'keterangan'    => 'nullable|string|max:255',
             'dokumen'       => 'nullable|mimes:pdf,jpg,jpeg,png|max:4096',
+            'pangkat' => 'nullable|string|max:50',
+            'level_pk' => 'nullable|string|max:50',
+            'gol_ruang' => 'nullable|string|max:50',
+'gaji_pokok' => 'nullable|string|max:100',
+'pejabat_sk' => 'nullable|string|max:150',
+'nomor_sk' => 'nullable|string|max:100',
+'tanggal_sk' => 'nullable|date',
+            'status_kepegawaian' => 'required|string',
         ]);
 
         $data = $request->except(['dokumen', '_token', '_method']);
@@ -520,14 +635,20 @@ class PerawatDrhController extends Controller
         if (!$user) return redirect('/');
 
         $request->validate([
-            'hubungan'      => 'required|string|max:50',
-            'nama'          => 'required|string|max:150',
-            'tanggal_lahir' => 'nullable|date',
-            'pekerjaan'     => 'nullable|string|max:150',
+    'hubungan'      => 'required|string|max:50',
+    'nama'          => 'required|string|max:150',
+    'tanggal_lahir' => 'nullable|date',
+    'pekerjaan'     => 'nullable|string|max:150',
+    'no_darurat'    => 'nullable|string|max:20',
+    'tempat_lahir'  => 'nullable|string|max:100', // BARU
+    'jenis_kelamin' => 'nullable|in:L,P', // BARU
+    'tanggal_nikah' => 'nullable|date', // BARU
+    'keterangan'    => 'nullable|string|max:255',
         ]);
 
-        $data = $request->only('hubungan', 'nama', 'tanggal_lahir', 'pekerjaan');
-        $data['user_id'] = $user->id;
+        // Tambahkan 'no_darurat' ke request->only
+       $data = $request->except(['_token', '_method']);
+$data['user_id'] = $user->id;
 
         PerawatKeluarga::create($data);
 
@@ -548,19 +669,34 @@ class PerawatDrhController extends Controller
 
     public function keluargaUpdate(Request $request, $id)
     {
+        // 1. DEFINISI USER (Ini yang menyebabkan error sebelumnya jika hilang)
         $user = $this->currentPerawat();
+
+        // 2. Cek jika user tidak ditemukan
         if (!$user) return redirect('/');
+
+        // 3. Cari data keluarga berdasarkan ID dan User ID (security)
         $keluarga = PerawatKeluarga::where('user_id', $user->id)->findOrFail($id);
 
+        // 4. Validasi Input
         $request->validate([
             'hubungan'      => 'required|string|max:50',
             'nama'          => 'required|string|max:150',
             'tanggal_lahir' => 'nullable|date',
             'pekerjaan'     => 'nullable|string|max:150',
+            'no_darurat'    => 'nullable|string|max:20', // Validasi no_darurat
         ]);
 
-        $keluarga->update($request->only('hubungan', 'nama', 'tanggal_lahir', 'pekerjaan'));
+        // 5. Update Data
+        $keluarga->update($request->only(
+            'hubungan',
+            'nama',
+            'tanggal_lahir',
+            'pekerjaan',
+            'no_darurat' // Pastikan no_darurat ikut di-update
+        ));
 
+        // 6. Redirect kembali
         return redirect()->route('perawat.keluarga.index')->with('swal', [
             'icon' => 'success',
             'title' => 'Berhasil',
@@ -609,6 +745,7 @@ class PerawatDrhController extends Controller
             'tempat'          => 'nullable|string|max:100',
             'tahun_mulai'     => 'nullable|date',
             'tahun_selesai'   => 'nullable|date',
+            'masa_organisasi' => 'nullable|string|max:50',
             'pemimpin'        => 'nullable|string|max:150',
             'dokumen'         => 'nullable|mimes:pdf,jpg,jpeg,png|max:4096',
         ]);
@@ -649,6 +786,7 @@ class PerawatDrhController extends Controller
             'tempat'          => 'nullable|string|max:100',
             'tahun_mulai'     => 'nullable|date',
             'tahun_selesai'   => 'nullable|date',
+            'masa_organisasi' => 'nullable|string|max:50',
             'pemimpin'        => 'nullable|string|max:150',
             'dokumen'         => 'nullable|mimes:pdf,jpg,jpeg,png|max:4096',
         ]);
@@ -688,7 +826,89 @@ class PerawatDrhController extends Controller
             'text' => 'Data organisasi dihapus.'
         ]);
     }
+/* ============ KUNJUNGAN LUAR NEGERI ============ */
+    public function kunjunganIndex()
+    {
+        $user = $this->currentPerawat();
+        if (!$user) return redirect('/');
+        $kunjungan = PerawatKunjungan::where('user_id', $user->id)->latest()->get();
+        return view('perawat.kunjungan.index', compact('user', 'kunjungan'));
+    }
 
+    public function kunjunganCreate()
+    {
+        $user = $this->currentPerawat();
+        if (!$user) return redirect('/');
+        return view('perawat.kunjungan.create', compact('user'));
+    }
+
+    public function kunjunganStore(Request $request)
+    {
+        $user = $this->currentPerawat();
+        if (!$user) return redirect('/');
+
+        $request->validate([
+            'negara' => 'required|string|max:100',
+            'tujuan_kunjungan' => 'required|string|max:255',
+            'lamanya' => 'nullable|string|max:100',
+            'yang_membiayai' => 'nullable|string|max:150',
+        ]);
+
+        $data = $request->except(['_token']);
+        $data['user_id'] = $user->id;
+
+        PerawatKunjungan::create($data);
+
+        return redirect()->route('perawat.kunjungan.index')->with('swal', [
+            'icon' => 'success',
+            'title' => 'Berhasil',
+            'text' => 'Data kunjungan luar negeri ditambahkan.'
+        ]);
+    }
+
+    public function kunjunganEdit($id)
+    {
+        $user = $this->currentPerawat();
+        if (!$user) return redirect('/');
+        $kunjungan = PerawatKunjungan::where('user_id', $user->id)->findOrFail($id);
+        return view('perawat.kunjungan.edit', compact('user', 'kunjungan'));
+    }
+
+    public function kunjunganUpdate(Request $request, $id)
+    {
+        $user = $this->currentPerawat();
+        if (!$user) return redirect('/');
+        $kunjungan = PerawatKunjungan::where('user_id', $user->id)->findOrFail($id);
+
+        $request->validate([
+            'negara' => 'required|string|max:100',
+            'tujuan_kunjungan' => 'required|string|max:255',
+            'lamanya' => 'nullable|string|max:100',
+            'yang_membiayai' => 'nullable|string|max:150',
+        ]);
+
+        $kunjungan->update($request->except(['_token', '_method']));
+
+        return redirect()->route('perawat.kunjungan.index')->with('swal', [
+            'icon' => 'success',
+            'title' => 'Berhasil',
+            'text' => 'Data kunjungan diperbarui.'
+        ]);
+    }
+
+    public function kunjunganDestroy($id)
+    {
+        $user = $this->currentPerawat();
+        if (!$user) return redirect('/');
+        
+        PerawatKunjungan::where('user_id', $user->id)->findOrFail($id)->delete();
+
+        return redirect()->route('perawat.kunjungan.index')->with('swal', [
+            'icon' => 'success',
+            'title' => 'Berhasil',
+            'text' => 'Data kunjungan dihapus.'
+        ]);
+    }
     /* ============ TANDA JASA ============ */
     public function tandajasaIndex()
     {
@@ -969,17 +1189,25 @@ class PerawatDrhController extends Controller
         $user = $this->currentPerawat();
         if (!$user) return redirect('/');
 
+        // Cek apakah sudah punya STR (Limit 1 per perawat)
+        if (PerawatStr::where('user_id', $user->id)->exists()) {
+            return redirect()->route('perawat.str.index')
+                ->with('swal', ['icon' => 'error', 'title' => 'Gagal', 'text' => 'Anda hanya diperbolehkan memiliki 1 dokumen STR.']);
+        }
+
         $request->validate([
-            'nama'        => 'required|string|max:100', // Validasi Baru
-            'lembaga'     => 'required|string|max:100', // Validasi Baru
+            'nama'        => 'nullable|string|max:100',
             'nomor'       => 'required|string|max:100',
             'tgl_terbit'  => 'required|date',
-            'tgl_expired' => 'required|date',
+            'tgl_expired' => 'nullable|date', // Jadi nullable
             'dokumen'     => 'required|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         $data = $request->except(['dokumen', '_token']);
         $data['user_id'] = $user->id;
+
+        // Pastikan null jika kosong (untuk lifetime)
+        $data['tgl_expired'] = $request->tgl_expired ?: null;
 
         if ($request->hasFile('dokumen')) {
             $data['file_path'] = $request->file('dokumen')->store('perawat/dokumen/str', 'public');
@@ -989,14 +1217,6 @@ class PerawatDrhController extends Controller
         return redirect()->route('perawat.str.index')->with('swal', ['icon' => 'success', 'title' => 'Berhasil', 'text' => 'STR berhasil disimpan.']);
     }
 
-    public function strEdit($id)
-    {
-        $user = $this->currentPerawat();
-        if (!$user) return redirect('/');
-        $data = PerawatStr::where('user_id', $user->id)->findOrFail($id);
-        return view('perawat.dokumen.str.edit', compact('user', 'data'));
-    }
-
     public function strUpdate(Request $request, $id)
     {
         $user = $this->currentPerawat();
@@ -1004,15 +1224,17 @@ class PerawatDrhController extends Controller
         $str = PerawatStr::where('user_id', $user->id)->findOrFail($id);
 
         $request->validate([
-            'nama'        => 'required|string|max:100', // Validasi Baru
-            'lembaga'     => 'required|string|max:100', // Validasi Baru
+            'nama'        => 'nullable|string|max:100',
             'nomor'       => 'required|string|max:100',
             'tgl_terbit'  => 'required|date',
-            'tgl_expired' => 'required|date',
+            'tgl_expired' => 'nullable|date', // [UBAH] Jadi nullable
             'dokumen'     => 'nullable|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         $data = $request->except(['dokumen', '_token', '_method']);
+
+        // Pastikan null jika kosong
+        $data['tgl_expired'] = $request->tgl_expired ?: null;
 
         if ($request->hasFile('dokumen')) {
             if ($str->file_path && Storage::disk('public')->exists($str->file_path)) {
@@ -1023,6 +1245,14 @@ class PerawatDrhController extends Controller
 
         $str->update($data);
         return redirect()->route('perawat.str.index')->with('swal', ['icon' => 'success', 'title' => 'Berhasil', 'text' => 'STR diperbarui.']);
+    }
+
+    public function strEdit($id)
+    {
+        $user = $this->currentPerawat();
+        if (!$user) return redirect('/');
+        $data = PerawatStr::where('user_id', $user->id)->findOrFail($id);
+        return view('perawat.dokumen.str.edit', compact('user', 'data'));
     }
 
     public function strDestroy($id)
@@ -1059,17 +1289,25 @@ class PerawatDrhController extends Controller
         $user = $this->currentPerawat();
         if (!$user) return redirect('/');
 
+        // [BARU] Cek apakah sudah punya SIP (Limit 1 per perawat)
+        if (PerawatSip::where('user_id', $user->id)->exists()) {
+            return redirect()->route('perawat.sip.index')
+                ->with('swal', ['icon' => 'error', 'title' => 'Gagal', 'text' => 'Anda hanya diperbolehkan memiliki 1 dokumen SIP.']);
+        }
+
         $request->validate([
-            'nama'        => 'required|string|max:100', // Validasi Baru
-            'lembaga'     => 'required|string|max:100', // Validasi Baru
+            'nama'        => 'nullable|string|max:100',
             'nomor'       => 'required|string|max:100',
             'tgl_terbit'  => 'required|date',
-            'tgl_expired' => 'required|date',
+            'tgl_expired' => 'nullable|date', // [UBAH] Jadi nullable
             'dokumen'     => 'required|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         $data = $request->except(['dokumen', '_token']);
         $data['user_id'] = $user->id;
+
+        // Pastikan null jika kosong
+        $data['tgl_expired'] = $request->tgl_expired ?: null;
 
         if ($request->hasFile('dokumen')) {
             $data['file_path'] = $request->file('dokumen')->store('perawat/dokumen/sip', 'public');
@@ -1093,15 +1331,17 @@ class PerawatDrhController extends Controller
         $sip = PerawatSip::where('user_id', $user->id)->findOrFail($id);
 
         $request->validate([
-            'nama'        => 'required|string|max:100', // Validasi Baru
-            'lembaga'     => 'required|string|max:100', // Validasi Baru
+            'nama'        => 'nullable|string|max:100',
             'nomor'       => 'required|string|max:100',
             'tgl_terbit'  => 'required|date',
-            'tgl_expired' => 'required|date',
+            'tgl_expired' => 'nullable|date', // [UBAH] Jadi nullable
             'dokumen'     => 'nullable|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         $data = $request->except(['dokumen', '_token', '_method']);
+
+        // Pastikan null jika kosong
+        $data['tgl_expired'] = $request->tgl_expired ?: null;
 
         if ($request->hasFile('dokumen')) {
             if ($sip->file_path && Storage::disk('public')->exists($sip->file_path)) {
@@ -1128,13 +1368,39 @@ class PerawatDrhController extends Controller
     }
 
     /* ------------ 4. DATA TAMBAHAN (Ada Field Jenis) ------------ */
-    public function tambahanIndex()
-    {
-        $user = $this->currentPerawat();
-        if (!$user) return redirect('/');
-        $data = PerawatDataTambahan::where('user_id', $user->id)->orderBy('tgl_expired', 'desc')->get();
-        return view('perawat.dokumen.tambahan.index', compact('user', 'data'));
+public function tambahanIndex()
+{
+    $user = $this->currentPerawat();
+    if (!$user) return redirect('/');
+
+    $data = PerawatDataTambahan::where('user_id', $user->id)->orderBy('tgl_terbit', 'desc')->get();
+    
+    // Logika perhitungan SKP
+    $today = Carbon::now();
+    $limaTahunLalu = Carbon::now()->subYears(5);
+
+    $totalSkpAktif = 0;
+    $totalSkpNonAktif = 0;
+
+    foreach ($data as $item) {
+        $isAktif = false;
+        
+        // Cek validitas dokumen (mirip dengan logika di Service)
+        if ($item->is_lifetime) {
+            if ($item->lifetime_approved) $isAktif = true;
+        } elseif ($item->tgl_expired && Carbon::parse($item->tgl_expired)->greaterThanOrEqualTo($today)) {
+            $isAktif = true;
+        }
+
+        if ($isAktif && Carbon::parse($item->tgl_terbit)->greaterThanOrEqualTo($limaTahunLalu)) {
+            $totalSkpAktif += $item->skp;
+        } else {
+            $totalSkpNonAktif += $item->skp;
+        }
     }
+
+    return view('perawat.dokumen.tambahan.index', compact('user', 'data', 'totalSkpAktif', 'totalSkpNonAktif'));
+}
 
     public function tambahanCreate()
     {
@@ -1150,12 +1416,12 @@ class PerawatDrhController extends Controller
 
         $isLifetime = $request->has('is_lifetime') && $request->input('is_lifetime') == '1';
 
-        $rules = [
-            'jenis'      => 'required|string|max:100',
+    $rules = [
             'nama'       => 'required|string|max:100',
             'lembaga'    => 'required|string|max:100',
             'nomor'      => 'required|string|max:100',
             'tgl_terbit' => 'required|date',
+            'skp'        => 'nullable|integer|min:0', // <-- TAMBAHKAN INI DI RULES
             'dokumen'    => 'required|mimes:pdf,jpg,jpeg,png|max:5120',
             'is_lifetime' => 'nullable|in:1',
         ];
@@ -1214,13 +1480,13 @@ class PerawatDrhController extends Controller
 
         $isLifetime = $request->has('is_lifetime') && $request->input('is_lifetime') == '1';
 
-        $rules = [
-            'jenis'      => 'required|string|max:100',
+      $rules = [
             'nama'       => 'required|string|max:100',
             'lembaga'    => 'required|string|max:100',
             'nomor'      => 'required|string|max:100',
             'tgl_terbit' => 'required|date',
-            'dokumen'    => 'nullable|mimes:pdf,jpg,jpeg,png|max:5120',
+            'skp'        => 'nullable|integer|min:0', // <-- TAMBAHKAN INI DI RULES
+            'dokumen'    => 'required|mimes:pdf,jpg,jpeg,png|max:5120',
             'is_lifetime' => 'nullable|in:1',
         ];
 

@@ -176,13 +176,18 @@
                         </div>
 
                         {{-- Tempat & Durasi --}}
-                        <div class="col-md-6">
+                      {{-- Tempat, Durasi & SKP --}}
+                        <div class="col-md-4">
                             <label class="form-label">Tempat</label>
                             <input type="text" name="tempat" class="form-control" value="{{ old('tempat') }}" placeholder="Kota / Lokasi">
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label">Durasi</label>
                             <input type="text" name="durasi" class="form-control" value="{{ old('durasi') }}" placeholder="Contoh: 32 JP / 3 Hari">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Total SKP</label>
+                            <input type="number" name="skp" class="form-control" value="{{ old('skp', 0) }}" min="0" placeholder="Contoh: 5">
                         </div>
 
                         {{-- Tanggal --}}

@@ -142,7 +142,9 @@
 
     <div class="container-sidebar">
         <div class="circle-decor"></div>
-        <img src="https://rsudslg.kedirikab.go.id/asset_compro/img/logo/Logo.png" class="side-logo" alt="Logo">
+
+    <img src="https://rsudslg.kedirikab.go.id/asset_compro/img/logo/Pemkab.png" class="side-logo">
+
         <div class="side-title">PEMERINTAH KABUPATEN KEDIRI<br>DINAS KESEHATAN<br>UOBK RSUD SLG</div>
 
         <div class="photo-frame">

@@ -9,12 +9,100 @@ use Illuminate\Support\Facades\Storage;
 
 class BankSoalController extends Controller
 {
-    public function index()
+
+public function index(Request $request)
     {
-        $soals = BankSoal::latest()->paginate(10);
-        return view('admin.bank_soal.index', compact('soals'));
+        $query = BankSoal::query();
+
+        // 1. Filter pencarian teks
+        if ($request->filled('search')) {
+            $query->where('pertanyaan', 'like', '%' . $request->search . '%');
+        }
+
+        // 2. Filter berdasarkan kategori
+        if ($request->filled('kategori')) {
+            $query->where('kategori', $request->kategori);
+        }
+
+        // 3. Filter Soal Duplikat & Unik
+        if ($request->filled('filter_tipe')) {
+            $duplicatePertanyaan = BankSoal::select('pertanyaan')
+                ->groupBy('pertanyaan')
+                ->havingRaw('COUNT(id) > 1')
+                ->pluck('pertanyaan');
+
+            if ($request->filter_tipe == 'duplikat') {
+                // Tampilkan hanya yang duplikat dan urutkan agar yang sama berdekatan
+                $query->whereIn('pertanyaan', $duplicatePertanyaan)
+                      ->orderBy('pertanyaan');
+            } elseif ($request->filter_tipe == 'unik') {
+                // Tampilkan hanya soal yang tidak duplikat
+                $query->whereNotIn('pertanyaan', $duplicatePertanyaan)
+                      ->latest();
+            } else {
+                $query->latest();
+            }
+        } else {
+            $query->latest();
+        }
+
+        // 4. Pagination dinamis
+        $perPage = $request->input('per_page', 10);
+        $soals = $query->paginate($perPage);
+
+        // Ambil daftar kategori unik
+        $kategoris = BankSoal::select('kategori')
+            ->whereNotNull('kategori')
+            ->where('kategori', '!=', '')
+            ->distinct()
+            ->pluck('kategori');
+
+        return view('admin.bank_soal.index', compact('soals', 'kategoris'));
     }
 
+    // Fungsi baru untuk export SEMUA data berdasarkan filter saat ini
+    public function exportJsonData(Request $request)
+    {
+        $query = BankSoal::query();
+
+        if ($request->filled('search')) {
+            $query->where('pertanyaan', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('kategori')) {
+            $query->where('kategori', $request->kategori);
+        }
+
+        if ($request->filled('filter_tipe')) {
+            $duplicatePertanyaan = BankSoal::select('pertanyaan')
+                ->groupBy('pertanyaan')
+                ->havingRaw('COUNT(id) > 1')
+                ->pluck('pertanyaan');
+
+            if ($request->filter_tipe == 'duplikat') {
+                $query->whereIn('pertanyaan', $duplicatePertanyaan)->orderBy('pertanyaan');
+            } elseif ($request->filter_tipe == 'unik') {
+                $query->whereNotIn('pertanyaan', $duplicatePertanyaan)->latest();
+            }
+        }
+
+        // Ambil semua data tanpa pagination untuk di-export
+        $data = $query->get()->map(function ($soal) {
+            return [
+                'ID' => $soal->id,
+                'Pertanyaan' => $soal->pertanyaan,
+                'Kategori' => $soal->kategori ?? 'Umum',
+                'Opsi A' => $soal->opsi_jawaban['a'] ?? '-',
+                'Opsi B' => $soal->opsi_jawaban['b'] ?? '-',
+                'Opsi C' => $soal->opsi_jawaban['c'] ?? '-',
+                'Opsi D' => $soal->opsi_jawaban['d'] ?? '-',
+                'Opsi E' => $soal->opsi_jawaban['e'] ?? '-',
+                'Kunci Jawaban' => strtoupper($soal->kunci_jawaban),
+            ];
+        });
+
+        return response()->json($data);
+    }
     public function create()
     {
         return view('admin.bank_soal.create');

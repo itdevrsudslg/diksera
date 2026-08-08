@@ -8,7 +8,9 @@
 @section('title', 'Bank Soal – Admin DIKSERA')
 
 @push('styles')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- Tambahkan CSS Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
         :root {
             --primary-color: #2563eb;
@@ -18,7 +20,20 @@
             --radius-md: 10px;
             --radius-lg: 14px;
         }
-
+.select2-container .select2-selection--single {
+            height: 38px !important;
+            border-radius: 8px !important;
+            border: 1px solid var(--border-color) !important;
+            display: flex;
+            align-items: center;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: #475569 !important;
+            font-size: 14px;
+        }
         .content-card {
             background: #ffffff;
             border-radius: var(--radius-lg);
@@ -146,33 +161,62 @@
                 <i class="bi bi-plus-lg"></i> Tambah Soal Manual
             </a>
         </div>
+<div class="toolbar-container mb-4">
+    <form action="{{ route('admin.bank-soal.index') }}" method="GET">
+        <div class="row g-3 align-items-center">
+            
+            <div class="col-lg-8 d-flex gap-2 flex-wrap">
+                <!-- 1. Select Per Page -->
+                <select name="per_page" class="form-select" style="width: auto; min-width: 80px;" onchange="this.form.submit()">
+                    @foreach([10, 20, 30, 40, 50, 100] as $limit)
+                        <option value="{{ $limit }}" {{ request('per_page', 10) == $limit ? 'selected' : '' }}>
+                            {{ $limit }}
+                        </option>
+                    @endforeach
+                </select>
 
-        <div class="toolbar-container mb-4">
-            <div class="row g-3 align-items-center">
-                <div class="col-lg-4">
-                    <div class="position-relative">
-                        <i class="bi bi-search position-absolute text-muted" style="top: 10px; left: 12px;"></i>
-                        <input type="text" name="search" class="form-control ps-5" placeholder="Cari soal..."
-                            value="{{ request('search') }}">
-                    </div>
+                <!-- 2. Search Box -->
+                <div class="position-relative flex-grow-1" style="min-width: 150px;">
+                    <i class="bi bi-search position-absolute text-muted" style="top: 10px; left: 12px;"></i>
+                    <input type="text" name="search" class="form-control ps-5" placeholder="Cari soal..." value="{{ request('search') }}">
                 </div>
-                <div class="col-lg-8 d-flex justify-content-lg-end gap-2 flex-wrap">
-                    <button class="btn btn-theme btn-theme-outline" onclick="downloadTemplate()">
-                        <i class="bi bi-file-earmark-arrow-down"></i> Template
-                    </button>
-                    <div class="h-divider mx-1 d-none d-lg-block" style="width: 1px; background: #e2e8f0; height: 30px;">
-                    </div>
-                    <button class="btn btn-theme btn-theme-success" onclick="exportExcel()">
-                        <i class="bi bi-file-earmark-spreadsheet"></i> Export
-                    </button>
-                    <button class="btn btn-theme btn-theme-outline text-success border-success" data-bs-toggle="modal"
-                        data-bs-target="#importModal">
-                        <i class="bi bi-upload"></i> Import Excel
-                    </button>
-                </div>
+                
+                <!-- 3. Kategori Select -->
+                <select name="kategori" id="kategori-select" class="form-select" style="min-width: 150px;">
+                    <option value="">Semua Kategori</option>
+                    @foreach ($kategoris as $kategori)
+                        <option value="{{ $kategori }}" {{ request('kategori') == $kategori ? 'selected' : '' }}>
+                            {{ $kategori }}
+                        </option>
+                    @endforeach
+                </select>
+
+                <!-- 4. Filter Duplikat -->
+                <select name="filter_tipe" class="form-select text-danger border-danger-subtle fw-semibold" style="min-width: 130px;" onchange="this.form.submit()">
+                    <option value="">Semua Soal</option>
+                    <option value="unik" {{ request('filter_tipe') == 'unik' ? 'selected' : '' }}>Soal Unik</option>
+                    <option value="duplikat" {{ request('filter_tipe') == 'duplikat' ? 'selected' : '' }}>Soal Duplikat</option>
+                </select>
+                
+                <button type="submit" class="d-none">Cari</button>
             </div>
-        </div>
 
+            <div class="col-lg-4 d-flex justify-content-lg-end gap-2 flex-wrap">
+                <button type="button" class="btn btn-theme btn-theme-outline" onclick="downloadTemplate()">
+                    <i class="bi bi-file-earmark-arrow-down"></i> Template
+                </button>
+                <div class="h-divider mx-1 d-none d-lg-block" style="width: 1px; background: #e2e8f0; height: 30px;"></div>
+                <button type="button" class="btn btn-theme btn-theme-success" onclick="exportExcel()">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> Export Semua
+                </button>
+                <button type="button" class="btn btn-theme btn-theme-outline text-success border-success" data-bs-toggle="modal" data-bs-target="#importModal">
+                    <i class="bi bi-upload"></i> Import
+                </button>
+            </div>
+            
+        </div>
+    </form>
+</div>
         <div class="table-responsive border rounded-3">
             <table class="table table-custom mb-0">
                 <thead>
@@ -267,8 +311,24 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+    $(document).ready(function() {
+            // Inisialisasi Select2 pada dropdown kategori
+            $('#kategori-select').select2({
+                placeholder: "Cari Kategori...",
+                allowClear: true
+            });
+
+            // Otomatis submit form ketika kategori dipilih atau dihapus
+            $('#kategori-select').on('change', function(e) {
+                // Pastikan yang men-trigger adalah user, bukan inisialisasi awal
+                if (e.originalEvent || e.type === 'change') {
+                    $(this).closest('form').submit();
+                }
+            });
+        });
         // Gunakan script yang sama dengan sebelumnya, fungsi processImport dan downloadTemplate tetap valid.
         function downloadTemplate() {
             const templateData = [{
@@ -287,13 +347,39 @@
             XLSX.writeFile(wb, 'Template_Soal.xlsx');
         }
 
-        function exportExcel() {
-            const table = document.querySelector("table");
-            const wb = XLSX.utils.table_to_book(table, {
-                sheet: "Bank Soal"
-            });
-            XLSX.writeFile(wb, 'Export_Bank_Soal.xlsx');
+    async function exportExcel() {
+    try {
+        Swal.fire({
+            title: 'Menyiapkan Data...',
+            text: 'Mengekstrak seluruh soal ke Excel',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        // Ambil query string dari URL saat ini agar data Excel sesuai dengan filter pencarian yang sedang aktif
+        let currentUrlParams = window.location.search;
+        let exportUrl = '{{ route("admin.bank-soal.export-json") }}' + currentUrlParams;
+
+        let response = await axios.get(exportUrl);
+        let dataToExport = response.data;
+
+        if (dataToExport.length === 0) {
+            Swal.fire('Kosong', 'Tidak ada data untuk diexport', 'info');
+            return;
         }
+
+        // Generate Excel dengan SheetJS
+        const ws = XLSX.utils.json_to_sheet(dataToExport);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Bank Soal Lengkap");
+        XLSX.writeFile(wb, 'Export_Bank_Soal_Full.xlsx');
+
+        Swal.close();
+    } catch (error) {
+        Swal.fire('Error', 'Gagal mengekspor data', 'error');
+        console.error(error);
+    }
+}
 
         function processImport() {
             const fileInput = document.getElementById('fileExcel');

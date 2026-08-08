@@ -39,7 +39,10 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-
+public function arsipDokumens()
+{
+    return $this->hasMany(PerawatArsipDokumen::class, 'user_id');
+}
     public function penanggungJawab()
     {
         return $this->hasOne(PenanggungJawabUjian::class);
@@ -120,4 +123,36 @@ class User extends Authenticatable
         return $this->hasOne(PerawatPendidikan::class, 'user_id')
             ->orderBy('tahun_lulus', 'desc');
     }
+    
+    // Tambahkan di dalam class User { ... }
+
+public function pendidikan()
+{
+    return $this->hasMany(PerawatPendidikan::class, 'user_id');
+}
+
+public function pelatihan()
+{
+    return $this->hasMany(PerawatPelatihan::class, 'user_id');
+}
+
+public function keluarga()
+{
+    return $this->hasMany(PerawatKeluarga::class, 'user_id');
+}
+
+public function organisasi()
+{
+    return $this->hasMany(PerawatOrganisasi::class, 'user_id');
+}
+// Relasi ke tabel perawat_pekerjaans
+    public function pekerjaans()
+    {
+        return $this->hasMany(\App\Models\PerawatPekerjaan::class, 'user_id');
+    }
+
+public function tandajasa()
+{
+    return $this->hasMany(PerawatTandaJasa::class, 'user_id');
+}
 }

@@ -2,7 +2,11 @@
     'title' => 'Registrasi Perawat – DIKSERA',
     'fullWidth' => true
 ])
+
 @section('content')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 <div class="text-center mb-3">
     <div class="logo-big mx-auto">
         <img src="{{ asset('icon.png') }}" alt="DIKSERA">
@@ -57,383 +61,298 @@
     </div>
 
     {{-- STEP 1 – I. KETERANGAN PERORANGAN (IDENTITAS + JABATAN) --}}
-    <div class="step-pane" data-step="1">
-        <div class="step-title">I. Keterangan Perorangan – Akun &amp; Identitas</div>
-        <div class="row g-3">
-            <div class="col-lg-7">
-                {{-- 2. Nama --}}
-                <div class="mb-2">
-                    <label class="form-label small text-muted mb-1">Nama Lengkap *</label>
-                    <input type="text"
-                           name="name"
-                           value="{{ old('name') }}"
-                           data-required="true"
-                           class="form-control form-control-sm form-control-light @error('name') is-invalid @enderror">
-                </div>
+<div class="step-pane" data-step="1">
+    <div class="step-title">I. Keterangan Perorangan – Akun & Identitas</div>
+    <div class="row g-3">
+        <div class="col-lg-7">
+            {{-- Nama --}}
+            <div class="mb-2">
+                <label class="form-label small text-muted mb-1">Nama Lengkap (Tanpa Gelar) *</label>
+                <input type="text" name="name" value="{{ old('name') }}" data-required="true" class="form-control form-control-sm form-control-light @error('name') is-invalid @enderror">
+            </div>
 
-                {{-- 8. Email --}}
-                <div class="mb-2">
-                    <label class="form-label small text-muted mb-1">E-mail *</label>
-                    <input type="email"
-                           name="email"
-                           value="{{ old('email') }}"
-                           data-required="true"
-                           class="form-control form-control-sm form-control-light @error('email') is-invalid @enderror">
-                </div>
+            {{-- Email --}}
+            <div class="mb-2">
+                <label class="form-label small text-muted mb-1">E-mail *</label>
+                <input type="email" name="email" value="{{ old('email') }}" data-required="true" class="form-control form-control-sm form-control-light @error('email') is-invalid @enderror">
+            </div>
 
-                {{-- Password --}}
-                <div class="mb-2">
-                    <label class="form-label small text-muted mb-1">Password *</label>
-                    <div class="password-wrapper">
-                        <input id="password_reg"
-                               type="password"
-                               name="password"
-                               data-required="true"
-                               class="form-control form-control-sm form-control-light @error('password') is-invalid @enderror">
-                        <button type="button" class="toggle-password-btn" data-target="password_reg">Lihat</button>
-                    </div>
-                    <small class="text-muted" style="font-size:11px;">Min. 6 karakter.</small>
+            {{-- Password --}}
+            <div class="mb-2">
+                <label class="form-label small text-muted mb-1">Password *</label>
+                <div class="password-wrapper">
+                    <input id="password_reg" type="password" name="password" data-required="true" class="form-control form-control-sm form-control-light @error('password') is-invalid @enderror">
+                    <button type="button" class="toggle-password-btn" data-target="password_reg">Lihat</button>
                 </div>
+                <small class="text-muted" style="font-size:11px;">Min. 6 karakter.</small>
+            </div>
 
-                <div class="mb-2">
-                    <label class="form-label small text-muted mb-1">Konfirmasi Password *</label>
-                    <div class="password-wrapper">
-                        <input id="password_reg_confirmation"
-                               type="password"
-                               name="password_confirmation"
-                               data-required="true"
-                               class="form-control form-control-sm form-control-light">
-                        <button type="button" class="toggle-password-btn" data-target="password_reg_confirmation">Lihat</button>
-                    </div>
-                </div>
-
-                {{-- 12. Kegemaran / Hobby --}}
-                <div class="mb-2">
-                    <label class="form-label small text-muted mb-1">Kegemaran / Hobby</label>
-                    <input type="text"
-                           name="hobby"
-                           value="{{ old('hobby') }}"
-                           class="form-control form-control-sm form-control-light @error('hobby') is-invalid @enderror">
+            <div class="mb-2">
+                <label class="form-label small text-muted mb-1">Konfirmasi Password *</label>
+                <div class="password-wrapper">
+                    <input id="password_reg_confirmation" type="password" name="password_confirmation" data-required="true" class="form-control form-control-sm form-control-light">
+                    <button type="button" class="toggle-password-btn" data-target="password_reg_confirmation">Lihat</button>
                 </div>
             </div>
 
-            <div class="col-lg-5">
-                {{-- 1. NIK --}}
-                <div class="mb-2">
-                    <label class="form-label small text-muted mb-1">Nomor Induk Kependudukan</label>
-                    <input type="text"
-                           name="nik"
-                           value="{{ old('nik') }}"
-                           class="form-control form-control-sm form-control-light @error('nik') is-invalid @enderror">
-                </div>
+             {{-- Hobby --}}
+             <div class="mb-2">
+                <label class="form-label small text-muted mb-1">Kegemaran / Hobby</label>
+                <input type="text" name="hobby" value="{{ old('hobby') }}" class="form-control form-control-sm form-control-light">
+            </div>
+        </div>
 
-                {{-- NIP & NIRP --}}
-                <div class="mb-2 row g-2">
-                    <div class="col-6">
-                        <label class="form-label small text-muted mb-1">NIP</label>
-                        <input type="text"
-                               name="nip"
-                               value="{{ old('nip') }}"
-                               class="form-control form-control-sm form-control-light @error('nip') is-invalid @enderror">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label small text-muted mb-1">NIRP</label>
-                        <input type="text"
-                               name="nirp"
-                               value="{{ old('nirp') }}"
-                               class="form-control form-control-sm form-control-light @error('nirp') is-invalid @enderror">
-                    </div>
-                </div>
+        <div class="col-lg-5">
+            {{-- NIK --}}
+            <div class="mb-2">
+                <label class="form-label small text-muted mb-1">NIK (KTP) *</label>
+                <input type="text" name="nik" value="{{ old('nik') }}" data-required="true" class="form-control form-control-sm form-control-light @error('nik') is-invalid @enderror">
+            </div>
 
-                {{-- 3 & 4. Kab/Kota Lahir + Tanggal Lahir --}}
-                <div class="mb-2 row g-2">
-                    <div class="col-6">
-                        <label class="form-label small text-muted mb-1">Kabupaten / Kota Lahir</label>
-                        <input type="text"
-                               name="tempat_lahir"
-                               value="{{ old('tempat_lahir') }}"
-                               class="form-control form-control-sm form-control-light @error('tempat_lahir') is-invalid @enderror">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label small text-muted mb-1">Tanggal Lahir</label>
-                        <input type="date"
-                               name="tanggal_lahir"
-                               value="{{ old('tanggal_lahir') }}"
-                               class="form-control form-control-sm form-control-light @error('tanggal_lahir') is-invalid @enderror">
-                    </div>
+            {{-- LOGIKA BARU: PROFESI & STATUS --}}
+            <div class="mb-2 row g-2">
+                <div class="col-6">
+                    <label class="form-label small text-muted mb-1">Profesi *</label>
+                    <select name="profesi" id="select_profesi" data-required="true" class="form-select form-select-sm form-control-light @error('profesi') is-invalid @enderror">
+                        <option value="">-- Pilih --</option>
+                        <option value="Perawat" {{ old('profesi')=='Perawat'?'selected':'' }}>Perawat</option>
+                        <option value="Bidan" {{ old('profesi')=='Bidan'?'selected':'' }}>Bidan</option>
+                    </select>
                 </div>
+                <div class="col-6">
+                    <label class="form-label small text-muted mb-1">Status Kepegawaian *</label>
+                    <select name="status_kepegawaian" id="select_status" data-required="true" class="form-select form-select-sm form-control-light @error('status_kepegawaian') is-invalid @enderror">
+                        <option value="">-- Pilih --</option>
+                        <option value="ASN - PNS" {{ old('status_kepegawaian')=='ASN - PNS'?'selected':'' }}>ASN - PNS</option>
+                        <option value="ASN - PPPK" {{ old('status_kepegawaian')=='ASN - PPPK'?'selected':'' }}>ASN - PPPK</option>
+                        <option value="ASN - PPPK PARUH WAKTU" {{ old('status_kepegawaian')=='ASN - PPPK PARUH WAKTU'?'selected':'' }}>ASN - PPPK PARUH WAKTU</option>
+                        <option value="NON ASN - KARYAWAN TETAP" {{ old('status_kepegawaian')=='NON ASN - KARYAWAN TETAP'?'selected':'' }}>NON ASN - KARYAWAN TETAP</option>
+                        <option value="NON ASN - KONTRAK" {{ old('status_kepegawaian')=='NON ASN - KONTRAK'?'selected':'' }}>NON ASN - KONTRAK</option>
+                    </select>
+                </div>
+            </div>
 
-                {{-- 5 / 6 / 7 – Jenis Kelamin, Agama, Status Kawin, Aliran Kepercayaan --}}
-                <div class="mb-2 row g-2">
-                    <div class="col-6">
-                        <label class="form-label small text-muted mb-1">Jenis Kelamin</label>
-                        <select name="jenis_kelamin"
-                                class="form-select form-select-sm form-control-light @error('jenis_kelamin') is-invalid @enderror">
-                            <option value="">-- Pilih --</option>
-                            <option value="L" {{ old('jenis_kelamin')=='L'?'selected':'' }}>Laki-laki</option>
-                            <option value="P" {{ old('jenis_kelamin')=='P'?'selected':'' }}>Perempuan</option>
-                        </select>
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label small text-muted mb-1">Agama</label>
-                        <select name="agama"
-                                class="form-select form-select-sm form-control-light @error('agama') is-invalid @enderror">
-                            <option value="">-- Pilih --</option>
-                            @php
-                                $agamaList = ['Islam','Kristen','Katolik','Hindu','Buddha','Konghucu','Lainnya'];
-                            @endphp
-                            @foreach($agamaList as $ag)
-                                <option value="{{ $ag }}" {{ old('agama')==$ag?'selected':'' }}>{{ $ag }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
+            {{-- LOGIKA BARU: NIP / NIRP (Muncul salah satu) --}}
+         <div class="mb-2">
+    {{-- Input NIP (Tanpa Spasi) --}}
+    <div id="wrapper_nip" class="d-none">
+        <label class="form-label small text-muted mb-1">NIP * (Tanpa Spasi)</label>
+        <input type="text" 
+               name="nip" 
+               id="input_nip" 
+               value="{{ old('nip') }}" 
+               class="form-control form-control-sm form-control-light @error('nip') is-invalid @enderror"
+               oninput="this.value = this.value.replace(/\s/g, '')"> {{-- Hapus spasi otomatis --}}
+    </div>
 
-                <div class="mb-2 row g-2">
-                    <div class="col-6">
-                        <label class="form-label small text-muted mb-1">Aliran Kepercayaan</label>
-                        <select name="aliran_kepercayaan"
-                                class="form-select form-select-sm form-control-light @error('aliran_kepercayaan') is-invalid @enderror">
-                            <option value="">-- Pilih --</option>
-                            @php
-                                $kepercayaanList = [
-                                    'Tidak / Bukan Penghayat',
-                                    'Penghayat Kepercayaan terhadap Tuhan YME',
-                                    'Lainnya',
-                                ];
-                            @endphp
-                            @foreach($kepercayaanList as $kp)
-                                <option value="{{ $kp }}" {{ old('aliran_kepercayaan')==$kp?'selected':'' }}>
-                                    {{ $kp }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label small text-muted mb-1">Status Perkawinan</label>
-                        <select name="status_perkawinan"
-                                class="form-select form-select-sm form-control-light @error('status_perkawinan') is-invalid @enderror">
-                            <option value="">-- Pilih --</option>
-                            @php
-                                $statusList = ['Belum Menikah','Menikah','Cerai Hidup','Cerai Mati'];
-                            @endphp
-                            @foreach($statusList as $st)
-                                <option value="{{ $st }}" {{ old('status_perkawinan')==$st?'selected':'' }}>{{ $st }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
+    {{-- Input NIRP (Tanpa Spasi) --}}
+    <div id="wrapper_nirp" class="d-none">
+        <label class="form-label small text-muted mb-1">NIRP * (Tanpa Spasi)</label>
+        <input type="text" 
+               name="nirp" 
+               id="input_nirp" 
+               value="{{ old('nirp') }}" 
+               class="form-control form-control-sm form-control-light @error('nirp') is-invalid @enderror"
+               oninput="this.value = this.value.replace(/\s/g, '')"> {{-- Hapus spasi otomatis --}}
+    </div>
+</div>
 
-                {{-- Jabatan / Pangkat / Golongan --}}
-                <div class="mb-2 row g-2">
-                    <div class="col-6 col-md-6">
-                        <label class="form-label small text-muted mb-1">Jabatan</label>
-                        <input type="text"
-                               name="jabatan"
-                               value="{{ old('jabatan') }}"
-                               class="form-control form-control-sm form-control-light @error('jabatan') is-invalid @enderror">
-                    </div>
-                    <div class="col-3 col-md-3">
-                        <label class="form-label small text-muted mb-1">Pangkat</label>
-                        <input type="text"
-                               name="pangkat"
-                               value="{{ old('pangkat') }}"
-                               class="form-control form-control-sm form-control-light @error('pangkat') is-invalid @enderror">
-                    </div>
-                    <div class="col-3 col-md-3">
-                        <label class="form-label small text-muted mb-1">Golongan</label>
-                        <input type="text"
-                               name="golongan"
-                               value="{{ old('golongan') }}"
-                               class="form-control form-control-sm form-control-light @error('golongan') is-invalid @enderror">
-                    </div>
+            {{-- LOGIKA BARU: JABATAN OTOMATIS --}}
+            <div class="mb-2">
+                <label class="form-label small text-muted mb-1">Jabatan (Otomatis) *</label>
+                <select name="jabatan" id="select_jabatan" data-required="true" class="form-select form-select-sm form-control-light @error('jabatan') is-invalid @enderror">
+                    <option value="">-- Pilih Profesi & Status Dulu --</option>
+                    {{-- Options diisi via Javascript --}}
+                </select>
+                {{-- Hidden input untuk menyimpan old value jabatan agar tidak hilang saat error --}}
+                <input type="hidden" id="old_jabatan" value="{{ old('jabatan') }}">
+            </div>
+
+            {{-- Pangkat & Golongan (Auto Fill) --}}
+            <div class="mb-2 row g-2">
+                <div class="col-6">
+                    <label class="form-label small text-muted mb-1">Golongan</label>
+                    <select name="golongan" id="golongan_select" class="form-select form-select-sm form-control-light">
+                        <option value="" data-pangkat="">-- Pilih --</option>
+                        <option value="None" data-pangkat="None" {{ old('golongan')=='None'?'selected':'' }}>None</option>
+                        @php
+                            $golonganMap = [
+                                'IIa' => 'Pengatur Muda', 'IIb' => 'Pengatur Muda Tingkat I', 'IIc' => 'Pengatur', 'IId' => 'Pengatur Tingkat I',
+                                'IIIa' => 'Penata Muda', 'IIIb' => 'Penata Muda Tingkat I', 'IIIc' => 'Penata', 'IIId' => 'Penata Tingkat I',
+                                'IVa' => 'Pembina', 'IVb' => 'Pembina Tingkat I', 'IVc' => 'Pembina Utama Muda', 'IVd' => 'Pembina Utama Madya', 'IVe' => 'Pembina Utama',
+                                // Tambahan untuk PPPK (Contoh IX, X, dll jika diperlukan, sesuaikan)
+                                'VII' => 'PPPK Gol VII', 'IX' => 'PPPK Gol IX', 'X' => 'PPPK Gol X'
+                            ];
+                        @endphp
+                        @foreach($golonganMap as $gol => $pang)
+                            <option value="{{ $gol }}" data-pangkat="{{ $pang }}" {{ old('golongan')==$gol?'selected':'' }}>{{ $gol }}</option>
+                        @endforeach
+                    </select>
                 </div>
+                <div class="col-6">
+                    <label class="form-label small text-muted mb-1">Pangkat</label>
+                    <input type="text" name="pangkat" id="pangkat_input" value="{{ old('pangkat') }}" readonly placeholder="Otomatis" class="form-control form-control-sm form-control-light bg-light">
+                </div>
+            </div>
+
+            {{-- TTL & Lainnya --}}
+            <div class="mb-2 row g-2">
+<div class="col-12">
+    <label class="form-label small text-muted mb-1">Kabupaten Lahir</label>
+    <select name="tempat_lahir" id="kabupaten_lahir" class="form-control form-control-sm">
+        <option value="">Cari Kabupaten/Kota...</option>
+    </select>
+</div>
+                <div class="col-12">
+                    <label class="form-label small text-muted mb-1">Tanggal Lahir</label>
+                    <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir') }}" class="form-control form-control-sm form-control-light">
+                </div>
+            </div>
+
+            <div class="mb-2 row g-2">
+                <div class="col-6">
+                    <label class="form-label small text-muted mb-1">Jenis Kelamin</label>
+                    <select name="jenis_kelamin" class="form-select form-select-sm form-control-light">
+                        <option value="">-- Pilih --</option>
+                        <option value="L" {{ old('jenis_kelamin')=='L'?'selected':'' }}>Laki-laki</option>
+                        <option value="P" {{ old('jenis_kelamin')=='P'?'selected':'' }}>Perempuan</option>
+                    </select>
+                </div>
+                <div class="col-6">
+                    <label class="form-label small text-muted mb-1">Agama</label>
+                    <select name="agama" class="form-select form-select-sm form-control-light">
+                        <option value="">-- Pilih --</option>
+                        @foreach(['Islam','Kristen','Katolik','Hindu','Buddha','Konghucu','Lainnya'] as $ag)
+                            <option value="{{ $ag }}" {{ old('agama')==$ag?'selected':'' }}>{{ $ag }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label small text-muted mb-1">Status Perkawinan</label>
+                <select name="status_perkawinan" class="form-select form-select-sm form-control-light">
+                    <option value="">-- Pilih --</option>
+                    @foreach(['Belum Menikah','Menikah','Cerai Hidup','Cerai Mati'] as $st)
+                        <option value="{{ $st }}" {{ old('status_perkawinan')==$st?'selected':'' }}>{{ $st }}</option>
+                    @endforeach
+                </select>
             </div>
         </div>
     </div>
+</div>
 
     {{-- STEP 2 – ALAMAT, BADAN, FOTO --}}
     <div class="step-pane d-none" data-step="2">
         <div class="step-title">I. Keterangan Perorangan – Alamat &amp; Keterangan Badan</div>
         <div class="row g-3">
-            <div class="col-lg-7">
-                {{-- 9. No HP (WA Aktif) --}}
+             <div class="col-lg-7">
+                {{-- 9. No HP --}}
                 <div class="mb-2">
                     <label class="form-label small text-muted mb-1">Nomor Handphone (Aktif WA) *</label>
-                    <input type="text"
-                           name="no_hp"
-                           value="{{ old('no_hp') }}"
-                           data-required="true"
+                    <input type="text" name="no_hp" value="{{ old('no_hp') }}" data-required="true"
                            class="form-control form-control-sm form-control-light @error('no_hp') is-invalid @enderror">
                 </div>
+                {{-- Alamat --}}
+          {{-- Alamat --}}
+<div class="mb-2">
+    <label class="form-label small text-muted mb-1">Alamat – Jalan (Detail RT/RW) *</label>
+    <input type="text" name="alamat_jalan" value="{{ old('alamat_jalan') }}" data-required="true"
+           class="form-control form-control-sm form-control-light @error('alamat_jalan') is-invalid @enderror" 
+           placeholder="Jl. Mawar No. 10, RT 01 RW 02">
+</div>
 
-                {{-- 10.a Jalan --}}
-                <div class="mb-2">
-                    <label class="form-label small text-muted mb-1">Alamat – Jalan *</label>
-                    <input type="text"
-                           name="alamat_jalan"
-                           value="{{ old('alamat_jalan') }}"
-                           data-required="true"
-                           class="form-control form-control-sm form-control-light @error('alamat_jalan') is-invalid @enderror">
-                </div>
+{{-- DROPDOWN WILAYAH BERJENJANG --}}
+<div class="mb-2 row g-2">
+    <div class="col-6">
+        <label class="form-label small text-muted mb-1">Provinsi *</label>
+        {{-- Select untuk UI --}}
+        <select id="select_provinsi" class="form-select form-select-sm select2-wilayah">
+            <option value="">Pilih Provinsi</option>
+        </select>
+        {{-- Input Hidden untuk dikirim ke Controller (Menyimpan Nama) --}}
+        <input type="hidden" name="alamat_provinsi" id="val_provinsi" value="{{ old('alamat_provinsi') }}">
+    </div>
+    <div class="col-6">
+        <label class="form-label small text-muted mb-1">Kabupaten / Kota *</label>
+        <select id="select_kota" class="form-select form-select-sm select2-wilayah" disabled>
+            <option value="">Pilih Kota/Kab</option>
+        </select>
+        <input type="hidden" name="alamat_kabkota" id="val_kota" value="{{ old('alamat_kabkota') }}">
+    </div>
+</div>
 
-                {{-- 10.b & 10.c Kelurahan & Kecamatan --}}
-                <div class="mb-2 row g-2">
-                    <div class="col-6">
-                        <label class="form-label small text-muted mb-1">Kelurahan *</label>
-                        <input type="text"
-                               name="alamat_kelurahan"
-                               value="{{ old('alamat_kelurahan') }}"
-                               data-required="true"
-                               class="form-control form-control-sm form-control-light @error('alamat_kelurahan') is-invalid @enderror">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label small text-muted mb-1">Kecamatan *</label>
-                        <input type="text"
-                               name="alamat_kecamatan"
-                               value="{{ old('alamat_kecamatan') }}"
-                               data-required="true"
-                               class="form-control form-control-sm form-control-light @error('alamat_kecamatan') is-invalid @enderror">
-                    </div>
-                </div>
-
-                {{-- 10.d & 10.e Kab/Kota & Provinsi --}}
-                <div class="mb-2 row g-2">
-                    <div class="col-6">
-                        <label class="form-label small text-muted mb-1">Kabupaten / Kota *</label>
-                        <input type="text"
-                               name="alamat_kabkota"
-                               value="{{ old('alamat_kabkota') }}"
-                               data-required="true"
-                               class="form-control form-control-sm form-control-light @error('alamat_kabkota') is-invalid @enderror">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label small text-muted mb-1">Provinsi *</label>
-                        <input type="text"
-                               name="alamat_provinsi"
-                               value="{{ old('alamat_provinsi') }}"
-                               data-required="true"
-                               class="form-control form-control-sm form-control-light @error('alamat_provinsi') is-invalid @enderror">
-                    </div>
-                </div>
+<div class="mb-2 row g-2">
+    <div class="col-6">
+        <label class="form-label small text-muted mb-1">Kecamatan *</label>
+        <select id="select_kecamatan" class="form-select form-select-sm select2-wilayah" disabled>
+            <option value="">Pilih Kecamatan</option>
+        </select>
+        <input type="hidden" name="alamat_kecamatan" id="val_kecamatan" value="{{ old('alamat_kecamatan') }}">
+    </div>
+    <div class="col-6">
+        <label class="form-label small text-muted mb-1">Kelurahan / Desa *</label>
+        <select id="select_kelurahan" class="form-select form-select-sm select2-wilayah" disabled>
+            <option value="">Pilih Kelurahan</option>
+        </select>
+        <input type="hidden" name="alamat_kelurahan" id="val_kelurahan" value="{{ old('alamat_kelurahan') }}">
+    </div>
+</div>
             </div>
-
             <div class="col-lg-5">
-                {{-- 11. Keterangan Badan --}}
+                 {{-- Badan --}}
                 <div class="mb-2 row g-2">
-                    <div class="col-4">
-                        <label class="form-label small text-muted mb-1">Tinggi (cm)</label>
-                        <input type="number"
-                               name="tinggi_badan"
-                               value="{{ old('tinggi_badan') }}"
-                               class="form-control form-control-sm form-control-light @error('tinggi_badan') is-invalid @enderror">
-                    </div>
-                    <div class="col-4">
-                        <label class="form-label small text-muted mb-1">Berat Badan</label>
-                        <input type="number"
-                               name="berat_badan"
-                               value="{{ old('berat_badan') }}"
-                               class="form-control form-control-sm form-control-light @error('berat_badan') is-invalid @enderror">
-                    </div>
+                    <div class="col-4"><label class="form-label small text-muted mb-1">Tinggi (cm)</label><input type="number" name="tinggi_badan" value="{{ old('tinggi_badan') }}" class="form-control form-control-sm form-control-light"></div>
+                    <div class="col-4"><label class="form-label small text-muted mb-1">Berat</label><input type="number" name="berat_badan" value="{{ old('berat_badan') }}" class="form-control form-control-sm form-control-light"></div>
                     <div class="col-4">
                         <label class="form-label small text-muted mb-1">Gol. Darah</label>
-                        <select name="golongan_darah"
-                                class="form-select form-select-sm form-control-light @error('golongan_darah') is-invalid @enderror">
-                            <option value="">-- Pilih --</option>
-                            @php
-                                $goldarList = ['A','B','AB','O','Tidak Tahu'];
-                            @endphp
-                            @foreach($goldarList as $gd)
-                                <option value="{{ $gd }}" {{ old('golongan_darah')==$gd?'selected':'' }}>
-                                    {{ $gd }}
-                                </option>
-                            @endforeach
+                        <select name="golongan_darah" class="form-select form-select-sm form-control-light">
+                            <option value="">--</option>
+                            @foreach(['A','B','AB','O','Tidak Tahu'] as $gd) <option value="{{ $gd }}" {{ old('golongan_darah')==$gd?'selected':'' }}>{{ $gd }}</option> @endforeach
                         </select>
                     </div>
                 </div>
-
                 <div class="mb-2 row g-2">
                     <div class="col-6">
                         <label class="form-label small text-muted mb-1">Rambut</label>
-                        <select name="rambut"
-                                class="form-select form-select-sm form-control-light @error('rambut') is-invalid @enderror">
-                            <option value="">-- Pilih --</option>
-                            @php
-                                $rambutList = ['Pendek','Sedang','Panjang','Beruban','Lainnya'];
-                            @endphp
-                            @foreach($rambutList as $rb)
-                                <option value="{{ $rb }}" {{ old('rambut')==$rb?'selected':'' }}>{{ $rb }}</option>
-                            @endforeach
+                        <select name="rambut" class="form-select form-select-sm form-control-light">
+                            <option value="">--</option>
+                            @foreach(['Pendek','Sedang','Panjang','Beruban','Lainnya'] as $rb) <option value="{{ $rb }}" {{ old('rambut')==$rb?'selected':'' }}>{{ $rb }}</option> @endforeach
                         </select>
                     </div>
                     <div class="col-6">
                         <label class="form-label small text-muted mb-1">Bentuk Muka</label>
-                        <select name="bentuk_muka"
-                                class="form-select form-select-sm form-control-light @error('bentuk_muka') is-invalid @enderror">
-                            <option value="">-- Pilih --</option>
-                            @php
-                                $mukaList = ['Oval','Bulat','Persegi','Hati','Lainnya'];
-                            @endphp
-                            @foreach($mukaList as $mk)
-                                <option value="{{ $mk }}" {{ old('bentuk_muka')==$mk?'selected':'' }}>{{ $mk }}</option>
-                            @endforeach
+                        <select name="bentuk_muka" class="form-select form-select-sm form-control-light">
+                            <option value="">--</option>
+                            @foreach(['Oval','Bulat','Persegi','Hati','Lainnya'] as $mk) <option value="{{ $mk }}" {{ old('bentuk_muka')==$mk?'selected':'' }}>{{ $mk }}</option> @endforeach
                         </select>
                     </div>
                 </div>
-
                 <div class="mb-2 row g-2">
                     <div class="col-6">
                         <label class="form-label small text-muted mb-1">Warna Kulit</label>
-                        <select name="warna_kulit"
-                                class="form-select form-select-sm form-control-light @error('warna_kulit') is-invalid @enderror">
-                            <option value="">-- Pilih --</option>
-                            @php
-                                $kulitList = ['Putih','Kuning Langsat','Sawo Matang','Gelap','Lainnya'];
-                            @endphp
-                            @foreach($kulitList as $kl)
-                                <option value="{{ $kl }}" {{ old('warna_kulit')==$kl?'selected':'' }}>{{ $kl }}</option>
-                            @endforeach
+                        <select name="warna_kulit" class="form-select form-select-sm form-control-light">
+                             <option value="">--</option>
+                             @foreach(['Putih','Kuning Langsat','Sawo Matang','Gelap','Lainnya'] as $kl) <option value="{{ $kl }}" {{ old('warna_kulit')==$kl?'selected':'' }}>{{ $kl }}</option> @endforeach
                         </select>
                     </div>
-                    <div class="col-6">
-                        <label class="form-label small text-muted mb-1">Ciri Khas</label>
-                        <input type="text"
-                               name="ciri_khas"
-                               value="{{ old('ciri_khas') }}"
-                               class="form-control form-control-sm form-control-light @error('ciri_khas') is-invalid @enderror">
-                    </div>
+                    <div class="col-6"><label class="form-label small text-muted mb-1">Ciri Khas</label><input type="text" name="ciri_khas" value="{{ old('ciri_khas') }}" class="form-control form-control-sm form-control-light"></div>
                 </div>
-
                 <div class="mb-2">
                     <label class="form-label small text-muted mb-1">Cacat Tubuh</label>
-                    <select name="cacat_tubuh"
-                            class="form-select form-select-sm form-control-light @error('cacat_tubuh') is-invalid @enderror">
-                        <option value="">-- Pilih --</option>
-                        @php
-                            $cacatList = ['Tidak Ada','Ada'];
-                        @endphp
-                        @foreach($cacatList as $ct)
-                            <option value="{{ $ct }}" {{ old('cacat_tubuh')==$ct?'selected':'' }}>{{ $ct }}</option>
-                        @endforeach
+                    <select name="cacat_tubuh" class="form-select form-select-sm form-control-light">
+                        <option value="">--</option>
+                        @foreach(['Tidak Ada','Ada'] as $ct) <option value="{{ $ct }}" {{ old('cacat_tubuh')==$ct?'selected':'' }}>{{ $ct }}</option> @endforeach
                     </select>
                 </div>
-
                 {{-- Foto 3x4 --}}
                 <div class="mb-2">
-                    <label class="form-label small text-muted mb-1">Foto 3x4 (jpg/png)</label>
+                    <label class="form-label small text-muted mb-1">Foto 3x4 (jpg/png) *</label>
                     <div>
-                        <input type="file"
-                               name="foto_3x4"
-                               class="form-control form-control-sm @error('foto_3x4') is-invalid @enderror"
-                               accept="image/*"
-                               data-show-filename="true"
-                               data-show-preview="true">
+                        <input type="file" name="foto_3x4" class="form-control form-control-sm" accept="image/*" data-show-filename="true" data-show-preview="true"data-required="true">
                         <small class="text-muted file-name" style="font-size:10px;"></small>
                         <div class="mt-2">
-                            <img class="img-preview"
-                                 src="#"
-                                 alt="Preview Foto 3x4"
-                                 style="max-height:130px;border-radius:8px;display:none;border:1px solid #e5e7eb;">
+                            <img class="img-preview" src="#" alt="Preview" style="max-height:130px;border-radius:8px;display:none;border:1px solid #e5e7eb;">
                         </div>
                     </div>
                 </div>
@@ -441,258 +360,178 @@
         </div>
     </div>
 
-    {{-- STEP 3 – II & III: Pendidikan / Kursus / Riwayat Pekerjaan --}}
-    <div class="step-pane d-none" data-step="3">
-        <div class="step-title">II. Pendidikan &amp; Kursus · III. Riwayat Pekerjaan</div>
+   {{-- STEP 3 – II & III: Pendidikan / Pelatihan / Riwayat Pekerjaan --}}
+<div class="step-pane d-none" data-step="3">
+    <div class="step-title">II. Pendidikan &amp; Pelatihan · III. Riwayat Pekerjaan</div>
 
-        {{-- Pendidikan (II.1) --}}
-        <div class="sub-section-head">1. Pendidikan di Dalam dan Luar Negeri</div>
-        <div id="pendidikan-wrapper" class="mb-2">
-            <div class="row g-1 mb-1 pendidikan-row dynamic-row">
-                <div class="col-6 col-md-2">
-                    <input type="text" name="pendidikan_jenjang[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Tingkat">
-                </div>
-                <div class="col-6 col-md-3">
-                    <input type="text" name="pendidikan_nama[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Nama Sekolah / PT">
-                </div>
-                <div class="col-6 col-md-2">
-                    <input type="text" name="pendidikan_akreditasi[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Akreditasi">
-                </div>
-                <div class="col-6 col-md-2">
-                    <input type="text" name="pendidikan_tempat[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Tempat">
-                </div>
-                <div class="col-12 col-md-3 d-flex flex-column gap-1">
-                    <input type="file"
-                           name="pendidikan_file[]"
-                           class="form-control form-control-sm form-control-light"
-                           accept=".pdf,image/*"
-                           data-show-filename="true"
-                           data-show-preview="true">
-                    <small class="text-muted file-name" style="font-size:10px;">STTB/Ijazah (pdf/jpg)</small>
-                    <img class="img-preview"
-                         src="#"
-                         alt="Preview"
-                         style="max-height:60px;border-radius:6px;display:none;border:1px solid #e5e7eb;">
-                    <button type="button"
-                            class="btn btn-link text-danger p-0 align-self-start remove-row-btn"
-                            style="font-size:11px;">Hapus</button>
-                </div>
+    {{-- Pendidikan (II.1) --}}
+    <div class="sub-section-head">1. Pendidikan di Dalam dan Luar Negeri</div>
+    <div id="pendidikan-wrapper" class="mb-2">
+        <div class="row g-1 mb-1 pendidikan-row dynamic-row">
+            {{-- UBAH: Dropdown Jenjang / Tingkat --}}
+            <div class="col-6 col-md-2">
+                <select name="pendidikan_jenjang[]" class="form-select form-select-sm form-control-light">
+                    <option value="" selected disabled>Pilih Tingkat</option>
+                    <option value="SD">SD</option>
+                    <option value="SMP">SMP</option>
+                    <option value="SMA/SMK">SMA/SMK</option>
+                    <option value="D1">D1</option>
+                    <option value="D2">D2</option>
+                    <option value="D3">D3</option>
+                    <option value="D4">D4</option>
+                    <option value="S1">S1</option>
+                    <option value="S2">S2</option>
+                    <option value="S3">S3</option>
+                    <option value="Profesi">Profesi</option>
+                </select>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <input type="text" name="pendidikan_nama[]"
+                       class="form-control form-control-sm form-control-light"
+                       placeholder="Nama Sekolah / PT">
+            </div>
+
+            {{-- UBAH: Dropdown Akreditasi --}}
+            <div class="col-6 col-md-2">
+                <select name="pendidikan_akreditasi[]" class="form-select form-select-sm form-control-light">
+                    <option value="" selected disabled>Akreditasi</option>
+                    <option value="Unggul">Unggul</option>
+                    <option value="A">A</option>
+                    <option value="Baik Sekali">Baik Sekali</option>
+                    <option value="B">B</option>
+                    <option value="Baik">Baik</option>
+                    <option value="C">C</option>
+                    <option value="Tidak Terakreditasi">Tidak Terakreditasi</option>
+                </select>
+            </div>
+
+            <div class="col-6 col-md-2">
+                <input type="text" name="pendidikan_tempat[]"
+                       class="form-control form-control-sm form-control-light"
+                       placeholder="Tempat">
+            </div>
+
+            <div class="col-12 col-md-3 d-flex flex-column gap-1">
+                <input type="file"
+                       name="pendidikan_file[]"
+                       class="form-control form-control-sm form-control-light"
+                       accept=".pdf,image/*"
+                       data-show-filename="true"
+                       data-required="true"
+                       data-show-preview="true">
+                <small class="text-muted file-name" style="font-size:10px;">STTB/Ijazah (pdf/jpg)</small>
+                <img class="img-preview"
+                     src="#"
+                     alt="Preview"
+                     style="max-height:60px;border-radius:6px;display:none;border:1px solid #e5e7eb;">
+                <button type="button"
+                        class="btn btn-link text-danger p-0 align-self-start remove-row-btn"
+                        style="font-size:11px;">Hapus</button>
             </div>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="add-pendidikan">+ Tambah Pendidikan</button>
+    </div>
+    <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="add-pendidikan">+ Tambah Pendidikan</button>
 
-        {{-- Kursus / Latihan (II.2) --}}
-        <div class="sub-section-head mt-2">2. Kursus / Latihan di Dalam dan Luar Negeri</div>
+        {{-- II.2 Pelatihan --}}
+        <div class="sub-section-head mt-2">2. Pelatihan</div>
         <div id="pelatihan-wrapper" class="mb-2">
             <div class="row g-1 mb-1 pelatihan-row dynamic-row">
-                <div class="col-12 col-md-3">
-                    <input type="text" name="pelatihan_nama[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Nama Kursus / Latihan">
-                </div>
-                <div class="col-6 col-md-2">
-                    <input type="text" name="pelatihan_durasi[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Lamanya">
-                </div>
-                <div class="col-6 col-md-2">
-                    <input type="date" name="pelatihan_mulai[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Tgl Mulai">
-                </div>
-                <div class="col-6 col-md-2">
-                    <input type="date" name="pelatihan_selesai[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Tgl Selesai">
-                </div>
+                <div class="col-12 col-md-3"><input type="text" name="pelatihan_nama[]" class="form-control form-control-sm form-control-light" placeholder="Nama Pelatihan"></div>
+                <div class="col-6 col-md-2"><input type="text" name="pelatihan_durasi[]" class="form-control form-control-sm form-control-light" placeholder="Lama"></div>
+                <div class="col-6 col-md-2"><input type="date" name="pelatihan_mulai[]" class="form-control form-control-sm form-control-light"></div>
+                <div class="col-6 col-md-2"><input type="date" name="pelatihan_selesai[]" class="form-control form-control-sm form-control-light"></div>
                 <div class="col-6 col-md-3 d-flex flex-column gap-1">
-                    <input type="file"
-                           name="pelatihan_file[]"
-                           class="form-control form-control-sm form-control-light"
-                           accept=".pdf,image/*"
-                           data-show-filename="true"
-                           data-show-preview="true">
-                    <small class="text-muted file-name" style="font-size:10px;">Sertifikat (pdf/jpg)</small>
-                    <img class="img-preview"
-                         src="#"
-                         alt="Preview"
-                         style="max-height:60px;border-radius:6px;display:none;border:1px solid #e5e7eb;">
-                    <button type="button"
-                            class="btn btn-link text-danger p-0 align-self-start remove-row-btn"
-                            style="font-size:11px;">Hapus</button>
+                    <input type="file" name="pelatihan_file[]" class="form-control form-control-sm form-control-light" accept=".pdf,image/*" data-show-filename="true" data-show-preview="true" data-required="true">
+                    <small class="text-muted file-name" style="font-size:10px;">Sertifikat</small>
+                    <img class="img-preview" src="#" style="max-height:60px;display:none;">
+                    <button type="button" class="btn btn-link text-danger p-0 align-self-start remove-row-btn" style="font-size:11px;">Hapus</button>
                 </div>
             </div>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="add-pelatihan">+ Tambah Kursus / Pelatihan</button>
+        <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="add-pelatihan">+ Tambah Pelatihan</button>
 
-        {{-- Riwayat Pekerjaan (III) --}}
+        {{-- III. Riwayat Pekerjaan --}}
         <div class="sub-section-head mt-2">III. Riwayat Pekerjaan</div>
         <div id="pekerjaan-wrapper" class="mb-2">
             <div class="row g-1 mb-1 pekerjaan-row dynamic-row">
-                <div class="col-12 col-md-3">
-                    <input type="text" name="pekerjaan_instansi[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Instansi / Perusahaan">
-                </div>
-                <div class="col-12 col-md-3">
-                    <input type="text" name="pekerjaan_jabatan[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Jabatan">
-                </div>
-                <div class="col-6 col-md-2">
-                    <input type="date" name="pekerjaan_mulai[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Mulai">
-                </div>
-                <div class="col-6 col-md-2">
-                    <input type="date" name="pekerjaan_selesai[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Selesai">
-                </div>
+                <div class="col-12 col-md-3"><input type="text" name="pekerjaan_instansi[]" class="form-control form-control-sm form-control-light" placeholder="Instansi"></div>
+                <div class="col-12 col-md-3"><input type="text" name="pekerjaan_jabatan[]" class="form-control form-control-sm form-control-light" placeholder="Jabatan"></div>
+                <div class="col-6 col-md-2"><input type="date" name="pekerjaan_mulai[]" class="form-control form-control-sm form-control-light"></div>
+                <div class="col-6 col-md-2"><input type="date" name="pekerjaan_selesai[]" class="form-control form-control-sm form-control-light"></div>
                 <div class="col-12 col-md-2 d-flex flex-column gap-1">
-                    <input type="file"
-                           name="pekerjaan_file[]"
-                           class="form-control form-control-sm form-control-light"
-                           accept=".pdf,image/*"
-                           data-show-filename="true"
-                           data-show-preview="true">
-                    <small class="text-muted file-name" style="font-size:10px;">SK Pengangkatan</small>
-                    <img class="img-preview"
-                         src="#"
-                         alt="Preview"
-                         style="max-height:60px;border-radius:6px;display:none;border:1px solid #e5e7eb;">
-                    <button type="button"
-                            class="btn btn-link text-danger p-0 align-self-start remove-row-btn"
-                            style="font-size:11px;">Hapus</button>
+                    <input type="file" name="pekerjaan_file[]" class="form-control form-control-sm form-control-light" accept=".pdf,image/*" data-show-filename="true" data-show-preview="true" data-required="true">
+                    <small class="text-muted file-name" style="font-size:10px;">SK</small>
+                    <img class="img-preview" src="#" style="max-height:60px;display:none;">
+                    <button type="button" class="btn btn-link text-danger p-0 align-self-start remove-row-btn" style="font-size:11px;">Hapus</button>
                 </div>
             </div>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-primary" id="add-pekerjaan">+ Tambah Riwayat Pekerjaan</button>
+        <button type="button" class="btn btn-sm btn-outline-primary" id="add-pekerjaan">+ Tambah Pekerjaan</button>
     </div>
 
-    {{-- STEP 4 – IV Tanda Jasa, V Keluarga, VI Organisasi --}}
+    {{-- STEP 4 – IV, V, VI --}}
     <div class="step-pane d-none" data-step="4">
-        <div class="step-title">IV. Tanda Jasa · V. Riwayat Keluarga · VI. Organisasi</div>
+        <div class="step-title">IV. Tanda Jasa · V. Keluarga · VI. Organisasi</div>
 
-        {{-- Tanda Jasa / Penghargaan --}}
+        {{-- IV. Tanda Jasa --}}
         <div class="sub-section-head">IV. Tanda Jasa / Penghargaan</div>
         <div id="tandajasa-wrapper" class="mb-2">
             <div class="row g-1 mb-1 tandajasa-row dynamic-row">
-                <div class="col-12 col-md-3">
-                    <input type="text" name="tandajasa_nama[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Nama Penghargaan">
-                </div>
-                <div class="col-12 col-md-3">
-                    <input type="text" name="tandajasa_instansi[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Negara / Instansi Pemberi">
-                </div>
-                <div class="col-6 col-md-2">
-                    <input type="text" name="tandajasa_tahun[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Tahun">
-                </div>
+                <div class="col-12 col-md-3"><input type="text" name="tandajasa_nama[]" class="form-control form-control-sm form-control-light" placeholder="Nama Penghargaan"></div>
+                <div class="col-12 col-md-3"><input type="text" name="tandajasa_instansi[]" class="form-control form-control-sm form-control-light" placeholder="Pemberi"></div>
+                <div class="col-6 col-md-2"><input type="text" name="tandajasa_tahun[]" class="form-control form-control-sm form-control-light" placeholder="Tahun"></div>
                 <div class="col-6 col-md-4 d-flex flex-column gap-1">
-                    <input type="file"
-                           name="tandajasa_file[]"
-                           class="form-control form-control-sm form-control-light"
-                           accept=".pdf,image/*"
-                           data-show-filename="true"
-                           data-show-preview="true">
-                    <small class="text-muted file-name" style="font-size:10px;">SK / Piagam</small>
-                    <img class="img-preview"
-                         src="#"
-                         alt="Preview"
-                         style="max-height:60px;border-radius:6px;display:none;border:1px solid #e5e7eb;">
-                    <button type="button"
-                            class="btn btn-link text-danger p-0 align-self-start remove-row-btn"
-                            style="font-size:11px;">Hapus</button>
+                     <input type="file" name="tandajasa_file[]" class="form-control form-control-sm form-control-light" accept=".pdf,image/*" data-show-filename="true" data-show-preview="true">
+                     <small class="text-muted file-name" style="font-size:10px;">SK/Piagam</small>
+                     <img class="img-preview" src="#" style="max-height:60px;display:none;">
+                     <button type="button" class="btn btn-link text-danger p-0 align-self-start remove-row-btn" style="font-size:11px;">Hapus</button>
                 </div>
             </div>
         </div>
         <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="add-tandajasa">+ Tambah Tanda Jasa</button>
 
-        {{-- Riwayat Keluarga --}}
-        <div class="sub-section-head mt-2">V. Riwayat Keluarga (Istri/Suami, Anak, Orang Tua, Saudara, Mertua)</div>
+        {{-- V. Keluarga --}}
+        <div class="sub-section-head mt-2">V. Riwayat Keluarga</div>
         <div id="keluarga-wrapper" class="mb-2">
             <div class="row g-1 mb-1 keluarga-row dynamic-row">
                 <div class="col-12 col-md-2">
-                    <input type="text" name="keluarga_hubungan[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Hubungan">
-                </div>
-                <div class="col-12 col-md-3">
-                    <input type="text" name="keluarga_nama[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Nama">
-                </div>
-                <div class="col-12 col-md-3">
-                    <input type="text" name="keluarga_ttl[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="TTL">
-                </div>
+            <select name="keluarga_hubungan[]" class="form-select form-select-sm form-control-light">
+                <option value="" selected disabled>Hubungan</option>
+                <option value="Suami">Suami</option>
+                <option value="Istri">Istri</option>
+                <option value="Anak">Anak</option>
+                <option value="Orang Tua">Orang Tua</option>
+                <option value="Saudara Kandung">Saudara Kandung</option>
+                 <option value="Lainnya">Lainnya</option>
+            </select>
+        </div>
+                <div class="col-12 col-md-3"><input type="text" name="keluarga_nama[]" class="form-control form-control-sm form-control-light" placeholder="Nama"></div>
+                <div class="col-12 col-md-3"><input type="text" name="keluarga_ttl[]" class="form-control form-control-sm form-control-light" placeholder="TTL"></div>
                 <div class="col-12 col-md-4 d-flex align-items-start gap-1">
-                    <input type="text" name="keluarga_pekerjaan[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Pekerjaan / Instansi">
-                    <button type="button"
-                            class="btn btn-link text-danger p-0 remove-row-btn"
-                            style="font-size:11px;">Hapus</button>
+                    <input type="text" name="keluarga_pekerjaan[]" class="form-control form-control-sm form-control-light" placeholder="Pekerjaan">
+                    <button type="button" class="btn btn-link text-danger p-0 remove-row-btn" style="font-size:11px;">Hapus</button>
                 </div>
             </div>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="add-keluarga">+ Tambah Anggota Keluarga</button>
+        <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="add-keluarga">+ Tambah Keluarga</button>
 
-        {{-- Organisasi --}}
-        <div class="sub-section-head mt-2">VI. Keterangan Organisasi</div>
+        {{-- VI. Organisasi --}}
+        <div class="sub-section-head mt-2">VI. Organisasi</div>
         <div id="organisasi-wrapper" class="mb-2">
             <div class="row g-1 mb-1 organisasi-row dynamic-row">
-                <div class="col-12 col-md-3">
-                    <input type="text" name="organisasi_nama[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Nama Organisasi">
-                </div>
-                <div class="col-12 col-md-3">
-                    <input type="text" name="organisasi_jabatan[]"
-                           class="form-control form-control-sm form-control-light"
-                           placeholder="Jabatan di Organisasi">
-                </div>
-                <div class="col-6 col-md-2">
-                    <input type="date" name="organisasi_mulai[]"
-                           class="form-control form-control-sm form-control-light">
-                </div>
-                <div class="col-6 col-md-2">
-                    <input type="date" name="organisasi_selesai[]"
-                           class="form-control form-control-sm form-control-light">
-                </div>
-                <div class="col-12 col-md-2 d-flex flex-column gap-1">
-                    <input type="file"
-                           name="organisasi_file[]"
-                           class="form-control form-control-sm form-control-light"
-                           accept=".pdf,image/*"
-                           data-show-filename="true"
-                           data-show-preview="true">
-                    <small class="text-muted file-name" style="font-size:10px;">Kartu / SK</small>
-                    <img class="img-preview"
-                         src="#"
-                         alt="Preview"
-                         style="max-height:60px;border-radius:6px;display:none;border:1px solid #e5e7eb;">
-                    <button type="button"
-                            class="btn btn-link text-danger p-0 align-self-start remove-row-btn"
-                            style="font-size:11px;">Hapus</button>
-                </div>
+                 <div class="col-12 col-md-3"><input type="text" name="organisasi_nama[]" class="form-control form-control-sm form-control-light" placeholder="Organisasi"></div>
+                 <div class="col-12 col-md-3"><input type="text" name="organisasi_jabatan[]" class="form-control form-control-sm form-control-light" placeholder="Jabatan"></div>
+                 <div class="col-6 col-md-2"><input type="date" name="organisasi_mulai[]" class="form-control form-control-sm form-control-light"></div>
+                 <div class="col-6 col-md-2"><input type="date" name="organisasi_selesai[]" class="form-control form-control-sm form-control-light"></div>
+                 <div class="col-12 col-md-2 d-flex flex-column gap-1">
+                     <input type="file" name="organisasi_file[]" class="form-control form-control-sm form-control-light" accept=".pdf,image/*" data-show-filename="true" data-show-preview="true">
+                     <small class="text-muted file-name" style="font-size:10px;">Kartu/SK</small>
+                     <img class="img-preview" src="#" style="max-height:60px;display:none;">
+                     <button type="button" class="btn btn-link text-danger p-0 align-self-start remove-row-btn" style="font-size:11px;">Hapus</button>
+                 </div>
             </div>
         </div>
-
         <p class="small text-muted mt-1">
             Pastikan data sudah terisi dengan benar sebelum menekan tombol <strong>Daftar</strong>.
         </p>
@@ -711,6 +550,32 @@
 
 @push('styles')
 <style>
+    /* --- PERBAIKAN SCROLLING HALAMAN --- */
+    html, body {
+        height: auto !important;
+        min-height: 100% !important;
+        overflow-y: auto !important;
+    }
+    /* Asumsi template utama Anda memakai ID/Class ini untuk wrapper */
+    .auth-page, .authentication-bg, #app, .main-wrapper {
+        height: auto !important;
+        min-height: 100vh;
+        overflow: visible !important;
+    }
+
+    /* CSS Step Pane & Responsiveness */
+    .step-pane {
+        position: relative;
+        border-radius: 18px;
+        background: linear-gradient(145deg,#ffffff,#f3f6ff);
+        border: 1px solid rgba(209,213,219,0.9);
+        padding: 16px 18px;
+        box-shadow: 0 10px 24px rgba(15,23,42,0.07);
+        margin-bottom: 4px;
+        /* Scroll Overflow Visible */
+        overflow: visible !important;
+    }
+    
     .step-dots-wrapper{
         font-size:11px;
         gap:6px;
@@ -763,26 +628,6 @@
         color:#1d4ed8;
     }
 
-    .step-pane {
-        position: relative;
-        border-radius: 18px;
-        background: linear-gradient(145deg,#ffffff,#f3f6ff);
-        border: 1px solid rgba(209,213,219,0.9);
-        padding: 16px 18px;
-        box-shadow: 0 10px 24px rgba(15,23,42,0.07);
-        margin-bottom: 4px;
-        overflow: hidden;
-    }
-    .step-pane::before{
-        content:"";
-        position:absolute;
-        top:0;
-        left:0;
-        right:0;
-        height:4px;
-        background: linear-gradient(90deg,rgba(37,99,235,0.15),transparent);
-    }
-
     .step-title {
         position: relative;
         font-size: 13px;
@@ -812,6 +657,7 @@
         border-left: 3px solid #2563eb;
     }
 
+    /* Mobile Responsive Tweaks */
     @media (max-width: 576px){
         .step-dots-wrapper{
             gap:4px !important;
@@ -829,38 +675,88 @@
         .step-pane{
             padding:10px 10px;
         }
-    }
-    .auth-card .form-control-sm,
-    .auth-card .form-select-sm {
-        min-height: 42px;              /* tinggi lebih nyaman */
-        padding: 0.4rem 0.75rem;       /* jarak dalam lebih lega */
-        font-size: 13px;               /* teks sedikit lebih besar */
-        border-radius: 10px;           /* biar tetap soft */
-    }
-
-    .auth-card .form-label {
-        font-size: 12px;
-    }
-
-    /* jarak antar field */
-    .auth-card .mb-2 {
-        margin-bottom: 0.6rem !important;
-    }
-
-    /* di mobile, jangan terlalu sempit */
-    @media (max-width: 576px){
         .auth-card .form-control-sm,
         .auth-card .form-select-sm {
             min-height: 44px;
             font-size: 13px;
         }
     }
-
+    
+    .auth-card .form-control-sm,
+    .auth-card .form-select-sm {
+        min-height: 42px;
+        padding: 0.4rem 0.75rem;
+        font-size: 13px;
+        border-radius: 10px;
+    }
+    .auth-card .form-label {
+        font-size: 12px;
+    }
+    .auth-card .mb-2 {
+        margin-bottom: 0.6rem !important;
+    }
 </style>
 @endpush
 
 @push('scripts')
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const element = document.getElementById('kabupaten_lahir');
+    
+    // 1. Inisialisasi Choices.js
+    const choices = new Choices(element, {
+        searchEnabled: true,
+        itemSelectText: '',
+        placeholder: true,
+        placeholderValue: 'Ketik namas kabupaten...',
+        noResultsText: 'Data tidak ditemukan',
+        loadingText: 'Memuat data wilayah...',
+        shouldSort: true
+    });
+
+    // 2. Samakan Source: Ambil dari API Lokal kamu (seperti bagian Alamat)
+    const localApi = "{{ url('/api-wilayah-lokal') }}";
+
+    // Kita ambil data provinsi dulu, lalu loop untuk ambil semua kabupaten
+    // Ini agar datanya selengkap di bagian Alamat
+    async function loadKabupatenTTL() {
+        try {
+            const resProv = await fetch(`${localApi}/provinces`);
+            const provJson = await resProv.json();
+            const daftarProvinsi = provJson.data;
+
+            // Ambil semua kabupaten secara paralel
+            const promises = daftarProvinsi.map(prov => 
+                fetch(`${localApi}/regencies/${prov.code}`).then(r => r.json())
+            );
+
+            const hasilRegencies = await Promise.all(promises);
+
+            let listSemuaKabupaten = [];
+            hasilRegencies.forEach(res => {
+                if(res.data) {
+                    res.data.forEach(kab => {
+                        listSemuaKabupaten.push({
+                            value: kab.name,
+                            label: kab.name,
+                            selected: kab.name === "{{ old('tempat_lahir') }}"
+                        });
+                    });
+                }
+            });
+
+            // Masukkan ke Choices.js
+            choices.clearChoices();
+            choices.setChoices(listSemuaKabupaten, 'value', 'label', true);
+
+        } catch (error) {
+            console.error("Gagal sinkronisasi data wilayah:", error);
+            choices.setMessage('Gagal memuat data wilayah lokal.');
+        }
+    }
+
+    loadKabupatenTTL();
+});
 document.addEventListener('DOMContentLoaded', function () {
     let currentStep = 1;
     const maxStep = 4;
@@ -871,6 +767,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnNext   = document.getElementById('btnNext');
     const btnSubmit = document.getElementById('btnSubmit');
 
+    // LOGIKA PANGKAT & GOLONGAN OTOMATIS
+    const golonganSelect = document.getElementById('golongan_select');
+    const pangkatInput   = document.getElementById('pangkat_input');
+
+    if(golonganSelect && pangkatInput) {
+        function updatePangkat() {
+            const selectedOption = golonganSelect.options[golonganSelect.selectedIndex];
+            const pangkatText = selectedOption.getAttribute('data-pangkat');
+            pangkatInput.value = pangkatText || '';
+        }
+        golonganSelect.addEventListener('change', updatePangkat);
+        updatePangkat();
+    }
+
+    // --- LOGIKA STEP FORM ---
     function renderSteps() {
         stepPanes.forEach(pane => {
             pane.classList.toggle('d-none', parseInt(pane.dataset.step) !== currentStep);
@@ -882,6 +793,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (btnPrev) btnPrev.disabled = currentStep === 1;
         if (btnNext) btnNext.classList.toggle('d-none', currentStep === maxStep);
         if (btnSubmit) btnSubmit.classList.toggle('d-none', currentStep !== maxStep);
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function hasEmptyRequired(step) {
@@ -907,7 +820,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 text: 'Silakan isi semua data wajib pada langkah ini terlebih dahulu.',
             });
         }
-
         return empty;
     }
 
@@ -932,36 +844,30 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // klik step dot buat loncat (optional, tapi enak)
     stepDots.forEach(dot => {
         dot.addEventListener('click', function () {
             const targetStep = parseInt(this.dataset.step);
             if (!targetStep) return;
-
-            // jangan biarkan lompat kalau step current masih ada required kosong
             if (targetStep > currentStep && hasEmptyRequired(currentStep)) {
                 return;
             }
-
             currentStep = targetStep;
             renderSteps();
         });
     });
 
-    // Show/hide password
     document.querySelectorAll('.toggle-password-btn').forEach(btn => {
         btn.addEventListener('click', function () {
             const targetId = this.dataset.target;
             const input = document.getElementById(targetId);
             if (!input) return;
-
             const isPassword = input.type === 'password';
             input.type = isPassword ? 'text' : 'password';
             this.textContent = isPassword ? 'Sembunyikan' : 'Lihat';
         });
     });
 
-    // Preview nama file & preview gambar
+    // File Preview & Dynamic Rows
     function bindFilePreview(input) {
         const parent = input.parentElement;
         const label = parent ? parent.querySelector('.file-name') : null;
@@ -969,11 +875,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         input.addEventListener('change', function () {
             const file = this.files && this.files[0];
-
             if (label && this.dataset.showFilename === 'true') {
                 label.textContent = file ? file.name : '';
             }
-
             if (imgEl && this.dataset.showPreview === 'true') {
                 if (file && file.type && file.type.startsWith('image/')) {
                     const reader = new FileReader();
@@ -995,119 +899,60 @@ document.addEventListener('DOMContentLoaded', function () {
             bindFilePreview(input);
         });
     }
-
     initFileInputs(document);
 
-    // Helper clone row
     function cloneRow(wrapperId, rowClass) {
         const wrapper = document.getElementById(wrapperId);
         if (!wrapper) return;
-
         const row = wrapper.querySelector('.' + rowClass);
         if (!row) return;
-
         const clone = row.cloneNode(true);
-
         clone.querySelectorAll('input').forEach(i => {
-            if (i.type === 'file') {
-                i.value = null;
-            } else {
-                i.value = '';
-            }
+            if (i.type === 'file') { i.value = null; } else { i.value = ''; }
         });
+        clone.querySelectorAll('select').forEach(s => {
+        s.selectedIndex = 0; // Kembali ke "Pilih Hubungan"
+    });
         clone.querySelectorAll('.file-name').forEach(fn => fn.textContent = '');
         clone.querySelectorAll('.img-preview').forEach(img => {
-            img.src = '#';
-            img.style.display = 'none';
+            img.src = '#'; img.style.display = 'none';
         });
-
         wrapper.appendChild(clone);
         initFileInputs(clone);
     }
 
-    // ADD buttons
-    const addPendidikanBtn = document.getElementById('add-pendidikan');
-    if (addPendidikanBtn) {
-        addPendidikanBtn.addEventListener('click', function () {
-            cloneRow('pendidikan-wrapper', 'pendidikan-row');
-        });
-    }
+    ['pendidikan','pelatihan','pekerjaan','keluarga','organisasi','tandajasa'].forEach(type => {
+        const btn = document.getElementById('add-' + type);
+        if(btn) btn.addEventListener('click', () => cloneRow(type + '-wrapper', type + '-row'));
+    });
 
-    const addPelatihanBtn = document.getElementById('add-pelatihan');
-    if (addPelatihanBtn) {
-        addPelatihanBtn.addEventListener('click', function () {
-            cloneRow('pelatihan-wrapper', 'pelatihan-row');
-        });
-    }
-
-    const addPekerjaanBtn = document.getElementById('add-pekerjaan');
-    if (addPekerjaanBtn) {
-        addPekerjaanBtn.addEventListener('click', function () {
-            cloneRow('pekerjaan-wrapper', 'pekerjaan-row');
-        });
-    }
-
-    const addKeluargaBtn = document.getElementById('add-keluarga');
-    if (addKeluargaBtn) {
-        addKeluargaBtn.addEventListener('click', function () {
-            cloneRow('keluarga-wrapper', 'keluarga-row');
-        });
-    }
-
-    const addOrganisasiBtn = document.getElementById('add-organisasi');
-    if (addOrganisasiBtn) {
-        addOrganisasiBtn.addEventListener('click', function () {
-            cloneRow('organisasi-wrapper', 'organisasi-row');
-        });
-    }
-
-    const addTandaJasaBtn = document.getElementById('add-tandajasa');
-    if (addTandaJasaBtn) {
-        addTandaJasaBtn.addEventListener('click', function () {
-            cloneRow('tandajasa-wrapper', 'tandajasa-row');
-        });
-    }
-
-    // Hapus row – guard minimal 1 baris
     document.addEventListener('click', function (e) {
         const btn = e.target.closest('.remove-row-btn');
         if (!btn) return;
-
         const row = btn.closest('.dynamic-row');
         if (!row) return;
-
         let wrapper = row.closest('[id$="-wrapper"]');
         if (!wrapper) wrapper = row.parentElement;
-
         const rows = wrapper.querySelectorAll('.dynamic-row');
-
         if (rows.length <= 1) {
             if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Tidak dapat dihapus',
-                    text: 'Minimal satu baris data harus tersedia.',
-                });
+                Swal.fire({ icon: 'info', title: 'Tidak dapat dihapus', text: 'Minimal satu baris data harus tersedia.' });
             }
             return;
         }
-
         row.remove();
     });
 
-    // AUTO PINDAH STEP KE FIELD ERROR PERTAMA (DARI SERVER)
     @if($errors->any())
     const errorKeys = @json($errors->keys());
     (function jumpToFirstError() {
         let firstField = null;
-
         errorKeys.some(function (key) {
             let el = document.querySelector('[name="' + key + '"]');
             if (!el) el = document.querySelector('[name^="' + key + '["]');
             if (el) { firstField = el; return true; }
             return false;
         });
-
         if (firstField) {
             const pane = firstField.closest('.step-pane');
             if (pane && pane.dataset.step) {
@@ -1124,6 +969,244 @@ document.addEventListener('DOMContentLoaded', function () {
     @endif
 
     renderSteps();
+
+    // === LOGIKA BARU: PROFESI, STATUS, NIP/NIRP, JABATAN ===
+    const selectProfesi = document.getElementById('select_profesi');
+    const selectStatus  = document.getElementById('select_status');
+    const selectJabatan = document.getElementById('select_jabatan');
+    const wrapperNip    = document.getElementById('wrapper_nip');
+    const wrapperNirp   = document.getElementById('wrapper_nirp');
+    const inputNip      = document.getElementById('input_nip');
+    const inputNirp     = document.getElementById('input_nirp');
+    const oldJabatanVal = document.getElementById('old_jabatan').value;
+
+    // Data Jabatan
+    const jabatanData = {
+        'Perawat_ASN': [
+            'Perawat Terampil', 'Perawat Mahir', 'Perawat Penyelia',
+            'Perawat Ahli Pertama', 'Perawat Ahli Muda', 'Perawat Ahli Madya', 'Perawat Ahli Utama'
+        ],
+        'Bidan_ASN': [
+            'Bidan Terampil', 'Bidan Mahir', 'Bidan Penyelia',
+            'Bidan Ahli Pertama', 'Bidan Ahli Muda', 'Bidan Ahli Madya', 'Bidan Ahli Utama'
+        ],
+        'Perawat_NonASN': ['Perawat Pelaksana'],
+        'Bidan_NonASN': ['Bidan Pelaksana']
+    };
+
+    function updateFormLogics() {
+        const profesi = selectProfesi.value;
+        const status  = selectStatus.value;
+
+        // 1. Logic NIP vs NIRP
+        wrapperNip.classList.add('d-none');
+        wrapperNirp.classList.add('d-none');
+        // Reset required state to prevent validation error on hidden fields logic (optional for HTML5)
+        inputNip.removeAttribute('data-required');
+        inputNirp.removeAttribute('data-required');
+
+        if (status.includes('ASN') && !status.includes('NON')) {
+            // Case ASN (PNS, PPPK, PPPK Paruh Waktu)
+            wrapperNip.classList.remove('d-none');
+            inputNip.setAttribute('data-required', 'true');
+        } else if (status.includes('NON ASN')) {
+            // Case NON ASN
+            wrapperNirp.classList.remove('d-none');
+            inputNirp.setAttribute('data-required', 'true');
+        }
+
+        // 2. Logic Jabatan Dropdown
+        selectJabatan.innerHTML = '<option value="">-- Pilih Jabatan --</option>';
+
+        if (profesi && status) {
+            let key = '';
+            // Tentukan Key
+            if (profesi === 'Perawat') {
+                key = (status.includes('ASN') && !status.includes('NON')) ? 'Perawat_ASN' : 'Perawat_NonASN';
+            } else if (profesi === 'Bidan') {
+                key = (status.includes('ASN') && !status.includes('NON')) ? 'Bidan_ASN' : 'Bidan_NonASN';
+            }
+
+            // Populate Options
+            if (key && jabatanData[key]) {
+                jabatanData[key].forEach(function(jab) {
+                    const option = document.createElement('option');
+                    option.value = jab;
+                    option.textContent = jab;
+                    if (oldJabatanVal === jab) {
+                        option.selected = true;
+                    }
+                    selectJabatan.appendChild(option);
+                });
+            }
+        }
+    }
+
+    // Listener
+    selectProfesi.addEventListener('change', updateFormLogics);
+    selectStatus.addEventListener('change', updateFormLogics);
+
+    // Trigger on load (for edit/validation error state)
+    if(selectProfesi.value || selectStatus.value) {
+        updateFormLogics();
+    }
+});
+
+$(document).ready(function() {
+    // 1. Inisialisasi Select2 agar bisa search
+   // 1. Inisialisasi Select2
+    $('.select2-wilayah').select2({
+        theme: 'bootstrap-5',
+        width: '100%',
+        placeholder: 'Cari...',
+    });
+
+    // Panggil Route Laravel kita sendiri (Tanpa Proxy luar)
+    const localApi = "{{ url('/api-wilayah-lokal') }}";
+    // ==========================================================
+    // LOGIC LOAD PROVINSI
+    // ==========================================================
+    $.getJSON(`${localApi}/provinces`, function(res) {
+        let options = '<option value="">Pilih Provinsi</option>';
+        res.data.forEach(function(item) {
+            options += `<option value="${item.code}" data-name="${item.name}">${item.name}</option>`;
+        });
+        $('#select_provinsi').html(options);
+        
+        // PENTING: Jalankan muat draft setelah provinsi terisi
+        if (typeof loadProgress === 'function') loadProgress();
+    });
+
+    // ==========================================================
+    // EVENT CHANGE PROVINSI -> LOAD KOTA
+    // ==========================================================
+    $('#select_provinsi').on('change', function() {
+        const code = $(this).val();
+        $('#val_provinsi').val($(this).find(':selected').data('name') || '');
+        
+        if(code) {
+            $('#select_kota').html('<option value="">Loading...</option>').prop('disabled', true);
+            $.getJSON(`${localApi}/regencies/${code}`, function(res) {
+                let options = '<option value="">Pilih Kota/Kab</option>';
+                res.data.forEach(item => options += `<option value="${item.code}" data-name="${item.name}">${item.name}</option>`);
+                $('#select_kota').html(options).prop('disabled', false).trigger('change');
+            });
+        }
+    });
+
+    // ==========================================================
+    // EVENT CHANGE KOTA -> LOAD KECAMATAN
+    // ==========================================================
+    $('#select_kota').on('change', function() {
+        const code = $(this).val();
+        $('#val_kota').val($(this).find(':selected').data('name') || '');
+        
+        if(code) {
+            $('#select_kecamatan').html('<option value="">Loading...</option>').prop('disabled', true);
+            $.getJSON(`${localApi}/districts/${code}`, function(res) {
+                let options = '<option value="">Pilih Kecamatan</option>';
+                res.data.forEach(item => options += `<option value="${item.code}" data-name="${item.name}">${item.name}</option>`);
+                $('#select_kecamatan').html(options).prop('disabled', false).trigger('change');
+            });
+        }
+    });
+
+    // ==========================================================
+    // EVENT CHANGE KECAMATAN -> LOAD KELURAHAN
+    // ==========================================================
+    $('#select_kecamatan').on('change', function() {
+        const code = $(this).val();
+        $('#val_kecamatan').val($(this).find(':selected').data('name') || '');
+        
+        if(code) {
+            $('#select_kelurahan').html('<option value="">Loading...</option>').prop('disabled', true);
+            $.getJSON(`${localApi}/villages/${code}`, function(res) {
+                let options = '<option value="">Pilih Kelurahan</option>';
+                res.data.forEach(item => options += `<option value="${item.code}" data-name="${item.name}">${item.name}</option>`);
+                $('#select_kelurahan').html(options).prop('disabled', false);
+            });
+        }
+    });
+
+    $('#select_kelurahan').on('change', function() {
+        $('#val_kelurahan').val($(this).find(':selected').data('name') || '');
+    });
+    // ==========================================================
+    // LOGIKA AUTO-SAVE KE LOCAL STORAGE
+    // ==========================================================
+    
+
+
+
+    const storageKey = 'DRAFT_DIKSERA_AWANG_STEP_SAVE';
+    const form = $('#registerForm');
+
+    // ==========================================================
+    // 1. FUNGSI SIMPAN (Semua Kolom + Posisi Step)
+    // ==========================================================
+   function saveProgress() {
+    let draft = {};
+    const dataArray = form.serializeArray();
+    dataArray.forEach(item => {
+        // JANGAN SIMPAN TOKEN DAN PASSWORD
+        if (!item.name.includes('password') && item.name !== '_token') { 
+            if (draft[item.name]) {
+                if (!Array.isArray(draft[item.name])) draft[item.name] = [draft[item.name]];
+                draft[item.name].push(item.value);
+            } else {
+                draft[item.name] = item.value;
+            }
+        }
+    });
+    draft['_saved_step'] = window.currentStep;
+    localStorage.setItem(storageKey, JSON.stringify(draft));
+}
+
+function loadProgress() {
+    const json = localStorage.getItem(storageKey);
+    if (!json) return;
+    const data = JSON.parse(json);
+
+    if (data._saved_step) {
+        window.currentStep = parseInt(data._saved_step);
+        if (typeof renderSteps === 'function') renderSteps();
+    }
+
+    Object.keys(data).forEach(key => {
+        if (key === '_token') return; // JANGAN OVERWRITE TOKEN ASLI HALAMAN
+        const val = data[key];
+        const $el = $(`[name="${key}"]`);
+        if ($el.length && $el.attr('type') !== 'file') {
+            $el.val(val).trigger('change.select2');
+        }
+    });
+}
+
+    // ==========================================================
+    // 3. EVENT LISTENERS
+    // ==========================================================
+
+    // Simpan tiap ada perubahan ketikan atau pilihan
+    $(document).on('input change keyup', '#registerForm input, #registerForm select, #registerForm textarea', function() {
+        saveProgress();
+    });
+
+    // Simpan khusus saat tombol "Berikutnya" atau "Sebelumnya" diklik
+    $('#btnNext, #btnPrev, .step-dot').on('click', function() {
+        // Kasih delay dikit biar variabel currentStep update dulu di script navigasi
+        setTimeout(saveProgress, 100);
+    });
+
+    // Jalankan load saat halaman direfresh
+    // Delay 500ms biar script wilayah & step Bapak siap dulu
+    setTimeout(loadProgress, 500);
+
+    // Hapus draft kalau sukses submit
+    form.on('submit', function() {
+        localStorage.removeItem(storageKey);
+    });
+
 });
 </script>
+
 @endpush

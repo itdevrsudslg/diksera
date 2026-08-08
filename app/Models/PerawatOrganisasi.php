@@ -17,6 +17,7 @@ class PerawatOrganisasi extends Model
         'tahun_selesai',
         // Unused 
         'keterangan',
+        'masa_organisasi',
     ];
 
     public function user()

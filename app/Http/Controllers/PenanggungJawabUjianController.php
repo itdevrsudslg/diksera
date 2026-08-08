@@ -7,15 +7,106 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use App\Models\JadwalWawancara;
 
 class PenanggungJawabUjianController extends Controller
 {
-    public function index()
-    {
-        $data = PenanggungJawabUjian::with('user')->paginate(10);
-        return view('admin.penanggung_jawab_ujian.index', compact('data'));
+ public function index()
+{
+    // Mengambil data beserta jumlah ujian yang sudah 'completed' (selesai diuji)
+    $data = PenanggungJawabUjian::with('user')
+        ->withCount([
+            'jadwalWawancara as total_uji_komp' => function ($query) {
+                $query->where('status', 'completed')
+                      ->whereHas('pengajuan', function ($q) {
+                          $q->where('metode', 'pg_interview');
+                      });
+            },
+            'jadwalWawancara as total_kredensial' => function ($query) {
+                $query->where('status', 'completed')
+                      ->whereHas('pengajuan', function ($q) {
+                          $q->where('metode', 'interview_only');
+                      });
+            }
+        ])->paginate(10);
+
+    return view('admin.penanggung_jawab_ujian.index', compact('data'));
+}
+
+public function show(Request $request, $id)
+{
+    $penanggungJawab = PenanggungJawabUjian::findOrFail($id);
+$listAsesor = PenanggungJawabUjian::where('id', '!=', $id)->get();
+    // Hitung Statistik Selesai
+    $totalUjiKompSelesai = JadwalWawancara::where('penanggung_jawab_id', $id)
+        ->where('status', 'completed')
+        ->whereHas('pengajuan', function($q){ $q->where('metode', 'pg_interview'); })
+        ->count();
+
+    $totalKredensialSelesai = JadwalWawancara::where('penanggung_jawab_id', $id)
+        ->where('status', 'completed')
+        ->whereHas('pengajuan', function($q){ $q->where('metode', 'interview_only'); })
+        ->count();
+
+    // Hitung Statistik On-Going (Menunggu / Sedang Berjalan)
+    $totalOnGoing = JadwalWawancara::where('penanggung_jawab_id', $id)
+        ->where('status', 'approved') // approved = terjadwal & belum selesai
+        ->count();
+
+    $totalSemuaSelesai = $totalUjiKompSelesai + $totalKredensialSelesai;
+
+    // Query untuk Tabel Riwayat (Tarik semua, tidak dibatasi hanya completed)
+    $query = JadwalWawancara::with(['pengajuan.user', 'penilaian'])
+        ->where('penanggung_jawab_id', $id);
+
+    // Filter Pencarian Nama
+    if ($request->filled('search')) {
+        $query->whereHas('pengajuan.user', function($q) use ($request) {
+            $q->where('name', 'like', '%' . $request->search . '%');
+        });
     }
 
+    // Filter Tipe (Metode)
+    if ($request->filled('metode')) {
+        $query->whereHas('pengajuan', function($q) use ($request) {
+            $q->where('metode', $request->metode);
+        });
+    }
+
+    // Filter Status Jadwal (Selesai vs On-Going)
+    if ($request->filled('status_jadwal')) {
+        $query->where('status', $request->status_jadwal);
+    }
+
+    // Filter Rentang Tanggal
+    if ($request->filled('start_date') && $request->filled('end_date')) {
+        $query->whereDate('waktu_wawancara', '>=', $request->start_date)
+              ->whereDate('waktu_wawancara', '<=', $request->end_date);
+    }
+
+    $riwayat = $query->orderBy('waktu_wawancara', 'desc')->paginate(10)->withQueryString();
+
+    return view('admin.penanggung_jawab_ujian.show', compact(
+        'penanggungJawab', 'riwayat', 
+        'totalUjiKompSelesai', 'totalKredensialSelesai', 'totalSemuaSelesai', 'totalOnGoing','listAsesor'
+    ));
+}
+public function updateTanggal(Request $request, $id)
+{
+    $request->validate([
+        'waktu_wawancara' => 'required|date',
+        'penanggung_jawab_id' => 'required|exists:penanggung_jawab_ujians,id' // Validasi ID asesor
+    ]);
+
+    $jadwal = \App\Models\JadwalWawancara::findOrFail($id);
+    
+    $jadwal->update([
+        'waktu_wawancara' => $request->waktu_wawancara,
+        'penanggung_jawab_id' => $request->penanggung_jawab_id // Update asesor baru
+    ]);
+
+    return back()->with('success', 'Jadwal dan Asesor berhasil diperbarui.');
+}
     public function create()
     {
         return view('admin.penanggung_jawab_ujian.create');

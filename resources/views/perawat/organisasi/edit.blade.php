@@ -212,7 +212,15 @@
                             <input type="date" name="tahun_selesai" class="form-control" value="{{ old('tahun_selesai', $organisasi->tahun_selesai) }}">
                             <small class="text-muted d-block mt-1" style="font-size: 0.8rem;">* Kosongi jika masih aktif.</small>
                         </div>
-
+<div class="col-md-12">
+    <label class="form-label">Kategori Masa Organisasi <span class="required-star">*</span></label>
+    <select name="masa_organisasi" class="form-select" required>
+        <option value="">- Pilih Kategori Waktu Organisasi -</option>
+        <option value="SLTA" {{ old('masa_organisasi') == 'SLTA' ? 'selected' : '' }}>Semasa Pendidikan SLTA ke bawah</option>
+        <option value="PT" {{ old('masa_organisasi') == 'PT' ? 'selected' : '' }}>Semasa Pendidikan Perguruan Tinggi</option>
+        <option value="Bekerja" {{ old('masa_organisasi') == 'Bekerja' ? 'selected' : '' }}>Sesudah selesai pendidikan / selama menjadi pegawai</option>
+    </select>
+</div>
                         {{-- Upload Dokumen --}}
                         <div class="col-12">
                             <label class="form-label">Update SK / Dokumen (Opsional)</label>

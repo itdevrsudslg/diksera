@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-
+use App\Models\Message;
 // Import Semua Model
 use App\Models\User;
 use App\Models\PerawatProfile;
@@ -36,14 +36,30 @@ class DashboardController extends Controller
             return redirect()->route('dashboard.admin');
         }
 
-        // ==========================================
-        // 1. DATA UTAMA & PROFIL
-        // ==========================================
-        $profile = PerawatProfile::where('user_id', $user->id)->first();
-        
-        // Menghitung umur
-        $age = $profile && $profile->tanggal_lahir ? Carbon::parse($profile->tanggal_lahir)->age : '-';
+  $profile = PerawatProfile::where('user_id', $user->id)->first();
 
+// --- LOGIC NORMALISASI TYPE PERAWAT (Sesuai cara Bapak) ---
+$typePerawat = [];
+if ($profile && $profile->type_perawat) {
+    $tp = $profile->type_perawat;
+    if (is_string($tp)) {
+        $decoded = json_decode($tp, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            $typePerawat = $decoded;
+        } else {
+            $typePerawat = array_map('trim', explode(',', $tp));
+        }
+    } else {
+        $typePerawat = $tp;
+    }
+}
+
+// Cek Kelengkapan (Minimal 2: KFK dan PK/BK)
+$isTypePerawatLengkap = count($typePerawat) >= 2;
+// -------------------------------------------------------
+
+// Tambahkan variabel age kembali agar tidak error
+$age = ($profile && $profile->tanggal_lahir) ? \Carbon\Carbon::parse($profile->tanggal_lahir)->age : '-';
         // ==========================================
         // 2. HITUNG JUMLAH DATA (PORTFOLIO)
         // ==========================================
@@ -88,6 +104,14 @@ class DashboardController extends Controller
                 'id' => 'doc', 'nama' => 'Legalitas (STR/SIP)', 'icon' => 'bi-file-earmark-medical',
                 'status' => ($counts['str'] > 0 || $counts['sip'] > 0), 'wajib' => true
             ],
+            
+            [
+        'id' => 'bio', // Diarahkan ke bio/identitas juga
+        'nama' => 'Kompetensi (KFK & PK/BK)', 
+        'icon' => 'bi-shield-check',
+        'status' => $isTypePerawatLengkap, 
+        'wajib' => true
+    ],
         ];
 
         $totalSections = count($sections);
@@ -137,10 +161,30 @@ $warnings = [];
             'labels' => ['Pendidikan', 'Pelatihan', 'Pekerjaan', 'Organisasi', 'Tanda Jasa'],
             'data'   => [$counts['pendidikan'], $counts['pelatihan'], $counts['pekerjaan'], $counts['organisasi'], $counts['tandajasa']]
         ];
+        
+       // Ambil pesan terakhir yang dikirim OLEH Admin KE Perawat ini
+$lastMessage = Message::where('receiver_id', $user->id)
+    ->whereHas('sender', function($q) {
+        $q->where('role', 'admin');
+    })
+    ->latest()
+    ->first();
+
+// Hitung pesan yang belum dibaca khusus dari Admin
+$unreadCount = Message::where('receiver_id', $user->id)
+    ->where('is_read', false)
+    ->whereHas('sender', function($q) {
+        $q->where('role', 'admin');
+    })
+    ->count();
+
+// Kirim ID pengirimnya biar modal tau harus bales ke admin yang mana
+$adminId = $lastMessage ? $lastMessage->sender_id : null;
+$adminName = $lastMessage ? ($lastMessage->sender->name ?? 'Admin') : 'Admin';
 
         return view('dashboard.index', compact(
             'user', 'profile', 'age', 'counts', 'sections', 'progressPercent', 
-            'legalitas', 'latestPengajuan', 'chartData','warnings'
+            'legalitas', 'latestPengajuan', 'chartData','warnings','isTypePerawatLengkap','typePerawat','lastMessage', 'unreadCount','adminName'
         ));
     }
 
@@ -234,9 +278,68 @@ $warnings = [];
             ->take(5)
             ->get();
 
-        return view('dashboard.admin', compact(
-            'stats', 'chartGender', 'eduStats', 'chartTrend', 
-            'recentPengajuans', 'newUsers', 'upcomingInterviews'
-        ));
+       $semuaPengajuan = PengajuanSertifikat::with('user.profile')
+        ->whereNotIn('status', ['ditolak', 'gagal']) // Ambil yang sedang jalan atau selesai
+        ->get();
+
+    $progressKlinis = [];
+
+   foreach ($semuaPengajuan as $p) {
+        $profesi = $p->user->profile->profesi ?? '';
+        
+        $kfkRaw = is_array($p->kfk) ? implode(' ', $p->kfk) : $p->kfk;
+        $gabungan = ($p->bidang ?? '') . ' ' . $kfkRaw;
+        
+        $type = '';
+        $level = '';
+
+        if (preg_match('/(PK|BK)\s*([1-5]|I{1,3}|IV|V)/i', $gabungan, $matches)) {
+            $type = strtoupper($matches[1]);
+            $level = strtoupper($matches[2]);
+        } elseif (preg_match('/(PK|BK)/i', $gabungan, $matches)) {
+            $type = strtoupper($matches[1]);
+        }
+
+        // KOREKSI OTOMATIS BERDASARKAN PROFESI DI DASHBOARD ADMIN
+        $profesiStr = strtolower(trim($profesi));
+        if (str_contains($profesiStr, 'bidan')) $type = 'BK';
+        elseif (str_contains($profesiStr, 'perawat')) $type = 'PK';
+
+        $jenjang = '-';
+        if ($type && $level) {
+            $map = ['1' => 'I', '2' => 'II', '3' => 'III', '4' => 'IV', '5' => 'V'];
+            $level = $map[$level] ?? $level;
+            $jenjang = $type . ' ' . $level;
+        }
+
+        if ($jenjang === '-') continue; // Skip jika tetap tidak terdeteksi
+
+        if (!isset($progressKlinis[$jenjang])) {
+            $progressKlinis[$jenjang] = [
+                'nama_jenjang' => $jenjang,
+                'total' => 0,
+                'selesai' => 0,
+                'list_selesai' => [],
+                'list_belum' => [],
+                'id_pengajuan' => []
+            ];
+        }
+
+        $progressKlinis[$jenjang]['total'] += 1;
+        $progressKlinis[$jenjang]['id_pengajuan'][] = $p->id;
+
+        if (in_array($p->status, ['completed', 'disetujui'])) {
+            $progressKlinis[$jenjang]['selesai'] += 1;
+            $progressKlinis[$jenjang]['list_selesai'][] = $p;
+        } else {
+            $progressKlinis[$jenjang]['list_belum'][] = $p;
+        }
     }
+    // Hitung persentase untuk masing-masing jenjang
+    foreach ($progressKlinis as $key => &$pk) {
+        $pk['persen'] = $pk['total'] > 0 ? round(($pk['selesai'] / $pk['total']) * 100) : 0;
+    }
+
+    return view('dashboard.admin', compact('stats', 'chartGender', 'eduStats', 'chartTrend', 'recentPengajuans', 'upcomingInterviews', 'progressKlinis'));
+}
 }

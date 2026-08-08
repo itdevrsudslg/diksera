@@ -1,13 +1,24 @@
 @extends('layouts.app')
 
 @php
-    $pageTitle = 'Data Perawat';
+    $pageTitle = 'Data Perawat dan Bidan';
     $pageSubtitle = 'Monitor dan kelola seluruh data perawat yang terdaftar dalam sistem.';
 @endphp
 
-@section('title', 'Data Perawat – Admin DIKSERA')
+@section('title', 'Data Perawat dan Bidan – Admin DIKSERA')
 
 @push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+    <style>
+        /* Menyesuaikan tinggi agar seragam dengan template Anda */
+        .choices__inner {
+            border-radius: 8px !important;
+            min-height: 38px !important;
+            padding: 4px 10px !important;
+            background-color: #fff !important;
+        }
+    </style>
+
     <style>
         .content-card {
             background: #ffffff;
@@ -103,7 +114,10 @@
     <div class="content-card">
 
         {{-- Header Tools: Total & Search Bar --}}
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
+       
+
+{{-- Header Tools: Total & Filter / Search Bar --}}
+        <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-end mb-4 gap-3">
 
             {{-- Bagian Kiri: Total Data --}}
             <div>
@@ -112,58 +126,151 @@
                 </h6>
             </div>
 
-            {{-- Bagian Kanan: Search Form --}}
-            <form method="GET" class="d-flex gap-2">
-                <input type="text" name="search" class="form-control form-control-sm search-input"
-                    placeholder="Cari nama, NIK, HP..." value="{{ request('search') }}" style="width: 240px;">
-                <button type="submit" class="btn btn-sm btn-primary px-3" style="border-radius: 8px;">
-                    <i class="bi bi-search"></i>
-                </button>
-                @if (request('search'))
-                    <a href="{{ route('admin.perawat.index') }}" class="btn btn-sm btn-outline-secondary px-3"
-                        style="border-radius: 8px;" title="Reset">
-                        <i class="bi bi-x-lg"></i>
-                    </a>
-                @endif
-            </form>
+            {{-- Bagian Kanan: Filter, Search, & Export --}}
+            <div class="d-flex flex-column flex-lg-row gap-2 align-items-lg-center">
+                
+                {{-- 1. Form Filter & Search --}}
+                <form method="GET" class="d-flex flex-wrap flex-md-nowrap gap-2">
+                    
+                    {{-- Filter Ruangan --}}
+                    <select name="filter_ruangan" class="form-select form-select-sm shadow-none" style="border-radius: 8px; max-width: 180px;">
+                        <option value="">-- Semua Ruangan --</option>
+                        @foreach($allRuangan as $ruangan)
+                            <option value="{{ $ruangan }}" {{ request('filter_ruangan') == $ruangan ? 'selected' : '' }}>
+                                {{ $ruangan }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    {{-- Filter PK --}}
+                    <select name="filter_pk" class="form-select form-select-sm shadow-none" style="border-radius: 8px; min-width: 120px;">
+                        <option value="">-- Semua PK --</option>
+                        @foreach($allPk as $pk)
+                            <option value="{{ $pk }}" {{ request('filter_pk') == $pk ? 'selected' : '' }}>
+                                {{ $pk }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    {{-- Search Input --}}
+                    <input type="text" name="search" class="form-control form-control-sm search-input shadow-none"
+                        placeholder="Cari nama, NIK..." value="{{ request('search') }}" style="width: 180px;">
+                    
+                    {{-- Tombol Cari --}}
+                    <button type="submit" class="btn btn-sm btn-primary px-3 shadow-sm" style="border-radius: 8px;" title="Terapkan Filter">
+                        <i class="bi bi-search"></i>
+                    </button>
+                    
+                    {{-- Tombol Reset (Muncul jika ada filter aktif) --}}
+                    @if (request('search') || request('filter_pk') || request('filter_ruangan'))
+                        <a href="{{ route('admin.perawat.index') }}" class="btn btn-sm btn-outline-danger px-3 shadow-sm"
+                            style="border-radius: 8px;" title="Reset Filter">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    @endif
+                </form>
+
+                {{-- Garis Pemisah (Hanya tampil di layar besar) --}}
+                <div class="vr d-none d-lg-block mx-1 text-secondary opacity-25"></div>
+
+                {{-- 2. Tombol Export --}}
+                <div class="d-flex gap-2">
+                    <button onclick="exportToExcel()" class="btn btn-success btn-sm px-3 shadow-sm" style="border-radius: 8px; white-space: nowrap;" title="Export Semua Data Terfilter">
+                        <i class="bi bi-file-earmark-excel"></i> Semua
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm px-3 shadow-sm" style="border-radius: 8px; white-space: nowrap;" data-bs-toggle="modal" data-bs-target="#modalExportKustom">
+                        <i class="bi bi-file-earmark-excel"></i> Ekspor Kustom
+                    </button>
+                    <button type="button" class="btn btn-outline-success btn-sm px-3 shadow-sm" style="border-radius: 8px; white-space: nowrap;" data-bs-toggle="modal" data-bs-target="#modalExportPk">
+                        <i class="bi bi-funnel"></i> Ekspor By KFK
+                    </button>
+                </div>
+
+            </div>
         </div>
+  
 
         {{-- Tabel Data --}}
         <div class="table-responsive">
             <table class="table table-custom table-hover mb-0">
-                <thead>
-                    <tr>
-                        <th style="width:50px;" class="text-center">No</th>
-                        <th>Identitas Perawat</th>
-                        <th>Kontak & NIK</th>
-                        <th>Dokumen Expired</th>
-                        <th style="width:160px;" class="text-center">Aksi</th> {{-- Lebar ditambah dikit biar muat 4 tombol --}}
-                    </tr>
-                </thead>
+             <thead>
+    <tr>
+        <th style="width:50px;" class="text-center">No</th>
+        <th>Identitas Perawat</th>
+        <th>Kontak & NIK</th>
+        <th>Dokumen Expired</th>
+        <th>Status Karir</th> {{-- KOLOM BARU --}}
+        <th style="width:160px;" class="text-center">Aksi</th>
+    </tr>
+</thead>
                 <tbody>
                     @forelse($perawat as $i => $p)
                         <tr>
                             <td class="text-center text-muted">{{ $loop->iteration + $perawat->firstItem() - 1 }}</td>
-                            <td>
-                                <div class="d-flex align-items-center gap-3">
-                                    {{-- Avatar --}}
-                                    <div class="avatar-wrapper">
-                                        @if (!empty($p->profile->foto_3x4))
-                                            {{-- Cek relasi profile --}}
-                                            <img src="{{ asset('storage/' . $p->profile->foto_3x4) }}" class="avatar-img"
-                                                alt="{{ $p->name }}">
-                                        @else
-                                            <div class="avatar-circle">{{ strtoupper(substr($p->name, 0, 1)) }}</div>
-                                        @endif
-                                    </div>
-                                    <div>
-                                        <div class="fw-bold text-dark">{{ $p->name }}</div>
-                                        <div class="text-muted" style="font-size: 11px;">
-                                            Joined: {{ $p->created_at->format('d M Y') }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
+                         <td>
+    <div class="d-flex align-items-center gap-3">
+        {{-- Avatar --}}
+        <div class="avatar-wrapper">
+            @if (!empty($p->profile->foto_3x4))
+                <img src="{{ asset('storage/' . $p->profile->foto_3x4) }}" class="avatar-img"
+                    alt="{{ $p->name }}">
+            @else
+                <div class="avatar-circle">{{ strtoupper(substr($p->name, 0, 1)) }}</div>
+            @endif
+        </div>
+        <div>
+            <div class="fw-bold text-dark">{{ $p->name }}</div>
+            <div class="text-muted mb-1" style="font-size: 11px;">
+                Joined: {{ $p->created_at->format('d M Y') }}
+            </div>
+{{-- INDIKATOR STATUS OPPE --}}
+@php
+    $oppeStatus = $p->profile->oppe_status ?? 'auto';
+    $isAutoOpen = false;
+    $today = now();
+    
+    // 1. Cek Jalur Serentak (7 - 10 Januari)
+    if ($today->month == 7 && $today->day >= 1 && $today->day <= 30) {
+        $isAutoOpen = true;
+    }
+
+    // 2. Cek Jalur RKK
+    $rkkActive = $p->lisensis->where('status', 'active')->sortByDesc('tgl_terbit')->first();
+    if ($rkkActive && $rkkActive->tgl_terbit) {
+        $mTerbit = \Carbon\Carbon::parse($rkkActive->tgl_terbit)->month;
+        $mAfter = ($mTerbit % 12) + 1;
+        if ($today->month == $mTerbit || $today->month == $mAfter) {
+            $isAutoOpen = true;
+        }
+    }
+
+    // Tentukan status efektif untuk warna tombol toggle
+    $isOppeActive = false;
+    if ($oppeStatus === 'on') $isOppeActive = true;
+    elseif ($oppeStatus === 'off') $isOppeActive = false;
+    else $isOppeActive = $isAutoOpen;
+@endphp
+
+@if($oppeStatus === 'on')
+    <span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-1 mt-1" style="font-size: 9px;">
+        <i class="bi bi-unlock-fill me-1"></i> OPPE: MANUAL ON
+    </span>
+@elseif($oppeStatus === 'off')
+    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-2 py-1 mt-1" style="font-size: 9px;">
+        <i class="bi bi-x-circle-fill me-1"></i> OPPE: MANUAL OFF
+    </span>
+@elseif($isAutoOpen)
+    <span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-1 mt-1" style="font-size: 9px;">
+        <i class="bi bi-calendar-check-fill me-1"></i> OPPE: AUTO ON
+    </span>
+@else
+    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary px-2 py-1 mt-1" style="font-size: 9px;">
+        <i class="bi bi-lock-fill me-1"></i> OPPE: OFF
+    </span>
+@endif
+        </div>
+    </div>
+</td>
                             <td>
                                 <div class="d-flex flex-column gap-1">
                                     <div class="d-flex align-items-center gap-2 text-dark">
@@ -181,15 +288,78 @@
                                     {{ $p->expired_docs_count }} dokumen expired
                                 </span>
                             </td>
+                            {{-- Status Karir (Membaca dari Service) --}}
+{{-- Status Karir (Membaca dari Service dengan Pengaman) --}}
+<td>
+    @php
+        // Gunakan ?? null agar tidak error jika data controller belum siap
+        $rek = $p->rekomendasiPk['rekomendasi'] ?? null;
+        
+        if ($rek) {
+            if ($rek['status'] === 'bisa_upgrade') {
+                $badgeClass = 'bg-success';
+                $textColor = 'text-success';
+                $icon = 'bi-rocket-takeoff';
+            } elseif ($rek['status'] === 'maksimal') {
+                $badgeClass = 'bg-primary';
+                $textColor = 'text-primary';
+                $icon = 'bi-award';
+            } elseif ($rek['status'] === 'stuck_pendidikan') {
+                $badgeClass = 'bg-danger';
+                $textColor = 'text-danger';
+                $icon = 'bi-exclamation-triangle';
+            } else {
+                $badgeClass = 'bg-warning';
+                $textColor = 'text-warning-emphasis';
+                $icon = 'bi-hourglass-split';
+            }
+        }
+    @endphp
+
+    <div class="d-flex flex-column align-items-start gap-1">
+        @if($rek)
+            <span class="badge {{ $badgeClass }} bg-opacity-10 {{ $textColor }} border border-{{ str_replace('bg-', '', $badgeClass) }} px-2 py-1" 
+                  data-bs-toggle="tooltip" data-bs-html="true" title="{{ strip_tags($rek['pesan']) }}">
+                <i class="bi {{ $icon }} me-1"></i> {{ $rek['target_pk'] ?: 'PK Maksimal' }}
+            </span>
+        @else
+            {{-- Tampilan jika data dari Controller terlewat/kosong --}}
+            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary px-2 py-1">
+                <i class="bi bi-dash-circle me-1"></i> Tidak Tersedia
+            </span>
+        @endif
+        
+        <small class="text-muted" style="font-size: 10px;">
+            Target PK Selanjutnya
+        </small>
+    </div>
+</td>
                             <td class="text-center">
                                 <div class="action-group">
+                                    {{-- 5. Manual Toggle OPPE --}}
+{{-- TOMBOL TOGGLE OPPE --}}
+<form action="{{ route('admin.perawat.toggle_oppe', $p->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin merubah status akses OPPE untuk perawat ini?');">
+    @csrf
+    @method('PATCH')
+    <button type="submit" 
+            class="btn btn-icon {{ $isOppeActive ? 'btn-success text-white shadow-sm' : 'btn-outline-secondary' }}" 
+            title="{{ $isOppeActive ? 'Matikan OPPE' : 'Nyalakan OPPE' }}" 
+            data-bs-toggle="tooltip">
+        <i class="bi {{ $isOppeActive ? 'bi-toggle-on' : 'bi-toggle-off' }} fs-5"></i>
+    </button>
+</form>
+<button type="button" class="btn btn-icon btn-outline-dark" 
+        title="Lihat Data Arsip" data-bs-toggle="tooltip"
+        onclick="openArsipModal('{{ addslashes($p->name) }}', {{ $p->arsipDokumens ?? '[]' }})">
+    <i class="bi bi-archive"></i>
+</button>
                                     {{-- 1. Detail --}}
                                     <a href="{{ route('admin.perawat.show', $p->id) }}"
                                         class="btn btn-icon btn-outline-primary" title="Detail DRH"
                                         data-bs-toggle="tooltip">
                                         <i class="bi bi-eye"></i>
                                     </a>
-
+                                
                                     {{-- 2. Sertifikat (Menggunakan Icon agar muat) --}}
                                     <a href="{{ route('admin.perawat.sertifikat', $p->id) }}"
                                         class="btn btn-icon btn-outline-success" title="Lihat Sertifikat & Dokumen"
@@ -202,7 +372,16 @@
                                         class="btn btn-icon btn-outline-warning" title="Edit Data" data-bs-toggle="tooltip">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-
+<button type="button" class="btn btn-icon btn-outline-info" 
+        onclick="openChatModal({{ $p->id }}, '{{ $p->name }}')" 
+        title="Kirim Pesan" data-bs-toggle="modal" data-bs-target="#chatModal">
+    <i class="bi bi-chat-dots"></i>
+    @if($p->unread_messages_count > 0)
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 8px;">
+            {{ $p->unread_messages_count }}
+        </span>
+    @endif
+</button>
                                     {{-- 4. Hapus --}}
                                     <form action="{{ route('admin.perawat.destroy', $p->id) }}" method="POST"
                                         class="d-inline"
@@ -226,6 +405,8 @@
                                 <span class="text-muted small">Data tidak ditemukan.</span>
                             </td>
                         </tr>
+                        
+                        
                     @endforelse
                 </tbody>
             </table>
@@ -236,4 +417,464 @@
             </div>
         </div>
     </div>
+{{-- MODAL EXPORT BY PK & KFK --}}
+<div class="modal fade" id="modalExportPk" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-success text-white border-0 py-3 px-4">
+                <h6 class="modal-title fw-bold mb-0"><i class="bi bi-file-earmark-excel me-2"></i>Export Excel by PK & KFK</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('admin.perawat.export_pk_kfk') }}" method="GET">
+                <div class="modal-body p-4">
+                    <p class="small text-muted mb-3">Filter data perawat berdasarkan jenjang karir klinis dan KFK, kemudian unduh laporannya beserta informasi ruangan (unit kerja).</p>
+                    
+                    {{-- DROPDOWN PK/BK DINAMIS --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Pilih Jenjang PK / BK</label>
+                        <select name="filter_pk" class="form-select">
+                            <option value="">-- Semua PK / BK --</option>
+                            @foreach($allPk as $pk)
+                                <option value="{{ $pk }}">{{ $pk }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    {{-- DROPDOWN KFK DINAMIS --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Pilih KFK</label>
+                        <select name="filter_kfk" class="form-select">
+                            <option value="">-- Semua KFK --</option>
+                            @foreach($allKfk as $kfk)
+                                <option value="{{ $kfk }}">{{ $kfk }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light p-3">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success fw-bold px-4">
+                        <i class="bi bi-download me-1"></i> Unduh Excel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{{-- MODAL LIHAT ARSIP --}}
+<div class="modal fade" id="modalArsip" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-dark text-white border-0 py-3 px-4">
+                <h6 class="modal-title fw-bold mb-0">
+                    <i class="bi bi-archive me-2"></i> Arsip Dokumen: <span id="arsipTargetName" class="text-warning"></span>
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-light" style="max-height: 60vh; overflow-y: auto;">
+                <div id="arsipBox">
+                    <!-- Data arsip akan dirender di sini via JS -->
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+// Fungsi untuk membuka modal dan memproses JSON Arsip
+function openArsipModal(nama, arsipData) {
+    document.getElementById('arsipTargetName').innerText = nama;
+    const container = document.getElementById('arsipBox');
+    container.innerHTML = ''; // Kosongkan isi sebelumnya
+
+    // Jika data kosong
+    if (!arsipData || arsipData.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-folder-x display-4 d-block mb-3 opacity-50"></i>
+                Belum ada data arsip dokumen untuk perawat ini.
+            </div>`;
+        
+        new bootstrap.Modal(document.getElementById('modalArsip')).show();
+        return;
+    }
+
+    // Kelompokkan data berdasarkan tahun
+    const grouped = arsipData.reduce((acc, curr) => {
+        if (!acc[curr.tahun]) acc[curr.tahun] = [];
+        acc[curr.tahun].push(curr);
+        return acc;
+    }, {});
+
+    // Urutkan tahun dari yang terbaru (descending)
+    const years = Object.keys(grouped).sort((a, b) => b - a);
+
+    // Render HTML
+    years.forEach(year => {
+        let html = `<h5 class="fw-bold mt-2 mb-3 text-dark border-bottom pb-2"><i class="bi bi-calendar3 me-2 text-primary"></i>Tahun ${year}</h5>`;
+        html += `<div class="row g-3 mb-4">`;
+        
+        grouped[year].forEach(item => {
+            // Karena isian_dokumen adalah array (cast di model), kita gabungkan dengan koma
+            let isian = Array.isArray(item.isian_dokumen) ? item.isian_dokumen.join('<br> • ') : '-';
+            
+            html += `
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm" style="border-radius: 12px;">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted" style="font-size: 12px;">Isian Dokumen:</h6>
+                            <p class="card-text small mb-3 text-dark">
+                                • ${isian}
+                            </p>
+                            <a href="${item.link_drive}" target="_blank" class="btn btn-sm btn-primary w-100" style="border-radius: 8px;">
+                                <i class="bi bi-link-45deg me-1"></i> Buka Link Drive
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `</div>`;
+        container.innerHTML += html;
+    });
+
+    // Tampilkan Modal
+    new bootstrap.Modal(document.getElementById('modalArsip')).show();
+}
+</script>
+
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+    });
+</script>
+<script>
+async function exportToExcel() {
+    const btn = document.querySelector('button[onclick="exportToExcel()"]');
+    
+    // Feedback UI
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Menyusun Struktur Excel...';
+
+    try {
+        const response = await fetch("{{ route('admin.perawat.export') }}");
+        if (!response.ok) throw new Error('Gagal mengambil data dari server');
+        
+        const data = await response.json();
+        const safe = (arr) => arr || [];
+        
+        const masterData = [];
+        let no = 1;
+
+        // 1. ITERASI UTAMA DATA PERAWAT
+        data.forEach(u => {
+            const edus = safe(u.pendidikan);
+            const works = safe(u.perawatPekerjaans); // Sesuai relasi di controller
+            const trains = safe(u.pelatihan);
+            const certsStr = safe(u.strs);
+            const certsSip = safe(u.sips);
+            const fams = safe(u.keluarga);
+            
+            // Hitung berapa baris flat yang dibutuhkan untuk menjabarkan seluruh riwayat perawat ini
+            const maxRows = Math.max(
+                1,
+                edus.length,
+                works.length,
+                trains.length,
+                certsStr.length,
+                certsSip.length,
+                fams.length
+            );
+
+            // Buat baris flat sejajar untuk setiap indeks riwayat
+            for (let idx = 0; idx < maxRows; idx++) {
+                masterData.push({
+                    // Data Profil Akun (Hanya muncul di baris pertama tiap perawat agar bersih, sisanya dikosongkan)
+                    'NO': idx === 0 ? no : '',
+                    'NAMA AKUN': idx === 0 ? (u.name ? u.name.toUpperCase() : '-') : '',
+                    'NAMA LENGKAP': idx === 0 ? (u.profile?.nama_lengkap || '-') : '',
+                    'NIK': idx === 0 ? (u.profile?.nik ? String(u.profile.nik) + '\t' : '-') : '',
+                    'NO. WHATSAPP': idx === 0 ? (u.profile?.no_hp || '-') : '',
+                    'ALAMAT': idx === 0 ? (u.profile?.alamat || '-') : '',
+                    
+                    // Kolom Terstruktur: Riwayat Pendidikan
+                    'PENDIDIKAN JENJANG': edus[idx]?.jenjang || '-',
+                    'PENDIDIKAN INSTITUSI': edus[idx]?.nama_institusi || '-',
+                    'PENDIDIKAN TAHUN LULUS': edus[idx]?.tahun_lulus || '-',
+                    
+                    // Kolom Terstruktur: Riwayat Pekerjaan
+                    'JABATAN': works[idx]?.jabatan || '-',
+                    'UNIT KERJA / INSTANSI': works[idx]?.nama_instansi || works[idx]?.unit_kerja || '-',
+                    'PERIODE KERJA': works[idx] ? `${works[idx].tahun_mulai || '-'} s/d ${works[idx].tahun_selesai || 'Sekarang'}` : '-',
+                    
+                    // Kolom Terstruktur: Pelatihan
+                    'NAMA PELATIHAN': trains[idx]?.nama_pelatihan || '-',
+                    
+                    // Kolom Terstruktur: Dokumen Legalitas (STR & SIP)
+                    'NOMOR STR': certsStr[idx]?.nomor || '-',
+                    'MASA BERLAKU STR': certsStr[idx]?.tgl_expired || '-',
+                    'NOMOR SIP': certsSip[idx]?.nomor || '-',
+                    'MASA BERLAKU SIP': certsSip[idx]?.tgl_expired || '-',
+                    
+                    // Kolom Terstruktur: Anggota Keluarga
+                    'NAMA KELUARGA': fams[idx]?.nama || '-',
+                    'HUBUNGAN KELUARGA': fams[idx]?.hubungan || '-'
+                });
+            }
+            no++;
+        });
+
+        // 2. GENERATE KE WORKBOOK EXCEL
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(masterData);
+
+        // 3. AUTO-FIT LEBAR KOLOM SECARA OTOMATIS
+        const colWidths = Object.keys(masterData[0] || {}).map(key => {
+            let maxLen = key.length;
+            masterData.forEach(row => {
+                const valLen = String(row[key] || '').length;
+                if (valLen > maxLen) maxLen = valLen;
+            });
+            return { wch: Math.min(Math.max(maxLen + 2, 10), 40) }; // Lebar dinamis pas dengan teks
+        });
+        ws['!cols'] = colWidths;
+
+        // 4. ATUR TINGGI BARIS (Header dibuat lebih longgar dan premium)
+        const rowHeights = new Array(masterData.length + 1).fill({ hpt: 20 });
+        rowHeights[0] = { hpt: 28 }; // Tinggi baris header judul utama
+        ws['!rows'] = rowHeights;
+
+        // 5. DOWNLOAD FILE
+        XLSX.utils.book_append_sheet(wb, ws, "Master Data Terstruktur");
+        const fileName = `Data_Master_Perawat_Ketata_${new Date().toISOString().slice(0,10)}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+
+    } catch (err) {
+        console.error(err);
+        alert('Terjadi kendala saat mengatur data Excel: ' + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-file-earmark-excel me-1"></i> Semua';
+    }
+}
+</script>
+<div class="modal fade" id="chatModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-chat-custom">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            {{-- Header --}}
+            <div class="modal-header bg-primary text-white border-0 py-3 px-4">
+                <div class="d-flex align-items-center">
+                    <div class="avatar-chat me-3">
+                        <i class="bi bi-person-circle fs-2"></i>
+                    </div>
+                    <div>
+                        <h6 class="modal-title fw-bold mb-0" id="chatTargetName">Memuat...</h6>
+                        <div class="d-flex align-items-center">
+                            <span class="online-indicator me-1"></span>
+                            <small class="opacity-75" style="font-size: 10px;">Support System</small>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            {{-- Body --}}
+            <div class="modal-body p-0 bg-chat-canvas">
+                <div id="chatBox" class="chat-container p-4">
+                    </div>
+            </div>
+
+            {{-- Footer --}}
+            <div class="modal-footer border-0 p-3 bg-white">
+                <form action="{{ route('messages.send') }}" method="POST" class="w-100" id="chatForm">
+                    @csrf
+                    <input type="hidden" name="receiver_id" id="chat_receiver_id">
+                    <div class="input-group shadow-sm" style="border-radius: 30px; overflow: hidden; border: 1px solid #e0e0e0;">
+                        <input name="message" id="chatInput" class="form-control border-0 bg-white px-4 py-2" 
+                               placeholder="Tulis pesan..." required autocomplete="off">
+                        <button class="btn btn-primary px-4" type="submit">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{{-- MODAL EXPORT KUSTOM --}}
+<div class="modal fade" id="modalExportKustom" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-success text-white border-0 py-3 px-4">
+                <h6 class="modal-title fw-bold mb-0"><i class="bi bi-file-earmark-excel me-2"></i>Ekspor Excel Kustom</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('admin.perawat.export_custom') }}" method="GET">
+                <div class="modal-body p-4">
+                    <p class="small text-muted mb-3">Pilih kolom data apa saja yang ingin kamu masukkan ke dalam file Excel.</p>
+                    
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="kolom[]" value="nama" id="col_nama" checked readonly onclick="return false;">
+                                <label class="form-check-label fw-bold" for="col_nama">Nama Lengkap</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="kolom[]" value="nik" id="col_nik" checked>
+                                <label class="form-check-label" for="col_nik">NIK</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="kolom[]" value="nohp" id="col_nohp" checked>
+                                <label class="form-check-label" for="col_nohp">No. WhatsApp</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="kolom[]" value="ruangan" id="col_ruangan">
+                                <label class="form-check-label" for="col_ruangan">Ruangan (Unit Kerja)</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="kolom[]" value="pk" id="col_pk">
+                                <label class="form-check-label" for="col_pk">Jenjang PK</label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="kolom[]" value="kfk" id="col_kfk">
+                                <label class="form-check-label" for="col_kfk">KFK</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="kolom[]" value="str" id="col_str">
+                                <label class="form-check-label" for="col_str">No. STR & Expired</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="kolom[]" value="sip" id="col_sip">
+                                <label class="form-check-label" for="col_sip">No. SIP & Expired</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="kolom[]" value="pendidikan" id="col_pendidikan">
+                                <label class="form-check-label" for="col_pendidikan">Pendidikan Terakhir</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="kolom[]" value="alamat" id="col_alamat">
+                                <label class="form-check-label" for="col_alamat">Alamat</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light p-3">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success fw-bold px-4">
+                        <i class="bi bi-download me-1"></i> Unduh Excel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<style>
+    /* Desktop Default */
+    .modal-chat-custom { max-width: 500px; }
+    
+    .bg-chat-canvas { background-color: #f0f2f5; background-image: url("https://www.transparenttextures.com/patterns/cubes.png"); }
+    
+    .chat-container {
+        height: 450px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        scroll-behavior: smooth;
+    }
+
+    /* Bubble Styling */
+    .msg-bubble {
+        max-width: 85%;
+        padding: 10px 15px;
+        font-size: 13px;
+        line-height: 1.5;
+        position: relative;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .msg-me {
+        align-self: flex-end;
+        background: #dcf8c6; /* Warna khas WhatsApp */
+        color: #303030;
+        border-radius: 15px 15px 2px 15px;
+    }
+    .msg-other {
+        align-self: flex-start;
+        background: #ffffff;
+        color: #303030;
+        border-radius: 15px 15px 15px 2px;
+    }
+    .msg-time { font-size: 9px; opacity: 0.6; display: block; margin-top: 4px; text-align: right; }
+    .online-indicator { width: 8px; height: 8px; background: #4df14d; border-radius: 50%; display: inline-block; }
+
+    /* RESPONSIVE MODE (HP) */
+    @media (max-width: 576px) {
+        .modal-chat-custom { margin: 0; max-width: 100%; height: 100%; }
+        .modal-chat-custom .modal-content { height: 100vh; border-radius: 0; }
+        .chat-container { height: calc(100vh - 140px); }
+    }
+</style>
+<script>
+function openChatModal(userId, userName) {
+    document.getElementById('chatTargetName').innerText = userName;
+    document.getElementById('chat_receiver_id').value = userId;
+    const chatBox = document.getElementById('chatBox');
+    
+    // Tampilkan loader halus
+    chatBox.innerHTML = `
+        <div class="d-flex justify-content-center align-items-center h-100">
+            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+            <span class="ms-2 small text-muted">Memuat percakapan...</span>
+        </div>`;
+
+    fetch(`/diksera/messages/history/${userId}`)
+        .then(res => res.json())
+        .then(data => {
+            chatBox.innerHTML = '';
+            
+            // Cek jika data kosong
+            if (data.length === 0) {
+                chatBox.innerHTML = '<div class="text-center my-auto text-muted small">Belum ada percakapan.<br>Mulai kirim pesan pertama.</div>';
+                return;
+            }
+
+            data.forEach(msg => {
+                const isMe = msg.sender_id == "{{ Auth::id() }}";
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `msg-bubble ${isMe ? 'msg-me' : 'msg-other'}`;
+                
+                const time = new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                msgDiv.innerHTML = `
+                    <div class="msg-content">${msg.message}</div>
+                    <span class="msg-time text-end">${time}</span>
+                `;
+                chatBox.appendChild(msgDiv);
+            });
+            
+            // Auto scroll ke paling bawah
+            setTimeout(() => {
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 100);
+        })
+        .catch(err => {
+            chatBox.innerHTML = '<div class="text-center my-auto text-danger small">Gagal memuat pesan.</div>';
+        });
+}
+
+// Tambahan: Agar saat tekan Enter langsung kirim tanpa reload (Opsional, tapi bagus)
+// Kalau mau standard submit biarkan saja.
+</script>
+
 @endsection

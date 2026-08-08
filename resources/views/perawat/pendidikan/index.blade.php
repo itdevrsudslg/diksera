@@ -236,11 +236,13 @@
             <table class="custom-table">
                 <thead>
                     <tr>
-                        <th width="30%">Jenjang & Institusi</th>
-                        <th width="20%">Jurusan</th>
+                        {{-- Saya menyesuaikan ulang width agar muat kolom baru --}}
+                        <th width="25%">Jenjang & Institusi</th>
+                        <th width="15%">No. Ijazah</th> {{-- Kolom Baru --}}
+                        <th width="15%">Jurusan</th>
                         <th width="20%">Lokasi & Akreditasi</th>
-                        <th width="15%">Periode</th>
-                        <th width="10%">Dokumen</th>
+                        <th width="10%">Periode</th>
+                        <th width="5%">File</th>
                         <th width="10%" class="text-end">Aksi</th>
                     </tr>
                 </thead>
@@ -251,6 +253,17 @@
                             <td>
                                 <span class="badge-soft">{{ $row->jenjang }}</span>
                                 <span class="data-title">{{ $row->nama_institusi }}</span>
+                            </td>
+
+                            {{-- No. Ijazah (BARU) --}}
+                            <td>
+                                @if($row->nomor_ijazah)
+                                    <span class="text-dark fw-medium" style="font-size: 0.9rem;">
+                                        {{ $row->nomor_ijazah }}
+                                    </span>
+                                @else
+                                    <span class="text-muted small">-</span>
+                                @endif
                             </td>
 
                             {{-- Jurusan --}}
@@ -276,8 +289,8 @@
                             {{-- Dokumen --}}
                             <td>
                                 @if($row->dokumen_path)
-                                    <a href="{{ asset('storage/'.$row->dokumen_path) }}" target="_blank" class="link-blue">
-                                        <i class="bi bi-file-earmark-pdf"></i> Ijazah
+                                    <a href="{{ asset('storage/'.$row->dokumen_path) }}" target="_blank" class="action-btn" title="Lihat Ijazah">
+                                        <i class="bi bi-file-earmark-pdf text-primary"></i>
                                     </a>
                                 @else
                                     <span class="text-muted small">-</span>
@@ -303,7 +316,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-5">
+                            <td colspan="7" class="text-center py-5">
                                 <div class="text-muted" style="opacity: 0.6;">
                                     <i class="bi bi-mortarboard fs-1 d-block mb-2"></i>
                                     Belum ada data pendidikan.

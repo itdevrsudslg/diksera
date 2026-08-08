@@ -194,7 +194,7 @@
         {{-- Header --}}
         <div class="d-flex justify-content-between align-items-center mb-4 page-header">
             <div>
-                <h2>Dashboard Pewawancara</h2>
+                <h2>Dashboard Asesor</h2>
                 <p>Selamat datang, {{ $pewawancara->nama }}</p>
             </div>
             <div>

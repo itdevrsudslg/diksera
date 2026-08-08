@@ -17,7 +17,7 @@ class CreatePerawatKeluargasTable extends Migration
             $table->string('nama', 150)->nullable();
             $table->date('tanggal_lahir')->nullable();
             $table->string('pekerjaan', 150)->nullable();
-
+             $table->string('no_darurat', 20)->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

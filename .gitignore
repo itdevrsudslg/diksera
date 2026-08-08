@@ -13,3 +13,16 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
+# Abaikan file upload, cache, dan log di storage
+/storage/app/
+/storage/framework/cache/
+/storage/framework/sessions/
+/storage/framework/views/
+/storage/logs/
+
+# Abaikan file backup (sangat penting untuk aaPanel)
+*.zip
+*.tar
+*.tar.gz
+*.sql
+*.sqlite

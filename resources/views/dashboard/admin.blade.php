@@ -219,7 +219,85 @@
             </div>
         </div>
     </div>
+<!-- KOTAK PROGRESS JENJANG KLINIS -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="dash-card p-4 shadow-sm">
+            <h6 class="fw-bold mb-4">Progress Kredensialing per Jenjang Klinis</h6>
+            
+            <div class="row g-4">
+                @foreach($progressKlinis as $jenjang => $data)
+                <div class="col-md-6">
+                    <div class="border rounded-3 p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold text-primary mb-0">{{ $data['nama_jenjang'] }}</h6>
+                            <span class="badge {{ $data['persen'] == 100 ? 'bg-success' : 'bg-warning text-dark' }}">
+                                {{ $data['persen'] }}%
+                            </span>
+                        </div>
+                        
+                        <p class="small text-muted mb-2">
+                            Total Pengajuan: <strong>{{ $data['total'] }}</strong> | 
+                            Selesai: <strong>{{ $data['selesai'] }}</strong> | 
+                            <a href="#" class="text-decoration-none text-danger" data-bs-toggle="modal" data-bs-target="#modalBelum-{{ str_replace(' ', '', $jenjang) }}">
+                                Kurang: <strong>{{ count($data['list_belum']) }}</strong>
+                            </a>
+                        </p>
 
+                        <div class="progress mb-3" style="height: 8px;">
+                            <div class="progress-bar {{ $data['persen'] == 100 ? 'bg-success' : 'bg-primary' }}" 
+                                 role="progressbar" style="width: {{ $data['persen'] }}%;"></div>
+                        </div>
+
+                        <!-- TOMBOL UNDUH PAKSA SEMUA (MASSAL) -->
+                        @if($data['selesai'] > 0)
+                            <a href="{{ route('admin.dashboard.cetak_spk_massal', ['jenjang' => $jenjang]) }}" 
+                               target="_blank" 
+                               class="btn btn-sm {{ $data['persen'] == 100 ? 'btn-success' : 'btn-outline-primary' }} w-100 fw-bold rounded-pill">
+                                <i class="bi bi-download me-1"></i> Unduh SPK Kolektif ({{ $data['selesai'] }} Nama)
+                            </a>
+                        @else
+                            <button type="button" class="btn btn-sm btn-outline-secondary w-100 fw-bold rounded-pill" disabled>
+                                <i class="bi bi-download me-1"></i> Unduh SPK Kolektif (Belum ada data)
+                            </button>
+                        @endif
+
+                    </div>
+                </div>
+
+                <!-- MODAL LIST ORANG YANG BELUM SELESAI -->
+                <div class="modal fade" id="modalBelum-{{ str_replace(' ', '', $jenjang) }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content border-0 shadow" style="border-radius: 12px;">
+                            <div class="modal-header bg-light border-0">
+                                <h6 class="modal-title fw-bold">Belum Selesai - {{ $jenjang }}</h6>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <ul class="list-group list-group-flush">
+                                    @forelse($data['list_belum'] as $belum)
+                                        <li class="list-group-item d-flex justify-content-between align-items-center px-0 border-0 mb-2">
+                                            <div>
+                                                <h6 class="mb-0 fw-bold small">{{ $belum->user->profile->nama_lengkap ?? $belum->user->name }}</h6>
+                                            </div>
+                                            <span class="badge bg-secondary rounded-pill" style="font-size: 10px;">{{ str_replace('_', ' ', $belum->status) }}</span>
+                                        </li>
+                                    @empty
+                                        <li class="list-group-item text-center text-success fw-bold border-0">
+                                            <i class="bi bi-check-circle-fill me-2"></i>Semua sudah selesai!
+                                        </li>
+                                    @endforelse
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                @endforeach
+            </div>
+        </div>
+    </div>
+</div>
 </div>
 
 @push('styles')

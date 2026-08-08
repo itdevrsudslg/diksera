@@ -17,5 +17,7 @@ class PerawatPendidikan extends Model
         'akreditasi',    
         'tempat',
         'dokumen_path', 
+         'nomor_ijazah',
+         'nama_kepala_institusi',
     ];
 }

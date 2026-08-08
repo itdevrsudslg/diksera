@@ -154,15 +154,10 @@
                     <div class="row g-4">
 
                         {{-- NEW: Nama & Lembaga --}}
-                        <div class="col-md-6">
-                            <label class="form-label">Nama STR <span class="required-star">*</span></label>
-                            <input type="text" name="nama" class="form-control @error('nama') is-invalid @enderror" value="{{ old('nama') }}" placeholder="Contoh: STR Baru, STR Perpanjangan" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Lembaga Penerbit <span class="required-star">*</span></label>
-                            <input type="text" name="lembaga" class="form-control @error('lembaga') is-invalid @enderror" value="{{ old('lembaga') }}" placeholder="Contoh: KTKI, MTKI" required>
-                        </div>
-
+                        <!--<div class="col-md-6">-->
+                        <!--    <label class="form-label">Nama STR <span class="required-star">*</span></label>-->
+                        <!--    <input type="text" name="nama" class="form-control @error('nama') is-invalid @enderror" value="{{ old('nama') }}" placeholder="Contoh: STR Baru, STR Perpanjangan" required>-->
+                        <!--</div>-->
                         {{-- Nomor STR --}}
                         <div class="col-12">
                             <label class="form-label">Nomor STR <span class="required-star">*</span></label>
@@ -170,14 +165,18 @@
                         </div>
 
                         {{-- Tanggal --}}
-                        <div class="col-md-6">
-                            <label class="form-label">Tanggal Terbit <span class="required-star">*</span></label>
-                            <input type="date" name="tgl_terbit" class="form-control @error('tgl_terbit') is-invalid @enderror" value="{{ old('tgl_terbit') }}" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Tanggal Expired <span class="required-star">*</span></label>
-                            <input type="date" name="tgl_expired" class="form-control @error('tgl_expired') is-invalid @enderror" value="{{ old('tgl_expired') }}" required>
-                        </div>
+                       <div class="col-md-6">
+    <label class="form-label">Tanggal Terbit <span class="required-star">*</span></label>
+    <input type="date" name="tgl_terbit" class="form-control @error('tgl_terbit') is-invalid @enderror" value="{{ old('tgl_terbit', $data->tgl_terbit ?? '') }}" required>
+</div>
+
+<div class="col-md-6">
+    {{-- HAPUS required-star dan tambahkan keterangan --}}
+    <label class="form-label">Tanggal Expired <small class="text-muted">(Kosongkan jika Seumur Hidup)</small></label>
+    
+    {{-- HAPUS attribute required di input --}}
+    <input type="date" name="tgl_expired" class="form-control @error('tgl_expired') is-invalid @enderror" value="{{ old('tgl_expired', $data->tgl_expired ?? '') }}">
+</div>
 
                         {{-- Upload --}}
                         <div class="col-12">

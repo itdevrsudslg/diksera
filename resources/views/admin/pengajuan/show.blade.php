@@ -1,535 +1,394 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Pengajuan - ' . $pengajuan->user->name)
+@section('title', 'Detail Verifikasi - ' . $pengajuan->user->name)
 
 @push('styles')
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-blue: #2563eb;
-            --text-dark: #1e293b;
-            --text-muted: #64748b;
-            --bg-light: #f8fafc;
-            --border-color: #e2e8f0;
-        }
-
-        body {
-            background-color: var(--bg-light);
-            font-family: 'Inter', sans-serif;
-            color: var(--text-dark);
-        }
-
-        /* --- Header --- */
-        .page-header {
-            margin-bottom: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .page-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0;
-            color: var(--text-dark);
-        }
-
-        /* --- Cards --- */
-        .content-card {
-            background: #fff;
-            border: 1px solid var(--border-color);
+        .card-custom {
+            border: 1px solid #e2e8f0;
             border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-            overflow: hidden;
-            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            background: white;
+            transition: transform 0.2s;
         }
 
-        .card-header-clean {
-            padding: 20px 24px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #fff;
-        }
-
-        .card-title-text {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .card-body-clean {
-            padding: 24px;
-        }
-
-        /* --- Profile Section --- */
-        .profile-wrapper {
-            display: flex;
-            align-items: flex-start;
-            gap: 20px;
-        }
-
-        .avatar-lg {
-            width: 64px;
-            height: 64px;
-            background: #eff6ff;
-            color: var(--primary-blue);
-            font-size: 24px;
-            font-weight: 700;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid #dbeafe;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 24px;
-            width: 100%;
-        }
-
-        .info-label {
+        .header-label {
             font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-muted);
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .info-value {
-            font-size: 0.95rem;
-            font-weight: 500;
-            color: var(--text-dark);
-        }
-
-        /* --- Score Widget --- */
-        .score-box {
-            text-align: center;
-            padding: 16px;
-            background: #f8fafc;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-        }
-
-        .score-val {
-            font-size: 1.8rem;
-            font-weight: 800;
-            line-height: 1;
-            margin-bottom: 4px;
-        }
-
-        .score-lbl {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        .val-primary {
-            color: var(--primary-blue);
-        }
-
-        .val-success {
-            color: #16a34a;
-        }
-
-        .val-danger {
-            color: #dc2626;
-        }
-
-        /* --- Timeline Vertical --- */
-        .timeline {
-            position: relative;
-            padding-left: 12px;
-            margin-top: 10px;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 7px;
-            top: 5px;
-            bottom: 0;
-            width: 2px;
-            background: #e2e8f0;
-        }
-
-        .timeline-item {
-            position: relative;
-            padding-left: 30px;
-            margin-bottom: 24px;
-        }
-
-        .timeline-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .timeline-dot {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #fff;
-            border: 3px solid #cbd5e1;
-            z-index: 2;
-        }
-
-        .timeline-item.active .timeline-dot {
-            border-color: var(--primary-blue);
-            background: var(--primary-blue);
-            box-shadow: 0 0 0 3px #dbeafe;
-        }
-
-        .timeline-date {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-bottom: 2px;
-        }
-
-        .timeline-title {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 2px;
-        }
-
-        .timeline-desc {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        /* --- Status Badges --- */
-        .badge-status {
-            padding: 8px 16px;
-            border-radius: 50px;
-            font-size: 0.85rem;
             font-weight: 700;
-            display: inline-flex;
+            color: #64748b;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .info-group {
+            padding: 12px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .file-item {
+            display: flex;
             align-items: center;
-            gap: 6px;
+            justify-content: space-between;
+            padding: 16px;
+            border: 1px solid #f1f5f9;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
         }
 
-        .bs-pending {
-            background: #fff7ed;
-            color: #c2410c;
-            border: 1px solid #ffedd5;
+        .file-item:hover {
+            border-color: #cbd5e1;
+            background-color: #f8fafc;
         }
 
-        .bs-info {
-            background: #eff6ff;
-            color: #1d4ed8;
-            border: 1px solid #dbeafe;
-        }
-
-        .bs-success {
-            background: #f0fdf4;
-            color: #15803d;
-            border: 1px solid #dcfce7;
-        }
-
-        .bs-danger {
-            background: #fef2f2;
-            color: #b91c1c;
-            border: 1px solid #fee2e2;
+        .status-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            background: #f0f9ff;
+            border: 1px dashed #bae6fd;
+            color: #0369a1;
         }
     </style>
 @endpush
 
 @section('content')
-    <div class="container py-4">
+    <div class="container py-5">
 
-        {{-- HEADER --}}
-        <div class="page-header">
-            <div>
-                <div class="d-flex align-items-center gap-3">
-                    <h1 class="page-title">Detail Pengajuan</h1>
-                    <span class="badge bg-light text-secondary border">#{{ $pengajuan->id }}</span>
-                </div>
-                <p class="text-muted small mb-0 mt-1">Informasi lengkap pemohon dan riwayat seleksi.</p>
-            </div>
-            <a href="{{ route('admin.pengajuan.index') }}" class="btn btn-light border shadow-sm px-3 fw-bold"
-                style="border-radius: 8px;">
-                <i class="bi bi-arrow-left me-1"></i> Kembali
-            </a>
+    {{-- HEADER NAVIGATION --}}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold text-dark mb-1">Detail Verifikasi Berkas</h1>
+            <p class="text-muted small mb-0">Verifikasi dokumen pengajuan dan tentukan metode evaluasi.</p>
         </div>
+        <a href="{{ route('admin.pengajuan.index') }}" class="btn btn-outline-secondary px-4 rounded-pill">
+            <i class="bi bi-arrow-left me-2"></i>Kembali
+        </a>
+    </div>
 
-        <div class="row g-4">
+    <div class="row g-4">
 
-            {{-- KOLOM KIRI: INFO & HASIL --}}
-            <div class="col-lg-8">
+        {{-- KOLOM KIRI: INFO USER & BERKAS --}}
+        <div class="col-lg-8">
 
-                {{-- 1. INFORMASI PEMOHON --}}
-                <div class="content-card">
-                    <div class="card-header-clean">
-                        <div class="card-title-text"><i class="bi bi-person-badge text-primary"></i> Data Pemohon</div>
-                        <div class="text-muted small">{{ $pengajuan->created_at->diffForHumans() }}</div>
-                    </div>
-                    <div class="card-body-clean">
-                        <div class="profile-wrapper">
-                            {{-- Avatar Initials --}}
-                            @php
-                                $initials = collect(explode(' ', $pengajuan->user->name))
-                                    ->map(fn($w) => strtoupper(substr($w, 0, 1)))
-                                    ->take(2)
-                                    ->join('');
-                            @endphp
-                            <div class="avatar-lg">{{ $initials }}</div>
+            {{-- 1. KARTU PROFIL USER --}}
+            <div class="card card-custom mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start">
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3 me-3">
+                            <i class="bi bi-person-bounding-box fs-3"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="fw-bold text-dark mb-1">{{ $pengajuan->user->name }}</h5>
+                       <h5 class="fw-bold text-dark mb-1">
+    {{ is_array($pengajuan->kfk) ? implode(', ', $pengajuan->kfk) : $pengajuan->kfk }}
+</h5>
+                            <div class="text-muted small mb-2"><i class="bi bi-envelope me-1"></i>
+                                {{ $pengajuan->user->email }}</div>
 
-                            {{-- Grid Data --}}
-                            <div class="info-grid">
-                                <div>
-                                    <div class="info-label">Nama Lengkap</div>
-                                    <div class="info-value">{{ $pengajuan->user->name }}</div>
-                                </div>
-                                <div>
-                                    <div class="info-label">Email</div>
-                                    <div class="info-value">{{ $pengajuan->user->email }}</div>
-                                </div>
-                                <div>
-                                    <div class="info-label">Sertifikat / Lisensi Lama</div>
-                                    <div class="info-value">{{ $pengajuan->lisensiLama->nama ?? '-' }}</div>
-                                </div>
-                                <div>
-                                    <div class="info-label">Metode Evaluasi</div>
-                                    <div class="info-value">
-                                        @if ($pengajuan->metode == 'pg_only')
-                                            <span class="badge bg-light text-dark border">Ujian Tulis Saja</span>
-                                        @else
-                                            <span class="badge bg-light text-dark border">Ujian Tulis + Wawancara</span>
-                                        @endif
-                                    </div>
-                                </div>
+                            <div class="text-muted small">
+                                <i class="bi bi-building me-1"></i> Unit Kerja:
+                                {{ $pengajuan->user->unit_kerja ?? 'RSUD Simpang Lima Gumul' }}
                             </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="header-label">JENIS PENGAJUAN</span>
+                            @if ($pengajuan->jenis_pengajuan == 'baru')
+                                <span class="badge bg-info text-dark px-3 py-2 rounded-pill"><i
+                                        class="bi bi-stars me-1"></i> BARU</span>
+                            @else
+                                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill"><i
+                                        class="bi bi-arrow-repeat me-1"></i> PERPANJANGAN</span>
+                            @endif
                         </div>
                     </div>
                 </div>
-
-                {{-- 2. HASIL UJIAN TULIS (Conditional) --}}
-                @if ($pengajuan->user && $pengajuan->user->examResult)
-                    @php
-                        $result = $pengajuan->user->examResult;
-                        // Logika lulus sederhana (atau ambil dari kolom db jika ada)
-                        $isPassed = $result->total_nilai >= 70;
-                    @endphp
-                    <div class="content-card">
-                        <div class="card-header-clean">
-                            <div class="card-title-text"><i class="bi bi-laptop text-primary"></i> Hasil Ujian Tulis (CBT)
-                            </div>
-                            <span
-                                class="badge {{ $isPassed ? 'bg-success' : 'bg-danger' }} bg-opacity-10 {{ $isPassed ? 'text-success' : 'text-danger' }} border {{ $isPassed ? 'border-success' : 'border-danger' }} px-3">
-                                {{ $isPassed ? 'LULUS (PASSING GRADE)' : 'TIDAK LULUS' }}
-                            </span>
-                        </div>
-                        <div class="card-body-clean">
-                            <div class="row g-3">
-                                <div class="col-4">
-                                    <div class="score-box">
-                                        <div class="score-val val-primary">{{ $result->total_nilai }}</div>
-                                        <div class="score-lbl">SKOR TOTAL</div>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="score-box">
-                                        <div class="score-val val-success">{{ $result->total_benar ?? 0 }}</div>
-                                        <div class="score-lbl">BENAR</div>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="score-box">
-                                        <div class="score-val val-danger">{{ $result->total_salah ?? 0 }}</div>
-                                        <div class="score-lbl">SALAH</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="text-end mt-3">
-                                <span class="text-muted small"><i class="bi bi-clock me-1"></i> Diselesaikan pada
-                                    {{ \Carbon\Carbon::parse($result->created_at)->format('d M Y, H:i') }}</span>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-                {{-- 3. HASIL WAWANCARA (Conditional) --}}
-                @if ($pengajuan->jadwalWawancara)
-                    @php $jadwal = $pengajuan->jadwalWawancara; @endphp
-                    <div class="content-card">
-                        <div class="card-header-clean">
-                            <div class="card-title-text"><i class="bi bi-mic text-primary"></i> Sesi Wawancara</div>
-                            @if ($jadwal->penilaian)
-                                <span class="badge bg-info bg-opacity-10 text-info border border-info px-3">
-                                    {{ strtoupper($jadwal->penilaian->keputusan) }}
-                                </span>
-                            @else
-                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning px-3">BELUM
-                                    DINILAI</span>
-                            @endif
-                        </div>
-                        <div class="card-body-clean">
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <div class="info-label">Pewawancara</div>
-                                    <div class="info-value">{{ $jadwal->pewawancara->nama ?? '-' }}</div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="info-label">Jadwal Pelaksanaan</div>
-                                    <div class="info-value">
-                                        {{ \Carbon\Carbon::parse($jadwal->waktu_wawancara)->format('d F Y, H:i') }} WIB
-                                    </div>
-                                </div>
-                            </div>
-
-                            @if ($jadwal->penilaian)
-                                <div class="p-3 bg-light border rounded-3 mt-3">
-                                    <div class="row text-center g-2">
-                                        <div class="col-4 border-end">
-                                            <div class="fw-bold fs-5">{{ $jadwal->penilaian->skor_kompetensi }}</div>
-                                            <div class="text-muted" style="font-size: 10px;">KOMPETENSI</div>
-                                        </div>
-                                        <div class="col-4 border-end">
-                                            <div class="fw-bold fs-5">{{ $jadwal->penilaian->skor_sikap }}</div>
-                                            <div class="text-muted" style="font-size: 10px;">SIKAP</div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="fw-bold fs-5">{{ $jadwal->penilaian->skor_pengetahuan }}</div>
-                                            <div class="text-muted" style="font-size: 10px;">PENGETAHUAN</div>
-                                        </div>
-                                    </div>
-                                    @if ($jadwal->penilaian->catatan)
-                                        <hr class="my-3 opacity-25">
-                                        <div class="small text-muted fst-italic">
-                                            <i class="bi bi-chat-quote me-1"></i> "{{ $jadwal->penilaian->catatan }}"
-                                        </div>
-                                    @endif
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-                @endif
-
             </div>
 
-            {{-- KOLOM KANAN: STATUS & TIMELINE --}}
-            <div class="col-lg-4">
-
-                {{-- STATUS CARD --}}
-                <div
-                    class="content-card border-top-0 border-end-0 border-start-0 border-bottom-0 shadow-none bg-transparent">
-                    <div class="bg-white border rounded-3 p-4 text-center shadow-sm">
-                        <h6 class="info-label mb-3">Status Saat Ini</h6>
-                        <div class="mb-4">
-                            @if ($pengajuan->status == 'pending')
-                                <span class="badge-status bs-pending"><i class="bi bi-hourglass-split"></i> Menunggu
-                                    Approval</span>
-                            @elseif($pengajuan->status == 'method_selected')
-                                <span class="badge-status bs-info"><i class="bi bi-pencil-square"></i> Sedang Ujian</span>
-                            @elseif($pengajuan->status == 'exam_passed')
-                                <span class="badge-status bs-info"><i class="bi bi-check-circle"></i> Lulus Ujian</span>
-                            @elseif($pengajuan->status == 'interview_scheduled')
-                                <span class="badge-status bs-info"><i class="bi bi-calendar-event"></i> Jadwal
-                                    Wawancara</span>
-                            @elseif($pengajuan->status == 'completed')
-                                <span class="badge-status bs-success"><i class="bi bi-check-all"></i> Selesai</span>
-                            @elseif($pengajuan->status == 'rejected')
-                                <span class="badge-status bs-danger"><i class="bi bi-x-circle"></i> Ditolak</span>
-                            @endif
+            {{-- 2. KARTU DOKUMEN --}}
+            <div class="card card-custom mb-4">
+                <div class="card-header bg-white py-3 border-bottom-0">
+                    <h6 class="fw-bold m-0"><i class="bi bi-folder2-open me-2 text-primary"></i>Kelengkapan Dokumen</h6>
+                </div>
+                <div class="card-body pt-0">
+                    {{-- LINK GDRIVE --}}
+                    <div class="file-item">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-success bg-opacity-10 text-success p-2 rounded me-3">
+                                <i class="bi bi-google fs-4"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark">Google Drive</div>
+                                <div class="small text-muted">Berkas pendukung lengkap</div>
+                            </div>
                         </div>
-
-                        {{-- Actions --}}
-                        @if ($pengajuan->status == 'pending')
-                            <div class="d-grid gap-2">
-                                <form action="{{ route('admin.pengajuan.approve', $pengajuan->id) }}" method="POST">
-                                    @csrf
-                                    <button class="btn btn-success w-100 fw-bold shadow-sm"
-                                        onclick="return confirm('Setujui pengajuan?')">
-                                        <i class="bi bi-check-lg"></i> Setujui
-                                    </button>
-                                </form>
-                                <a href="#" class="btn btn-outline-danger fw-bold">
-                                    <i class="bi bi-x-lg"></i> Tolak
-                                </a>
-                            </div>
+                        @if ($pengajuan->link_gdrive)
+                            <a href="{{ $pengajuan->link_gdrive }}" target="_blank"
+                                class="btn btn-sm btn-outline-success fw-bold">
+                                Buka Link <i class="bi bi-box-arrow-up-right ms-1"></i>
+                            </a>
                         @else
-                            <div class="p-2 bg-light rounded text-muted small border">
-                                Tidak ada aksi pending.
-                            </div>
+                            <span class="badge bg-secondary">Tidak Ada</span>
                         @endif
                     </div>
-                </div>
 
-                {{-- TIMELINE --}}
-                <div class="content-card">
-                    <div class="card-header-clean py-3">
-                        <div class="card-title-text" style="font-size: 0.9rem;">Riwayat Proses</div>
-                    </div>
-                    <div class="card-body-clean">
-                        <div class="timeline">
-                            {{-- Step 1 --}}
-                            <div class="timeline-item active">
-                                <div class="timeline-dot"></div>
-                                <div class="timeline-date">{{ $pengajuan->created_at->format('d M Y, H:i') }}</div>
-                                <div class="timeline-title">Pengajuan Dibuat</div>
-                                <div class="timeline-desc">Menunggu verifikasi admin.</div>
+                    @if ($pengajuan->jenis_pengajuan == 'baru')
+                        <div class="file-item">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-danger bg-opacity-10 text-danger p-2 rounded me-3">
+                                    <i class="bi bi-file-earmark-pdf fs-4"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark">Dokumen Pengajuan</div>
+                                    <div class="small text-muted">Format PDF</div>
+                                </div>
                             </div>
-
-                            {{-- Step 2 (Approved) --}}
-                            @if (in_array($pengajuan->status, ['method_selected', 'exam_passed', 'interview_scheduled', 'completed']))
-                                <div class="timeline-item active">
-                                    <div class="timeline-dot"></div>
-                                    <div class="timeline-title">Disetujui Admin</div>
-                                    <div class="timeline-desc">Metode:
-                                        {{ $pengajuan->metode == 'pg_only' ? 'Tulis' : 'Wawancara' }}</div>
-                                </div>
+                            @if ($pengajuan->file_dokumen_baru)
+                                <a href="{{ asset('storage/' . $pengajuan->file_dokumen_baru) }}" target="_blank"
+                                    class="btn btn-sm btn-outline-danger fw-bold">
+                                    <i class="bi bi-download me-1"></i> Unduh
+                                </a>
+                            @else
+                                <span class="badge bg-secondary">Belum Upload</span>
                             @endif
-
-                            {{-- Step 3 (Exam) --}}
-                            @if ($pengajuan->user->examResult)
-                                <div class="timeline-item active">
-                                    <div class="timeline-dot"></div>
-                                    <div class="timeline-title">Ujian Tulis Selesai</div>
-                                    <div class="timeline-desc">Skor: {{ $pengajuan->user->examResult->total_nilai }}</div>
+                        </div>
+                    @else
+                        <div class="file-item">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-warning bg-opacity-10 text-warning p-2 rounded me-3">
+                                    <i class="bi bi-award fs-4"></i>
                                 </div>
+                                <div>
+                                    <div class="fw-bold text-dark">Sertifikat Lama</div>
+                                    <div class="small text-muted">Bukti lisensi sebelumnya</div>
+                                </div>
+                            </div>
+                            @if ($pengajuan->file_sertifikat_lama)
+                                <a href="{{ asset('storage/' . $pengajuan->file_sertifikat_lama) }}" target="_blank"
+                                    class="btn btn-sm btn-outline-dark">
+                                    <i class="bi bi-eye me-1"></i> Lihat
+                                </a>
+                            @else
+                                <span class="badge bg-secondary">Belum Upload</span>
                             @endif
+                        </div>
 
-                            {{-- Step 4 (Interview) --}}
-                            @if ($pengajuan->jadwalWawancara)
-                                <div class="timeline-item active">
-                                    <div class="timeline-dot"></div>
-                                    <div class="timeline-title">Wawancara Dijadwalkan</div>
-                                    <div class="timeline-desc">Tanggal:
-                                        {{ \Carbon\Carbon::parse($pengajuan->jadwalWawancara->waktu_wawancara)->format('d M') }}
-                                    </div>
+                        <div class="file-item">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 text-primary p-2 rounded me-3">
+                                    <i class="bi bi-envelope-paper-heart fs-4"></i>
                                 </div>
-                                @if ($pengajuan->jadwalWawancara->penilaian)
-                                    <div class="timeline-item active">
-                                        <div class="timeline-dot"></div>
-                                        <div class="timeline-title">Wawancara Selesai</div>
-                                        <div class="timeline-desc">Hasil:
-                                            {{ ucfirst($pengajuan->jadwalWawancara->penilaian->keputusan) }}</div>
+                                <div>
+                                    <div class="fw-bold text-dark">Surat Rekomendasi</div>
+                                    <div class="small text-muted">Dari Karu/Atasan</div>
+                                </div>
+                            </div>
+                            @if ($pengajuan->file_surat_rekomendasi)
+                                <a href="{{ asset('storage/' . $pengajuan->file_surat_rekomendasi) }}" target="_blank"
+                                    class="btn btn-sm btn-outline-dark">
+                                    <i class="bi bi-eye me-1"></i> Lihat
+                                </a>
+                            @else
+                                <span class="badge bg-secondary">Belum Upload</span>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            {{-- 3. KARTU HASIL EVALUASI (BARU: HASIL UJIAN & WAWANCARA) --}}
+            <div class="card card-custom">
+                <div class="card-header bg-white py-3 border-bottom-0">
+                    <h6 class="fw-bold m-0"><i class="bi bi-clipboard-check me-2 text-primary"></i>Hasil Evaluasi Peserta</h6>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="row g-3">
+                        {{-- HASIL UJIAN TULIS --}}
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <span class="header-label">Hasil Ujian Tulis (CBT)</span>
+                                @php $exam = $pengajuan->user->examResult; @endphp
+                                @if ($exam)
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <h3 class="fw-bold mb-0 {{ $exam->total_nilai >= 75 ? 'text-success' : 'text-danger' }}">
+                                                {{ $exam->total_nilai }}
+                                            </h3>
+                                            <small class="text-muted">Skor minimal Lulus: 75</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <!--<span class="badge {{ $exam->lulus ? 'bg-success' : 'bg-warning' }} rounded-pill">-->
+                                            <!--    {{ $exam->lulus ? 'Disetujui Admin' : 'Menunggu Validasi' }}-->
+                                            <!--</span>-->
+                                        </div>
                                     </div>
+                                    <div class="mt-2 small text-muted">
+                                        Benar: {{ $exam->total_benar }} | Salah: {{ $exam->total_salah }}
+                                    </div>
+                                @else
+                                    <div class="text-muted italic py-2">Belum ada data ujian tulis.</div>
                                 @endif
-                            @endif
+                            </div>
+                        </div>
 
-                            {{-- Final --}}
-                            @if ($pengajuan->status == 'completed')
-                                <div class="timeline-item active">
-                                    <div class="timeline-dot" style="background: #16a34a; border-color: #16a34a;"></div>
-                                    <div class="timeline-title text-success">Selesai</div>
-                                    <div class="timeline-desc">Proses perpanjangan tuntas.</div>
-                                </div>
-                            @endif
+                        {{-- HASIL WAWANCARA & SKILL --}}
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <span class="header-label">Hasil Uji Skill & Wawancara</span>
+                                @php $jadwal = $pengajuan->jadwalWawancara; @endphp
+                                @if ($jadwal && $jadwal->penilaian)
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <h3 class="fw-bold mb-0 text-primary">
+                                                {{ $jadwal->penilaian->nilai_wawancara }}
+                                            </h3>
+                                            <small class="text-muted">Oleh: {{ $jadwal->pewawancara->nama ?? 'Pewawancara' }}</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-info text-dark rounded-pill">Status: {{ ucfirst($jadwal->status) }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 small text-dark fw-bold">
+                                        Catatan: <span class="fw-normal">{{ $jadwal->penilaian->catatan ?? '-' }}</span>
+                                    </div>
+                                    @if($jadwal->penilaian->file_hasil)
+                                        <a href="{{ asset('storage/' . $jadwal->penilaian->file_hasil) }}" target="_blank" class="btn btn-sm btn-link p-0 mt-1 text-decoration-none">
+                                            <i class="bi bi-file-earmark-check"></i> Lihat Berkas Penilaian
+                                        </a>
+                                    @endif
+                                @else
+                                    <div class="text-muted italic py-2">Belum ada data penilaian wawancara.</div>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
+
+        {{-- KOLOM KANAN: AKSI & TANGGAL --}}
+        <div class="col-lg-4">
+            <div class="card card-custom">
+                <div class="card-header bg-white py-3">
+                    <h6 class="fw-bold m-0 text-dark"><i class="bi bi-shield-check me-2"></i>Verifikasi & Validasi</h6>
+                </div>
+                <div class="card-body">
+                    
+                    {{-- STATUS DISPLAY JIKA SUDAH DIPROSES --}}
+                    @if ($pengajuan->status != 'pending')
+                        <div class="status-card mb-3">
+                            <div class="text-uppercase small fw-bold mb-1 opacity-75">Status Saat Ini</div>
+                            <h5 class="fw-bold mb-0 text-primary">
+                                {{ strtoupper(str_replace('_', ' ', $pengajuan->status)) }}
+                            </h5>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">BERLAKU SEJAK</label>
+                            <input type="text" class="form-control bg-light" value="{{ $pengajuan->tgl_mulai_berlaku }}" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">BERAKHIR PADA</label>
+                            <input type="text" class="form-control bg-light" value="{{ $pengajuan->tgl_akhir_berlaku }}" readonly>
+                        </div>
+                    @endif
+
+                    {{-- ALUR PROSES LANJUTAN --}}
+                    <div class="d-grid gap-2">
+                        {{-- 1. Validasi Nilai Ujian (Jika status method_selected & sudah ujian) --}}
+                        @if ($pengajuan->status == 'method_selected' && $pengajuan->user->examResult)
+                            <form action="{{ route('admin.pengajuan.approve', $pengajuan->id) }}" method="POST">
+                                @csrf
+                               <a href="{{ route('admin.pengajuan.approve_score', $pengajuan->id) }}" class="btn btn-primary w-100 fw-bold py-2 rounded-pil" onclick="return confirm('Verifikasi Nilai?')" title="Acc Nilai">VALIDASI</a>
+
+                            </form>
+                        @endif
+
+                        {{-- 2. Selesaikan Proses (Jika status interview_scheduled & jadwal disetujui/completed) --}}
+                        @php $jadwal = $pengajuan->jadwalWawancara; @endphp
+                        @if ($pengajuan->status == 'interview_scheduled' && $jadwal && $jadwal->status == 'approved' && $jadwal->penilaian)
+                            <form action="{{ route('admin.pengajuan.completeProcess', $pengajuan->id) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn btn-success w-100 fw-bold py-2 rounded-pill">
+                                    <i class="bi bi-patch-check me-1"></i> TERBITKAN LISENSI
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+
+                    {{-- FORM APPROVAL AWAL (HANYA MUNCUL JIKA PENDING) --}}
+                    @if ($pengajuan->status == 'pending')
+                        <form action="{{ route('admin.pengajuan.approve', $pengajuan->id) }}" method="POST">
+                            @csrf
+                            <div class="alert alert-info small mb-3">
+                                <i class="bi bi-info-circle me-1"></i> 
+                                Metode evaluasi akan <strong>terdeteksi otomatis</strong> berdasarkan pilihan user.
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-dark">TANGGAL TERBIT <span class="text-danger">*</span></label>
+                                <input type="date" name="tgl_mulai_berlaku" class="form-control" 
+                                    value="{{ date('Y-m-d') }}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-dark">TANGGAL EXPIRED (1 TH) <span class="text-danger">*</span></label>
+                                <input type="date" name="tgl_akhir_berlaku" class="form-control" 
+                                    value="{{ date('Y-m-d', strtotime('+1 years')) }}" required>
+                            </div>
+
+                            <hr>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success fw-bold py-2" 
+                                    onclick="return confirm('Tanggal sudah benar? Lanjutkan proses?')">
+                                    <i class="bi bi-check-lg me-2"></i> SETUJUI & PROSES
+                                </button>
+
+                                <button type="button" class="btn btn-outline-danger py-2" 
+                                    onclick="if(confirm('Tolak berkas ini?')){document.getElementById('form-reject').submit();}">
+                                    <i class="bi bi-x-lg me-2"></i> TOLAK BERKAS
+                                </button>
+                            </div>
+                        </form>
+
+                        <form id="form-reject" action="{{ route('admin.pengajuan.reject', $pengajuan->id) }}" method="POST" class="d-none">
+                            @csrf
+                        </form>
+                    @endif
+                </div>
+            </div>
+<!--            <div class="card border-0 shadow-sm rounded-4 mt-4">-->
+<!--    <div class="card-header bg-white border-0 pt-4 px-4">-->
+<!--        <h6 class="fw-bold mb-0"><i class="bi bi-send-check text-primary me-2"></i>Penerbitan Dokumen SPK & SPKK</h6>-->
+<!--    </div>-->
+<!--    <div class="card-body p-4">-->
+<!--        @if($pengajuan->status == 'disetujui')-->
+<!--            <div class="alert alert-success border-0 mb-0">-->
+<!--                <i class="bi bi-check-circle-fill me-2"></i> Dokumen SPK & SPKK sudah diterbitkan dan terkirim ke Dashboard Perawat.-->
+<!--            </div>-->
+            
+            <!-- Tombol untuk Admin ngintip PDF-nya -->
+<!--            <div class="mt-3">-->
+<!--                <a href="{{ route('pengajuan.print_spk', $pengajuan->id) }}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3">Lihat SPK</a>-->
+<!--                <a href="{{ route('pengajuan.print_spkk', $pengajuan->id) }}" target="_blank" class="btn btn-outline-info btn-sm rounded-pill px-3">Lihat SPKK</a>-->
+<!--            </div>-->
+<!--        @else-->
+<!--            <p class="small text-muted mb-3">Pastikan semua tahapan kredensialing sudah selesai sebelum menerbitkan dokumen ini ke perawat bersangkutan.</p>-->
+            
+<!--            <form action="{{ route('admin.pengajuan.terbitkan_spk', $pengajuan->id) }}" method="POST">-->
+<!--                @csrf-->
+<!--                <button type="submit" class="btn btn-primary fw-bold rounded-pill px-4 shadow-sm" onclick="return confirm('Terbitkan SPK dan kirim ke dashboard perawat sekarang?')">-->
+<!--                    <i class="bi bi-send-fill me-2"></i> Terbitkan & Kirim SPK-->
+<!--                </button>-->
+<!--            </form>-->
+<!--        @endif-->
+<!--    </div>-->
+<!--</div>-->
+        </div>
     </div>
+</div>
 @endsection

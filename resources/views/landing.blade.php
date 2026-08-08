@@ -1,4 +1,4 @@
-@extends('layouts.landing', ['title' => 'DIKSERA – Digitalisasi Kompetensi Perawat'])
+@extends('layouts.landing', ['title' => 'DIKSERA – Digitalisasi Kompetensi Evaluasi Bidan dan Perawat'])
 
 @push('styles')
 <style>
@@ -257,6 +257,33 @@
         color:#eff6ff;
         cursor:pointer;
     }
+    
+    .section-pk {
+    width: 100%;
+    max-width: 1000px;
+    margin-top: 40px;
+}
+.pk-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    border: 1px solid #e5e7eb;
+}
+.pk-list {
+    font-size: 0.9rem;
+}
+.pk-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+.badge-pk {
+    background: #eff6ff;
+    color: #2563eb;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+}
 </style>
 @endpush
 
@@ -266,7 +293,7 @@
 <div class="hero-grid">
     <div>
         <div class="hero-badge mb-2" style="display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border-radius:999px;background:#eff6ff;font-size:11px;color:#2563eb;">
-            <span>🩺 Platform Kompetensi Perawat</span>
+            <span>🩺 Platform Kompetensi Perawat & Bidan</span>
             <span style="width:4px;height:4px;border-radius:999px;background:#2563eb;"></span>
             <span>Terukur & terdokumentasi</span>
         </div>
@@ -275,11 +302,11 @@
             <span class="hero-highlight" style="background:linear-gradient(135deg,#1d4ed8,#38bdf8);-webkit-background-clip:text;color:transparent;">
                 DIKSERA
             </span><br>
-            Satu pintu pengelolaan<br>kompetensi & sertifikasi perawat.
+            Satu pintu pengelolaan<br>kompetensi, sertifikasi perawat & bidan.
         </h1>
 
         <p class="hero-text mb-3" style="font-size:13px;color:#4b5563;max-width:460px;">
-            Kelola data perawat, riwayat pelatihan, lisensi STR/SIP, ujian tertulis,
+            Kelola data, riwayat pelatihan, lisensi STR/SIP, ujian tertulis,
             hingga wawancara kompetensi dalam satu aplikasi terintegrasi. 
             Memudahkan komite keperawatan dan mendukung standar akreditasi rumah sakit.
         </p>
@@ -289,7 +316,7 @@
                 Masuk ke DIKSERA
             </a>
             <a href="{{ route('register.perawat') }}" class="btn btn-outline-blue">
-                Registrasi Perawat
+                Registrasi
             </a>
         </div>
 
@@ -297,7 +324,7 @@
             <div class="hero-metric">
                 <strong style="font-size:16px;color:#1d4ed8;">DRH & Lisensi</strong><br>
                 <span style="font-size:12px;color:#4b5563;">
-                    Data perawat lengkap, valid & terdokumentasi.
+                    Data perawat & bidan lengkap, valid & terdokumentasi.
                 </span>
             </div>
             <div class="hero-metric">
@@ -315,19 +342,87 @@
                 Ringkasan Singkat DIKSERA
             </div>
             <ul class="small mb-2" style="padding-left:16px;color:#4b5563;font-size:12px;">
-                <li>Registrasi perawat + pengisian Daftar Riwayat Hidup (DRH) secara digital.</li>
+                <li>Registrasi perawat & bidan + pengisian Daftar Riwayat Hidup (DRH) secara digital.</li>
                 <li>Upload & pemantauan masa berlaku STR/SIP dan sertifikat pelatihan.</li>
                 <li>Penjadwalan ujian tertulis dan wawancara oleh komite keperawatan.</li>
-                <li>Rekap penilaian kompetensi dan status akhir perawat.</li>
+                <li>Rekap penilaian kompetensi dan status akhir perawat & bidan.</li>
             </ul>
             <div class="alert alert-primary py-2 px-3 small mb-0">
-                Setelah registrasi, akun perawat langsung terhubung dengan DRH dan siap digunakan
+                Setelah registrasi, akun perawat & bidan langsung terhubung dengan DRH dan siap digunakan
                 untuk proses kompetensi berikutnya.
             </div>
         </div>
     </div>
 </div>
-
+<div class="section-shell mt-5">
+    <div class="section-title">Persyaratan Jenjang Karier (PK)</div>
+    <div class="section-subtitle">Detail persyaratan masa kerja dan SKP untuk kenaikan jenjang karier.</div>
+    
+    <div class="pk-card">
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            <!-- PK 1 -->
+            <div class="col">
+                <div class="p-3 border-start border-primary border-4 bg-light h-100">
+                    <h6 class="fw-bold">Pra PK ke PK 1</h6>
+                    <ul class="pk-list ps-3">
+                        <li>D3: Min. 2 Thn Klinis</li>
+                        <li>S1/D4/Profesi: Min. 1 Thn Klinis</li>
+                        <li><strong>SKP: 5</strong> (Aktif)</li>
+                    </ul>
+                </div>
+            </div>
+            <!-- PK 2 -->
+            <div class="col">
+                <div class="p-3 border-start border-primary border-4 bg-light h-100">
+                    <h6 class="fw-bold">PK 1 ke PK 2</h6>
+                    <ul class="pk-list ps-3">
+                        <li>D3: Min. 4 Thn (PK 1)</li>
+                        <li>S1/D4/Profesi: Min. 3 Thn (PK 1)</li>
+                        <li><strong>SKP: 10</strong> (Aktif)</li>
+                    </ul>
+                </div>
+            </div>
+            <!-- PK 3 -->
+            <div class="col">
+                <div class="p-3 border-start border-primary border-4 bg-light h-100">
+                    <h6 class="fw-bold">PK 2 ke PK 3</h6>
+                    <ul class="pk-list ps-3">
+                        <li>D3/S1/D4/Profesi: Min. 4 Thn (PK 2)</li>
+                        <li><strong>SKP: 20</strong> (Aktif)</li>
+                    </ul>
+                </div>
+            </div>
+            <!-- PK 4 -->
+            <div class="col">
+                <div class="p-3 border-start border-primary border-4 bg-light h-100">
+                    <h6 class="fw-bold">PK 3 ke PK 4</h6>
+                    <ul class="pk-list ps-3">
+                        <li>S1/D4/Profesi: Min. 6 Thn (PK 3)</li>
+                        <li>S2: Min. 4 Thn (PK 3)</li>
+                        <li><strong>SKP: 40</strong> (Aktif)</li>
+                            <li>Membuat PDSA / PDCA / RCA lengkap sebanyak 3 Case</li>
+                    </ul>
+                </div>
+            </div>
+            <!-- PK 5 -->
+            <div class="col">
+                <div class="p-3 border-start border-primary border-4 bg-light h-100">
+                    <h6 class="fw-bold">PK 4 ke PK 5</h6>
+                    <ul class="pk-list ps-3">
+                        <li>S1/D4/Profesi: Min. 6 Thn (PK 4)</li>
+                        <li>S2: Min. 4 Thn (PK 4)</li>
+                        <li><strong>SKP: 50</strong> (Aktif)</li>
+                           <li>Membuat PDSA / PDCA / RCA lengkap sebanyak 5 Case</li>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 p-2 text-muted small bg-white border rounded">
+            * <strong>Catatan:</strong> SKP wajib dalam status aktif. Selalu perhatikan tanggal mulai dan tanggal selesai masa aktif SKP.
+        </div>
+    </div>
+</div>
 {{-- SECTION 2: FITUR UTAMA --}}
 <div class="section-shell mt-5">
     <div class="section-title">
@@ -341,16 +436,16 @@
         <div class="col-md-4">
             <div class="feature-card">
                 <div class="feature-chip">
-                    <span>DRH Perawat</span>
+                    <span>DRH Perawat & Bidan</span>
                 </div>
                 <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Daftar Riwayat Hidup Digital</div>
                 <p style="font-size:12px;color:#4b5563;margin-bottom:8px;">
-                    Profil perawat, riwayat pendidikan, pelatihan, organisasi, pekerjaan,
+                    Profil perawat & bidan, riwayat pendidikan, pelatihan, organisasi, pekerjaan,
                     hingga keluarga terdokumentasi dalam satu sistem.
                 </p>
                 <ul style="padding-left:16px;font-size:11px;color:#6b7280;margin-bottom:0;">
                     <li>Format seragam sesuai kebutuhan komite.</li>
-                    <li>Update data mandiri oleh perawat.</li>
+                    <li>Update data mandiri oleh perawat & bidan.</li>
                     <li>Memudahkan saat audit & akreditasi.</li>
                 </ul>
             </div>
@@ -384,7 +479,7 @@
                 </p>
                 <ul style="padding-left:16px;font-size:11px;color:#6b7280;margin-bottom:0;">
                     <li>Bank soal terpusat.</li>
-                    <li>Rekap nilai per perawat.</li>
+                    <li>Rekap nilai per perawat & bidan.</li>
                     <li>Status kompeten/observasi jelas.</li>
                 </ul>
             </div>
@@ -410,7 +505,7 @@
                     Perawat membuat akun, mengisi data dasar, dan mengajukan registrasi ke komite keperawatan.
                 </p>
                 <span class="stat-pill">
-                    Klik tombol <strong>"Registrasi Perawat"</strong> di bagian atas halaman untuk memulai.
+                    Klik tombol <strong>"Registrasi Perawat & Bidan"</strong> di bagian atas halaman untuk memulai.
                 </span>
             </div>
         </div>
@@ -435,10 +530,10 @@
                 <div style="font-size:13px;font-weight:600;">Ujian, wawancara & penetapan status</div>
                 <p style="font-size:12px;color:#4b5563;margin-bottom:4px;">
                     Komite menjadwalkan ujian tertulis dan wawancara. Hasil penilaian disatukan
-                    dalam satu rekap, hingga penetapan status kompetensi perawat.
+                    dalam satu rekap, hingga penetapan status kompetensi perawat & bidan.
                 </p>
                 <span class="stat-pill">
-                    Membantu komite menyusun rekomendasi penempatan dan pengembangan perawat.
+                    Membantu komite menyusun rekomendasi penempatan dan pengembangan perawat & bidan.
                 </span>
             </div>
         </div>
@@ -451,14 +546,14 @@
         Untuk siapa DIKSERA dibuat?
     </div>
     <div class="section-subtitle">
-        Menghubungkan perawat dan komite keperawatan dalam satu ekosistem data.
+        Menghubungkan perawat & bidan dan komite keperawatan dalam satu ekosistem data.
     </div>
 
     <div class="row g-3">
         <div class="col-md-6">
             <div class="feature-card">
                 <div class="feature-chip">
-                    <span>Perawat Klinis</span>
+                    <span>SDM</span>
                 </div>
                 <div style="font-size:13px;font-weight:600;margin-bottom:4px;">Rapi mengelola karier</div>
                 <ul style="padding-left:16px;font-size:11px;color:#4b5563;margin-bottom:0;">
@@ -475,7 +570,7 @@
                 </div>
                 <div style="font-size:13px;font-weight:600;margin-bottom:4px;">Pengambilan keputusan lebih mudah</div>
                 <ul style="padding-left:16px;font-size:11px;color:#4b5563;margin-bottom:0;">
-                    <li>Rekap data perawat dalam satu dashboard.</li>
+                    <li>Rekap data perawat & bidan dalam satu dashboard.</li>
                     <li>Dukungan data untuk rekomendasi penempatan.</li>
                     <li>Memudahkan pemenuhan standar akreditasi.</li>
                 </ul>
@@ -553,49 +648,49 @@
     $stats = $stats ?? [];
 @endphp
 
-<div class="section-shell mt-5">
-    <div class="section-title">
-        Sekilas data di DIKSERA
-    </div>
-    <div class="section-subtitle">
-        Angka ini akan bertambah seiring implementasi DIKSERA di lingkungan rumah sakit.
-    </div>
+<!--<div class="section-shell mt-5">-->
+<!--    <div class="section-title">-->
+<!--        Sekilas data di DIKSERA-->
+<!--    </div>-->
+<!--    <div class="section-subtitle">-->
+<!--        Angka ini akan bertambah seiring implementasi DIKSERA di lingkungan rumah sakit.-->
+<!--    </div>-->
 
-    <div class="row g-3">
-        <div class="col-6 col-md-3">
-            <div class="feature-card" style="text-align:center;">
-                <div style="font-size:22px;font-weight:700;color:#1d4ed8;">
-                    {{ number_format($stats['users'] ?? 0) }}
-                </div>
-                <div style="font-size:11px;color:#4b5563;">Akun terdaftar</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="feature-card" style="text-align:center;">
-                <div style="font-size:22px;font-weight:700;color:#1d4ed8;">
-                    {{ number_format($stats['profiles'] ?? 0) }}
-                </div>
-                <div style="font-size:11px;color:#4b5563;">Profil perawat</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="feature-card" style="text-align:center;">
-                <div style="font-size:22px;font-weight:700;color:#1d4ed8;">
-                    {{ number_format($stats['pelatihan'] ?? 0) }}
-                </div>
-                <div style="font-size:11px;color:#4b5563;">Riwayat pelatihan</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="feature-card" style="text-align:center;">
-                <div style="font-size:22px;font-weight:700;color:#1d4ed8;">
-                    {{ number_format($stats['pekerjaan'] ?? 0) }}
-                </div>
-                <div style="font-size:11px;color:#4b5563;">Riwayat pekerjaan</div>
-            </div>
-        </div>
-    </div>
-</div>
+<!--    <div class="row g-3">-->
+<!--        <div class="col-6 col-md-3">-->
+<!--            <div class="feature-card" style="text-align:center;">-->
+<!--                <div style="font-size:22px;font-weight:700;color:#1d4ed8;">-->
+<!--                    {{ number_format($stats['users'] ?? 0) }}-->
+<!--                </div>-->
+<!--                <div style="font-size:11px;color:#4b5563;">Akun terdaftar</div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <div class="col-6 col-md-3">-->
+<!--            <div class="feature-card" style="text-align:center;">-->
+<!--                <div style="font-size:22px;font-weight:700;color:#1d4ed8;">-->
+<!--                    {{ number_format($stats['profiles'] ?? 0) }}-->
+<!--                </div>-->
+<!--                <div style="font-size:11px;color:#4b5563;">Profil perawat</div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <div class="col-6 col-md-3">-->
+<!--            <div class="feature-card" style="text-align:center;">-->
+<!--                <div style="font-size:22px;font-weight:700;color:#1d4ed8;">-->
+<!--                    {{ number_format($stats['pelatihan'] ?? 0) }}-->
+<!--                </div>-->
+<!--                <div style="font-size:11px;color:#4b5563;">Riwayat pelatihan</div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <div class="col-6 col-md-3">-->
+<!--            <div class="feature-card" style="text-align:center;">-->
+<!--                <div style="font-size:22px;font-weight:700;color:#1d4ed8;">-->
+<!--                    {{ number_format($stats['pekerjaan'] ?? 0) }}-->
+<!--                </div>-->
+<!--                <div style="font-size:11px;color:#4b5563;">Riwayat pekerjaan</div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
 
 {{-- SECTION 7: FAQ SINGKAT --}}
 <div class="section-shell mt-5 mb-3">
@@ -724,12 +819,6 @@ Kamu bisa tanya:
     // inject statistik dari PHP ke JS (kalau ada)
     window.dikseraStats = @json($stats ?? []);
 
-    /**
-     * Mini NLP / intent engine sederhana (rule-based):
-     * - Normalisasi: lowercase, hapus tanda baca kecil.
-     * - Cek beberapa intent: greeting, about, register, drh, lisensi, stats, dll.
-     * - Pilih intent dengan skor keyword tertinggi.
-     */
     function normalizeText(text) {
         return (text || '')
             .toLowerCase()

@@ -194,7 +194,51 @@
             background: transparent;
             border: 1px solid transparent;
         }
-
+  .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        border: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        transition: transform 0.2s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+    }
+    .stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.7rem;
+    }
+    .icon-active {
+        background: #dcfce7; /* Hijau muda */
+        color: #16a34a; /* Hijau solid */
+    }
+    .icon-inactive {
+        background: #fee2e2; /* Merah muda */
+        color: #ef4444; /* Merah solid */
+    }
+    .stat-info p {
+        margin: 0 0 4px 0;
+        font-size: 0.9rem;
+        color: var(--text-gray);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .stat-info h3 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+     
         .action-btn:hover {
             background: #dbeafe;
             color: var(--primary-blue);
@@ -224,8 +268,8 @@
     <div class="container py-5">
         <div class="page-header">
             <div>
-                <h1 class="page-title">Data Dokumen Tambahan</h1>
-                <p class="page-subtitle">Kelola dokumen pendukung lainnya (Sertifikat, dll).</p>
+ <h1 class="page-title">Pemenuhan SKP</h1>
+<p class="page-subtitle">Monitor perolehan SKP dari dokumen sertifikasi Anda.</p>
             </div>
             <div class="d-flex gap-2">
                 <a href="{{ route('perawat.drh') }}" class="btn-white"><i class="bi bi-arrow-left"></i> Kembali</a>
@@ -234,6 +278,32 @@
             </div>
         </div>
 
+
+
+   <div class="row mb-4">
+        <div class="col-md-6 mb-3 mb-md-0">
+            <div class="stat-card">
+                <div class="stat-icon icon-active">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div class="stat-info">
+                    <p>Total SKP Aktif </p>
+                    <h3>{{ $totalSkpAktif }} <span style="font-size: 1rem; color: #64748b; font-weight: 500;">SKP</span></h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="stat-card">
+                <div class="stat-icon icon-inactive">
+                    <i class="bi bi-shield-x"></i>
+                </div>
+                <div class="stat-info">
+                    <p>Total SKP Non-Aktif (Kadaluarsa)</p>
+                    <h3>{{ $totalSkpNonAktif }}<span style="font-size: 1rem; color: #64748b; font-weight: 500;">SKP</span></h3>
+                </div>
+            </div>
+        </div>
+    </div>
         @if (session('success'))
             <div class="alert-blue"><i class="bi bi-check-circle-fill"></i> {{ session('success') }}</div>
         @endif
@@ -246,6 +316,7 @@
                             <th width="5%">No</th>
                             <th width="30%">Dokumen</th>
                             <th width="20%">Nomor Dokumen</th>
+                            <th width="10%">SKP</th> <!-- Tambah ini -->
                             <th width="20%">Masa Berlaku</th>
                             <th width="15%">Status</th>
                             <th width="10%" class="text-center">File</th>
@@ -263,13 +334,14 @@
 
                                     {{-- Jenis (Badge) & Lembaga (Building Icon) --}}
                                     <div class="text-muted" style="font-size: 0.8rem; margin-top: 2px;">
-                                        <span class="badge bg-light text-dark border me-1">{{ $item->jenis }}</span>
                                         <span><i class="bi bi-building"></i> {{ $item->lembaga }}</span>
                                     </div>
                                 </td>
 
                                 <td><span class="text-dark">{{ $item->nomor }}</span></td>
-
+<td>
+    <span class="badge bg-light text-dark border">{{ $item->skp }}</span>
+</td>
                                 <td>
                                     <span class="data-sub">
                                         <i class="bi bi-calendar-event"></i>
@@ -328,7 +400,7 @@
 
                                 <td class="text-center">
                                     @if ($item->file_path)
-                                        <a href="{{ Storage::url($item->file_path) }}" target="_blank" class="action-btn"
+                                        <a href="{{ asset('storage/' . $item->file_path) }}" target="_blank" class="action-btn"
                                             title="Lihat File" style="color: var(--primary-blue);">
                                             <i class="bi bi-file-earmark-pdf-fill fs-5"></i>
                                         </a>

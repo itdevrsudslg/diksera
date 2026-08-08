@@ -183,89 +183,37 @@
                         <select name="kategori" id="choices-kategori" class="form-select form-select-custom">
                             <option value="">-- Pilih Kategori --</option>
                             @php
-                                $kategoriList = [
-                                    // --- BIDAN ---
-                                    'Bidan Pra PK', 'Bidan PK 1', 'Bidan PK 1.5', 'Bidan PK 2',
-                                    'Bidan PK 2.5', 'Bidan PK 3', 'Bidan PK 3.5', 'Bidan PK 4',
-                                    'Bidan PK 4.5', 'Bidan PK 5',
+                                 $kategoriList = [
+            // --- KFK KRITIS ---
+            'KFK Kritis Gawat Darurat', 'KFK Kritis ICU', 'KFK Kritis ICVCU', 'KFK Kritis Anestesi',
 
-                                    // --- PERAWAT UMUM ---
-                                    'Perawat Pra PK', 'Perawat PK 1', 'Perawat PK 1.5', 'Perawat PK 2',
-                                    'Perawat PK 2.5', 'Perawat PK 3', 'Perawat PK 3.5', 'Perawat PK 4',
-                                    'Perawat PK 4.5', 'Perawat PK 5',
+            // --- KFK MEDIKAL BEDAH ---
+            'KFK Medikal Bedah Penyakit Dalam', 'KFK Medikal Bedah Bedah', 'KFK Medikal Bedah Perioperatif', 'KFK Medikal Bedah Isolasi (Keperawatan Khusus)',
 
-                                    // --- KEPERAWATAN KRITIS (ICU) ---
-                                    'Keperawatan Kritis ICU PK 2', 'Keperawatan Kritis ICU PK 2.5',
-                                    'Keperawatan Kritis ICU PK 3', 'Keperawatan Kritis ICU PK 3.5',
-                                    'Keperawatan Kritis ICU PK 4', 'Keperawatan Kritis ICU PK 4.5',
-                                    'Keperawatan Kritis ICU PK 5',
+            // --- KFK ANAK ---
+            'KFK Anak NICU', 'KFK Anak PICU', 'KFK Anak Pediatri', 'KFK Anak Neonatus',
 
-                                    // --- KEPERAWATAN KRITIS (ICVCU) ---
-                                    'Keperawatan Kritis ICVCU PK 2', 'Keperawatan Kritis ICVCU PK 2.5',
-                                    'Keperawatan Kritis ICVCU PK 3', 'Keperawatan Kritis ICVCU PK 3.5',
-                                    'Keperawatan Kritis ICVCU PK 4', 'Keperawatan Kritis ICVCU PK 4.5',
-                                    'Keperawatan Kritis ICVCU PK 5',
+            // --- KFK MATERNITAS ---
+            'KFK Maternitas',
 
-                                    // --- KEPERAWATAN KRITIS (Gawat Darurat) ---
-                                    'Keperawatan Kritis Gawat Darurat PK 2', 'Keperawatan Kritis Gawat Darurat PK 2.5',
-                                    'Keperawatan Kritis Gawat Darurat PK 3', 'Keperawatan Kritis Gawat Darurat PK 3.5',
-                                    'Keperawatan Kritis Gawat Darurat PK 4', 'Keperawatan Kritis Gawat Darurat PK 4.5',
-                                    'Keperawatan Kritis Gawat Darurat PK 5',
+            // --- JENIS PERAWAT KLINIS (PK) ---
+            'PRA PK', 'PK 1',
+            'PK 2 KEP GAWAT DARURAT', 'PK 3 KEP GAWAT DARURAT', 'PK 4 KEP GAWAT DARURAT', 'PK 5 KEP GAWAT DARURAT',
+            'PK 2 KEP ICU', 'PK 3 KEP ICU', 'PK 4 KEP ICU', 'PK 5 KEP ICU',
+            'PK 2 KEP ICVCU', 'PK 3 KEP ICVCU', 'PK 4 KEP ICVCU', 'PK 5 KEP ICVCU',
+            'PK 2 KEP ANESTESI', 'PK 3 KEP ANESTESI', 'PK 4 KEP ANESTESI', 'PK 5 KEP ANESTESI',
+            'PK 2 KEP PENYAKIT DALAM', 'PK 3 KEP PENYAKIT DALAM', 'PK 4 KEP PENYAKIT DALAM', 'PK 5 KEP PENYAKIT DALAM',
+            'PK 2 KEP BEDAH', 'PK 3 KEP BEDAH', 'PK 4 KEP BEDAH', 'PK 5 KEP BEDAH',
+            'PK 2 KEP PERIOPERATIF', 'PK 3 KEP PERIOPERATIF', 'PK 4 KEP PERIOPERATIF', 'PK 5 KEP PERIOPERATIF',
+            'PK 2 KEP ISOLASI (KEPERAWATAN KHUSUS)', 'PK 3 KEP ISOLASI (KEPERAWATAN KHUSUS)', 'PK 4 KEP ISOLASI (KEPERAWATAN KHUSUS)', 'PK 5 KEP ISOLASI (KEPERAWATAN KHUSUS)',
+            'PK 2 KEP NICU', 'PK 3 KEP NICU', 'PK 4 KEP NICU', 'PK 5 KEP NICU',
+            'PK 2 KEP PICU', 'PK 3 KEP PICU', 'PK 4 KEP PICU', 'PK 5 KEP PICU',
+            'PK 2 KEP PEDIATRI', 'PK 3 KEP PEDIATRI', 'PK 4 KEP PEDIATRI', 'PK 5 KEP PEDIATRI',
+            'PK 2 KEP NEONATUS', 'PK 3 KEP NEONATUS', 'PK 4 KEP NEONATUS', 'PK 5 KEP NEONATUS',
 
-                                    // --- KEPERAWATAN KRITIS (Anestesi) ---
-                                    'Keperawatan Kritis Anestesi PK 2', 'Keperawatan Kritis Anestesi PK 2.5',
-                                    'Keperawatan Kritis Anestesi PK 3', 'Keperawatan Kritis Anestesi PK 3.5',
-                                    'Keperawatan Kritis Anestesi PK 4', 'Keperawatan Kritis Anestesi PK 4.5',
-                                    'Keperawatan Kritis Anestesi PK 5',
-
-                                    // --- KEPERAWATAN ANAK (PICU) ---
-                                    'Keperawatan Anak PICU PK 2', 'Keperawatan Anak PICU PK 2.5',
-                                    'Keperawatan Anak PICU PK 3', 'Keperawatan Anak PICU PK 3.5',
-                                    'Keperawatan Anak PICU PK 4', 'Keperawatan Anak PICU PK 4.5',
-                                    'Keperawatan Anak PICU PK 5',
-
-                                    // --- KEPERAWATAN ANAK (NICU) ---
-                                    'Keperawatan Anak NICU PK 2', 'Keperawatan Anak NICU PK 2.5',
-                                    'Keperawatan Anak NICU PK 3', 'Keperawatan Anak NICU PK 3.5',
-                                    'Keperawatan Anak NICU PK 4', 'Keperawatan Anak NICU PK 4.5',
-                                    'Keperawatan Anak NICU PK 5',
-
-                                    // --- KEPERAWATAN ANAK (Neonatus) ---
-                                    'Keperawatan Anak Neonatus PK 2', 'Keperawatan Anak Neonatus PK 2.5',
-                                    'Keperawatan Anak Neonatus PK 3', 'Keperawatan Anak Neonatus PK 3.5',
-                                    'Keperawatan Anak Neonatus PK 4', 'Keperawatan Anak Neonatus PK 4.5',
-                                    'Keperawatan Anak Neonatus PK 5',
-
-                                    // --- KEPERAWATAN ANAK (Pediatri) ---
-                                    'Keperawatan Anak Pediatri PK 2', 'Keperawatan Anak Pediatri PK 2.5',
-                                    'Keperawatan Anak Pediatri PK 3', 'Keperawatan Anak Pediatri PK 3.5',
-                                    'Keperawatan Anak Pediatri PK 4', 'Keperawatan Anak Pediatri PK 4.5',
-                                    'Keperawatan Anak Pediatri PK 5',
-
-                                    // --- KMB (Interna) ---
-                                    'Keperawatan Medikal Bedah Interna PK 2', 'Keperawatan Medikal Bedah Interna PK 2.5',
-                                    'Keperawatan Medikal Bedah Interna PK 3', 'Keperawatan Medikal Bedah Interna PK 3.5',
-                                    'Keperawatan Medikal Bedah Interna PK 4', 'Keperawatan Medikal Bedah Interna PK 4.5',
-                                    'Keperawatan Medikal Bedah Interna PK 5',
-
-                                    // --- KMB (Bedah) ---
-                                    'Keperawatan Medikal Bedah Bedah PK 2', 'Keperawatan Medikal Bedah Bedah PK 2.5',
-                                    'Keperawatan Medikal Bedah Bedah PK 3', 'Keperawatan Medikal Bedah Bedah PK 3.5',
-                                    'Keperawatan Medikal Bedah Bedah PK 4', 'Keperawatan Medikal Bedah Bedah PK 4.5',
-                                    'Keperawatan Medikal Bedah Bedah PK 5',
-
-                                    // --- KMB (OK) ---
-                                    'Keperawatan Medikal Bedah Kamar Operasi PK 2', 'Keperawatan Medikal Bedah Kamar Operasi PK 2.5',
-                                    'Keperawatan Medikal Bedah Kamar Operasi PK 3', 'Keperawatan Medikal Bedah Kamar Operasi PK 3.5',
-                                    'Keperawatan Medikal Bedah Kamar Operasi PK 4', 'Keperawatan Medikal Bedah Kamar Operasi PK 4.5',
-                                    'Keperawatan Medikal Bedah Kamar Operasi PK 5',
-
-                                    // --- KMB (Isolasi) ---
-                                    'Keperawatan Medikal Bedah Isolasi PK 2', 'Keperawatan Medikal Bedah Isolasi PK 2.5',
-                                    'Keperawatan Medikal Bedah Isolasi PK 3', 'Keperawatan Medikal Bedah Isolasi PK 3.5',
-                                    'Keperawatan Medikal Bedah Isolasi PK 4', 'Keperawatan Medikal Bedah Isolasi PK 4.5',
-                                    'Keperawatan Medikal Bedah Isolasi PK 5',
-                                ];
+            // --- JENIS BIDAN KLINIS (BK) ---
+            'PRA BK', 'BK 1', 'BK 2 MATERNITAS', 'BK 3 MATERNITAS', 'BK 4 MATERNITAS', 'BK 5 MATERNITAS'
+        ];
                             @endphp
                             @foreach ($kategoriList as $kategori)
                                 <option value="{{ $kategori }}" {{ old('kategori') == $kategori ? 'selected' : '' }}>

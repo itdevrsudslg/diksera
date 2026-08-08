@@ -8,6 +8,7 @@
 @section('title', 'Buat Form – Admin DIKSERA')
 
 @push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
     <style>
         /* Global Card */
         .content-card {
@@ -83,7 +84,7 @@
             border-color: var(--blue-main);
         }
 
-        /* Participant List Item Styling (UPDATED) */
+        /* Participant List Item Styling */
         .participant-item {
             border: 1px solid var(--border-soft);
             border-radius: 8px;
@@ -100,12 +101,9 @@
             background: #f8fbff;
         }
 
-        /* Style khusus untuk yang Urgent (Expired) */
         .participant-item.urgent {
             border-color: #fca5a5;
-            /* Merah soft border */
             background: #fef2f2;
-            /* Merah soft bg */
         }
 
         .participant-item.urgent:hover {
@@ -118,7 +116,6 @@
             padding-right: 5px;
         }
 
-        /* Custom Scrollbar */
         .custom-scroll::-webkit-scrollbar {
             width: 6px;
         }
@@ -132,7 +129,6 @@
             border-radius: 10px;
         }
 
-        /* Badge Dokumen Expired */
         .badge-doc {
             font-size: 10px;
             padding: 3px 6px;
@@ -142,19 +138,19 @@
             border: 1px solid #fecaca;
         }
 
+        /* Choices JS Customization */
         .choices__inner {
             background-color: #fff;
             border-radius: 8px;
-            /* Sesuai tombol Anda */
             border: 1px solid #ced4da;
             min-height: 45px;
             display: flex;
             align-items: center;
         }
 
-        .choices__list--dropdown {
-            border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        .choices__list--multiple .choices__item {
+            background-color: var(--blue-main);
+            border: 1px solid var(--blue-main);
         }
 
         .choices.is-focused .choices__inner {
@@ -194,16 +190,19 @@
                     </div>
 
                     {{-- 2. Jadwal --}}
+                    {{-- 2. Jadwal --}}
                     <div class="row g-3 mb-4">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label">Waktu Mulai <span class="text-danger">*</span></label>
-                            <input type="datetime-local" name="waktu_mulai" class="form-control form-control-custom"
-                                required>
+                            <input type="datetime-local" name="waktu_mulai" class="form-control form-control-custom" required>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label">Waktu Selesai <span class="text-danger">*</span></label>
-                            <input type="datetime-local" name="waktu_selesai" class="form-control form-control-custom"
-                                required>
+                            <input type="datetime-local" name="waktu_selesai" class="form-control form-control-custom" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Durasi (Menit) <span class="text-danger">*</span></label>
+                            <input type="number" name="durasi" class="form-control form-control-custom" placeholder="Contoh: 90" required min="1">
                         </div>
                     </div>
 
@@ -211,7 +210,6 @@
                     {{-- Penanggung Jawab --}}
                     <div class="mb-4">
                         <label class="form-label">Penanggung Jawab <span class="text-danger">*</span></label>
-                        {{-- Tambahkan ID disini --}}
                         <select name="penanggung_jawab_id" id="choices-penanggung-jawab"
                             class="form-select form-control-custom" required>
                             <option value="">-- Pilih Penanggung Jawab --</option>
@@ -224,34 +222,53 @@
                     </div>
                     <hr class="border-light my-4">
 
-                    {{-- 3. Target Peserta --}}
+                    {{-- 3. Target Peserta (UPDATED 3 KOLOM) --}}
                     <div class="mb-4">
                         <label class="form-label mb-3">Siapa yang dapat mengakses form ini?</label>
                         <div class="row g-3">
-                            <div class="col-md-6">
+                            {{-- Opsi 1: Semua --}}
+                            <div class="col-md-4">
                                 <label class="target-option w-100 h-100">
                                     <input class="form-check-input d-none target-radio" type="radio" name="target_peserta"
-                                        value="semua" checked onclick="togglePeserta(false)">
+                                        value="semua" checked onclick="toggleTarget('semua')">
                                     <div class="target-card">
                                         <div class="target-icon"><i class="bi bi-people"></i></div>
                                         <div>
-                                            <div class="fw-bold text-dark">Semua Perawat</div>
-                                            <div class="text-muted small" style="font-size: 11px;">Form terbuka untuk
-                                                seluruh perawat terdaftar.</div>
+                                            <div class="fw-bold text-dark">Semua</div>
+                                            <div class="text-muted small" style="font-size: 10px;">Semua perawat terdaftar.
+                                            </div>
                                         </div>
                                     </div>
                                 </label>
                             </div>
-                            <div class="col-md-6">
+
+                            {{-- Opsi 2: KFK (BARU) --}}
+                            <div class="col-md-4">
                                 <label class="target-option w-100 h-100">
                                     <input class="form-check-input d-none target-radio" type="radio" name="target_peserta"
-                                        value="khusus" onclick="togglePeserta(true)">
+                                        value="kfk" onclick="toggleTarget('kfk')">
+                                    <div class="target-card">
+                                        <div class="target-icon"><i class="bi bi-diagram-3"></i></div>
+                                        <div>
+                                            <div class="fw-bold text-dark">By KFK</div>
+                                            <div class="text-muted small" style="font-size: 10px;">Sesuai level kompetensi.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            {{-- Opsi 3: Khusus --}}
+                            <div class="col-md-4">
+                                <label class="target-option w-100 h-100">
+                                    <input class="form-check-input d-none target-radio" type="radio" name="target_peserta"
+                                        value="khusus" onclick="toggleTarget('khusus')">
                                     <div class="target-card">
                                         <div class="target-icon"><i class="bi bi-person-check"></i></div>
                                         <div>
-                                            <div class="fw-bold text-dark">Perawat Tertentu</div>
-                                            <div class="text-muted small" style="font-size: 11px;">Pilih manual perawat yang
-                                                diizinkan.</div>
+                                            <div class="fw-bold text-dark">Manual</div>
+                                            <div class="text-muted small" style="font-size: 10px;">Pilih orang tertentu.
+                                            </div>
                                         </div>
                                     </div>
                                 </label>
@@ -259,17 +276,47 @@
                         </div>
                     </div>
 
-                    {{-- 4. Daftar Peserta (Hidden by Default) --}}
+{{-- A. Wrapper untuk KFK (BARU) --}}
+<div id="list-kfk-container" class="mb-4" style="{{ (old('target_peserta', $form->target_peserta ?? '') == 'kfk') ? '' : 'display: none;' }}">
+    <label class="form-label fw-bold">Pilih Level KFK Target <span class="text-danger">*</span></label>
+    
+    <select name="kfk_target[]" id="choices-kfk" multiple class="form-select @error('kfk_target') is-invalid @enderror">
+        @foreach ($kfkOptions as $category => $kfks)
+            <optgroup label="{{ $category }}">
+                @foreach ($kfks as $kfk)
+                    <option value="{{ $kfk }}" 
+                        @if(isset($selectedKfk) && in_array($kfk, $selectedKfk))
+                            selected
+                        @elseif(is_array(old('kfk_target')) && in_array($kfk, old('kfk_target')))
+                            selected
+                        @endif>
+                        {{ $kfk }}
+                    </option>
+                @endforeach
+            </optgroup>
+        @endforeach
+    </select>
+
+    @error('kfk_target')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+
+    <div class="form-text text-muted small mt-2">
+        <i class="bi bi-info-circle me-1"></i> Form hanya akan muncul pada perawat yang memiliki salah satu KFK yang dipilih di atas (berdasarkan Lisensi Terakhir).
+    </div>
+</div>
+
+                    {{-- B. Wrapper untuk Peserta Khusus (LAMA) --}}
                     <div id="list-peserta-container" class="mb-4" style="display: none;">
                         <div class="d-flex justify-content-between align-items-end mb-2">
-                            <label class="form-label mb-0">Pilih Perawat</label>
+                            <label class="form-label mb-0">Pilih Perawat Manual <span class="text-danger">*</span></label>
                             <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25"
                                 style="font-size: 11px;">
-                                <i class="bi bi-exclamation-triangle-fill me-1"></i> Background Merah = Dokumen Expired
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i> Merah = Dokumen Expired
                             </span>
                         </div>
 
-                        {{-- SEARCH BAR BARU DISINI --}}
+                        {{-- Search Bar --}}
                         <div class="input-group mb-3">
                             <span class="input-group-text bg-white border-end-0"><i
                                     class="bi bi-search text-muted"></i></span>
@@ -278,7 +325,7 @@
                                 placeholder="Cari nama, email, atau NIP...">
                         </div>
 
-                        {{-- Wrapper List --}}
+                        {{-- List Wrapper --}}
                         <div class="bg-light p-3 rounded-3 border">
                             <div class="custom-scroll">
                                 <div class="row g-2" id="peserta-list-wrapper">
@@ -286,13 +333,11 @@
                                         @php
                                             $warnings = $user->dokumen_warning ?? [];
                                             $isUrgent = count($warnings) > 0;
-                                            // Siapkan string pencarian (lower case)
                                             $searchText = strtolower(
                                                 $user->name . ' ' . ($user->email ?? '') . ' ' . ($user->nip ?? ''),
                                             );
                                         @endphp
 
-                                        {{-- Tambahkan class 'peserta-item-col' dan 'data-search' untuk filtering JS --}}
                                         <div class="col-md-6 peserta-item-col" data-search="{{ $searchText }}">
                                             <label
                                                 class="participant-item d-flex align-items-start gap-3 w-100 {{ $isUrgent ? 'urgent' : '' }}"
@@ -313,7 +358,7 @@
                                                         @endif
                                                     </div>
                                                     <div class="text-muted mb-1" style="font-size: 11px;">
-                                                        {{ $user->email ?? ($user->nip ?? 'No ID') }}</div>
+                                                        {{ $user->email ?? ($user->nip ?? '-') }}</div>
                                                     @if ($isUrgent)
                                                         <div class="d-flex flex-wrap gap-1 mt-1">
                                                             @foreach ($warnings as $docName)
@@ -326,19 +371,10 @@
                                         </div>
                                     @endforeach
                                 </div>
-
-                                {{-- Pesan jika tidak ada hasil search --}}
                                 <div id="no-result-msg" class="text-center text-muted py-4" style="display: none;">
                                     <i class="bi bi-search display-6 opacity-25"></i>
                                     <p class="small mt-2">Data tidak ditemukan.</p>
                                 </div>
-
-                                @if ($users->isEmpty())
-                                    <div class="text-center text-muted py-5">
-                                        <i class="bi bi-people display-6 opacity-25"></i>
-                                        <p class="small mt-2">Belum ada data perawat di database.</p>
-                                    </div>
-                                @endif
                             </div>
                         </div>
                     </div>
@@ -356,31 +392,36 @@
 @endsection
 
 @push('scripts')
+    {{-- Load Choices JS --}}
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            
-            // --- 1. IMPLEMENTASI CHOICES.JS ---
-            const element = document.getElementById('choices-penanggung-jawab');
-            if (element) {
-                const choices = new Choices(element, {
+
+            // --- 1. CHOICES JS: PENANGGUNG JAWAB ---
+            const elementPj = document.getElementById('choices-penanggung-jawab');
+            if (elementPj) {
+                new Choices(elementPj, {
                     searchEnabled: true,
                     itemSelectText: '',
-                    placeholder: true,
-                    placeholderValue: '-- Cari atau Pilih Penanggung Jawab --',
-                    noResultsText: 'Tidak ditemukan hasil',
-                    shouldSort: false, // Menjaga urutan sesuai PHP
+                    placeholderValue: '-- Cari Penanggung Jawab --',
+                    shouldSort: false,
                 });
             }
 
-            // --- 2. LOGIC TOGGLE & SEARCH PESERTA (Kode Lama) ---
-            
-            // Handle Old Input / Edit State
-            const selected = document.querySelector('input[name="target_peserta"]:checked');
-            if (selected && selected.value === 'khusus') {
-                togglePeserta(true);
+            // --- 2. CHOICES JS: KFK (MULTI SELECT) ---
+            const elementKfk = document.getElementById('choices-kfk');
+            if (elementKfk) {
+                new Choices(elementKfk, {
+                    removeItemButton: true,
+                    searchEnabled: true,
+                    placeholderValue: 'Cari dan pilih KFK...',
+                    itemSelectText: 'Tekan untuk memilih',
+                    shouldSort: false,
+                });
             }
 
-            // Logic Search Real-time
+            // --- 3. HANDLE SEARCH PESERTA ---
             const searchInput = document.getElementById('search-peserta');
             if (searchInput) {
                 searchInput.addEventListener('keyup', function(e) {
@@ -391,40 +432,53 @@
                     items.forEach(function(item) {
                         const searchData = item.getAttribute('data-search');
                         if (searchData.includes(keyword)) {
-                            item.style.display = 'block'; 
+                            item.style.display = 'block';
                             visibleCount++;
                         } else {
-                            item.style.display = 'none'; 
+                            item.style.display = 'none';
                         }
                     });
 
-                    // Show/Hide No Result Message
                     const noMsg = document.getElementById('no-result-msg');
-                    if (noMsg) {
-                        noMsg.style.display = (visibleCount === 0) ? 'block' : 'none';
-                    }
+                    if (noMsg) noMsg.style.display = (visibleCount === 0) ? 'block' : 'none';
                 });
+            }
+
+            // --- 4. HANDLE INITIAL STATE (OLD INPUT) ---
+            const selected = document.querySelector('input[name="target_peserta"]:checked');
+            if (selected) {
+                toggleTarget(selected.value);
             }
         });
 
-        // Fungsi Toggle di luar DOMContentLoaded agar bisa dipanggil onclick HTML
-        function togglePeserta(show) {
-            const container = document.getElementById('list-peserta-container');
-            if (!container) return; // Safety check
-            
-            if (show) {
-                container.style.display = 'block';
-                container.style.opacity = 0;
-                setTimeout(() => {
-                    container.style.opacity = 1;
-                    container.style.transition = 'opacity 0.3s';
-                }, 10);
-            } else {
-                container.style.display = 'none';
+        // --- 5. FUNCTION TOGGLE TARGET ---
+        function toggleTarget(val) {
+            const containerPeserta = document.getElementById('list-peserta-container');
+            const containerKfk = document.getElementById('list-kfk-container');
+
+            // Reset Display
+            if (containerPeserta) containerPeserta.style.display = 'none';
+            if (containerKfk) containerKfk.style.display = 'none';
+
+            // Show Logic
+            if (val === 'khusus') {
+                containerPeserta.style.display = 'block';
+                fadeIn(containerPeserta);
+            } else if (val === 'kfk') {
+                containerKfk.style.display = 'block';
+                fadeIn(containerKfk);
             }
         }
 
-        // --- 3. SWEETALERT LOGIC ---
+        function fadeIn(element) {
+            element.style.opacity = 0;
+            setTimeout(() => {
+                element.style.opacity = 1;
+                element.style.transition = 'opacity 0.3s';
+            }, 10);
+        }
+
+        // --- 6. SWEETALERT ---
         @if (session('success'))
             Swal.fire({
                 icon: 'success',
@@ -434,20 +488,18 @@
                 timer: 2000
             });
         @endif
-
         @if (session('error'))
             Swal.fire({
                 icon: 'error',
                 title: 'Gagal!',
-                text: "{{ session('error') }}",
+                text: "{{ session('error') }}"
             });
         @endif
-
         @if ($errors->any())
             Swal.fire({
                 icon: 'warning',
                 title: 'Perhatian',
-                text: "Mohon periksa kembali inputan Anda.",
+                text: "Mohon periksa kembali inputan Anda."
             });
         @endif
     </script>

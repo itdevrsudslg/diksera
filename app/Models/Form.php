@@ -14,6 +14,7 @@ class Form extends Model
     protected $casts = [
         'waktu_mulai' => 'datetime',
         'waktu_selesai' => 'datetime',
+        'kfk_target' => 'array', // Tambahkan ini
     ];
 
     public function participants()

@@ -1,4 +1,4 @@
-<div class="content-card h-100"> {{-- Ubah dash-card jadi content-card --}}
+<div class="content-card h-100"> 
 
     {{-- Header dengan Style Section Title --}}
     <div class="section-title">
@@ -9,16 +9,15 @@
     </div>
 
     <div class="table-responsive">
-        {{-- Ubah table-bordered jadi table-custom agar border lebih soft --}}
-        <table class="table table-custom align-middle mb-0">
+        {{-- Penambahan text-nowrap agar tabel bisa di scroll horizontal di HP --}}
+        <table class="table table-custom align-middle mb-0 text-nowrap">
             <thead>
                 <tr>
                     <th class="text-center" style="width: 40px;">No</th>
 
-                    {{-- Loop Header: Support format array ['Label' => 'key'] agar header rapi --}}
+                    {{-- Loop Header --}}
                     @foreach ($cols as $label => $key)
                         <th>
-                            {{-- Cek apakah pakai key asosiatif (Label Custom) atau index biasa --}}
                             {{ is_string($label) ? $label : ucwords(str_replace('_', ' ', $key)) }}
                         </th>
                     @endforeach
@@ -34,7 +33,6 @@
                         {{-- Loop Value --}}
                         @foreach ($cols as $key)
                             <td>
-                                {{-- Menampilkan value (bisa ditambah format date jika perlu) --}}
                                 {{ $row->$key ?? '-' }}
                             </td>
                         @endforeach
@@ -55,7 +53,6 @@
                     </tr>
                 @empty
                     <tr>
-                        {{-- Empty State yang lebih rapi --}}
                         <td colspan="{{ count($cols) + 2 }}" class="text-center py-4">
                             <div class="text-muted small fst-italic">
                                 Belum ada data {{ strtolower($title) }}.

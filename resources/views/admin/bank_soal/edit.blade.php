@@ -8,6 +8,7 @@
 @section('title', 'Edit Soal – Admin DIKSERA')
 
 @push('styles')
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
     <style>
         /* Global Card */
         .content-card {
@@ -144,15 +145,48 @@
                     {{-- Kategori --}}
                     <div class="mb-4">
                         <label class="form-label">Kategori Soal <span class="text-danger">*</span></label>
-                        <select name="kategori" class="form-select form-select-custom">
-                            <option value="">-- Pilih Kategori --</option>
-                            @foreach (['Umum', 'Gak Umum'] as $kategori)
-                                <option value="{{ $kategori }}"
-                                    {{ old('kategori', $soal->kategori) == $kategori ? 'selected' : '' }}>
-                                    {{ $kategori }}
-                                </option>
-                            @endforeach
-                        </select>
+                 <select name="kategori" id="choices-kategori" class="form-select form-select-custom">
+    <option value="">-- Pilih Kategori --</option>
+    @php
+        $kategoriList = [
+            // --- KFK KRITIS ---
+            'KFK Kritis Gawat Darurat', 'KFK Kritis ICU', 'KFK Kritis ICVCU', 'KFK Kritis Anestesi',
+
+            // --- KFK MEDIKAL BEDAH ---
+            'KFK Medikal Bedah Penyakit Dalam', 'KFK Medikal Bedah Bedah', 'KFK Medikal Bedah Perioperatif', 'KFK Medikal Bedah Isolasi (Keperawatan Khusus)',
+
+            // --- KFK ANAK ---
+            'KFK Anak NICU', 'KFK Anak PICU', 'KFK Anak Pediatri', 'KFK Anak Neonatus',
+
+            // --- KFK MATERNITAS ---
+            'KFK Maternitas',
+
+            // --- JENIS PERAWAT KLINIS (PK) ---
+            'PRA PK', 'PK 1',
+            'PK 2 KEP GAWAT DARURAT', 'PK 3 KEP GAWAT DARURAT', 'PK 4 KEP GAWAT DARURAT', 'PK 5 KEP GAWAT DARURAT',
+            'PK 2 KEP ICU', 'PK 3 KEP ICU', 'PK 4 KEP ICU', 'PK 5 KEP ICU',
+            'PK 2 KEP ICVCU', 'PK 3 KEP ICVCU', 'PK 4 KEP ICVCU', 'PK 5 KEP ICVCU',
+            'PK 2 KEP ANESTESI', 'PK 3 KEP ANESTESI', 'PK 4 KEP ANESTESI', 'PK 5 KEP ANESTESI',
+            'PK 2 KEP PENYAKIT DALAM', 'PK 3 KEP PENYAKIT DALAM', 'PK 4 KEP PENYAKIT DALAM', 'PK 5 KEP PENYAKIT DALAM',
+            'PK 2 KEP BEDAH', 'PK 3 KEP BEDAH', 'PK 4 KEP BEDAH', 'PK 5 KEP BEDAH',
+            'PK 2 KEP PERIOPERATIF', 'PK 3 KEP PERIOPERATIF', 'PK 4 KEP PERIOPERATIF', 'PK 5 KEP PERIOPERATIF',
+            'PK 2 KEP ISOLASI (KEPERAWATAN KHUSUS)', 'PK 3 KEP ISOLASI (KEPERAWATAN KHUSUS)', 'PK 4 KEP ISOLASI (KEPERAWATAN KHUSUS)', 'PK 5 KEP ISOLASI (KEPERAWATAN KHUSUS)',
+            'PK 2 KEP NICU', 'PK 3 KEP NICU', 'PK 4 KEP NICU', 'PK 5 KEP NICU',
+            'PK 2 KEP PICU', 'PK 3 KEP PICU', 'PK 4 KEP PICU', 'PK 5 KEP PICU',
+            'PK 2 KEP PEDIATRI', 'PK 3 KEP PEDIATRI', 'PK 4 KEP PEDIATRI', 'PK 5 KEP PEDIATRI',
+            'PK 2 KEP NEONATUS', 'PK 3 KEP NEONATUS', 'PK 4 KEP NEONATUS', 'PK 5 KEP NEONATUS',
+
+            // --- JENIS BIDAN KLINIS (BK) ---
+            'PRA BK', 'BK 1', 'BK 2 MATERNITAS', 'BK 3 MATERNITAS', 'BK 4 MATERNITAS', 'BK 5 MATERNITAS'
+        ];
+    @endphp
+
+    @foreach ($kategoriList as $kategori)
+        <option value="{{ $kategori }}" {{ old('kategori') == $kategori ? 'selected' : '' }}>
+            {{ $kategori }}
+        </option>
+    @endforeach
+</select>
                     </div>
 
                     <hr class="border-light my-4">
@@ -209,8 +243,20 @@
     </div>
 
     {{-- Script untuk Highlight Row saat Radio dipilih --}}
+        <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+                   // --- A. Init Choices.js untuk Kategori ---
+            const element = document.querySelector('#choices-kategori');
+            const choices = new Choices(element, {
+                searchEnabled: true,
+                searchPlaceholderValue: 'Cari kategori...',
+                itemSelectText: 'Tekan untuk memilih',
+                shouldSort: false, // Penting! Agar urutan PK tidak berantakan (tetap sesuai PHP array)
+                placeholder: true,
+                placeholderValue: '-- Pilih Kategori --'
+            });
+
             const radios = document.querySelectorAll('.key-radio');
             const rows = document.querySelectorAll('.option-item');
 

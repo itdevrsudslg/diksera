@@ -6,8 +6,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
     :root {
-        --primary-blue: #2563eb; /* Royal Blue yang Jernih */
-        --primary-hover: #1d4ed8; /* Biru lebih gelap untuk hover */
+        --primary-blue: #2563eb;
+        --primary-hover: #1d4ed8;
         --text-dark: #0f172a;
         --text-gray: #64748b;
         --bg-light: #f1f5f9;
@@ -41,7 +41,55 @@
         margin-top: 4px;
     }
 
-    /* --- 2. Tombol Utama (BIRU) --- */
+    /* --- 2. Dashboard Cards --- */
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        border: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        transition: transform 0.2s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+    }
+    .stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.7rem;
+    }
+    .icon-active {
+        background: #dcfce7; /* Hijau muda */
+        color: #16a34a; /* Hijau solid */
+    }
+    .icon-inactive {
+        background: #fee2e2; /* Merah muda */
+        color: #ef4444; /* Merah solid */
+    }
+    .stat-info p {
+        margin: 0 0 4px 0;
+        font-size: 0.9rem;
+        color: var(--text-gray);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .stat-info h3 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-dark);
+    }
+
+    /* --- 3. Tombol --- */
     .btn-blue {
         background-color: var(--primary-blue);
         color: white;
@@ -50,14 +98,13 @@
         font-weight: 600;
         font-size: 0.9rem;
         border: 1px solid var(--primary-blue);
-        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2); /* Shadow Biru Halus */
+        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
         transition: all 0.2s ease;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
         gap: 8px;
     }
-
     .btn-blue:hover {
         background-color: var(--primary-hover);
         border-color: var(--primary-hover);
@@ -65,7 +112,6 @@
         transform: translateY(-2px);
         box-shadow: 0 6px 10px -1px rgba(37, 99, 235, 0.3);
     }
-
     .btn-white {
         background: white;
         color: var(--text-gray);
@@ -86,7 +132,7 @@
         border-color: #cbd5e1;
     }
 
-    /* --- 3. Tabel Card (Clean Style) --- */
+    /* --- 4. Tabel Card --- */
     .table-card {
         background: white;
         border-radius: 12px;
@@ -94,14 +140,12 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         overflow: hidden;
     }
-
     .custom-table {
         width: 100%;
         border-collapse: collapse;
     }
-
     .custom-table thead th {
-        background-color: #f1f5f9; /* Header Abu Muda */
+        background-color: #f1f5f9;
         color: #475569;
         font-size: 0.75rem;
         font-weight: 700;
@@ -111,29 +155,22 @@
         border-bottom: 1px solid #e2e8f0;
         text-align: left;
     }
-
     .custom-table tbody tr {
         transition: background-color 0.2s;
         border-bottom: 1px solid #f1f5f9;
     }
-
     .custom-table tbody tr:last-child {
         border-bottom: none;
     }
-
-    /* Hover Row jadi agak biru dikit */
     .custom-table tbody tr:hover {
-        background-color: #eff6ff; /* Very Light Blue tint */
+        background-color: #eff6ff;
     }
-
     .custom-table td {
         padding: 20px 24px;
         vertical-align: middle;
         font-size: 0.95rem;
         color: var(--text-gray);
     }
-
-    /* --- 4. Typography & Elements --- */
     .data-title {
         font-weight: 600;
         color: var(--text-dark);
@@ -141,7 +178,6 @@
         margin-bottom: 4px;
         font-size: 1rem;
     }
-
     .data-sub {
         font-size: 0.85rem;
         color: var(--text-gray);
@@ -149,21 +185,21 @@
         align-items: center;
         gap: 5px;
     }
-
-    /* Link Dokumen Biru */
-    .link-blue {
-        color: var(--primary-blue);
-        font-weight: 600;
-        text-decoration: none;
-        font-size: 0.9rem;
-        transition: 0.2s;
-    }
-    .link-blue:hover {
-        color: var(--primary-hover);
-        text-decoration: underline;
+    
+    /* Highlight SKP */
+    .badge-skp {
+        background: #f1f5f9;
+        color: #0f172a;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
     }
 
-    /* Action Buttons */
+    /* Link & Aksi */
+    .link-blue { color: var(--primary-blue); font-weight: 600; text-decoration: none; font-size: 0.9rem; transition: 0.2s; }
+    .link-blue:hover { color: var(--primary-hover); text-decoration: underline; }
+    
     .action-btn {
         width: 34px;
         height: 34px;
@@ -176,9 +212,7 @@
         background: transparent;
         border: 1px solid transparent;
     }
-    /* Edit jadi Biru */
     .action-btn:hover { background: #dbeafe; color: var(--primary-blue); }
-    /* Hapus jadi Merah */
     .action-btn.delete:hover { background: #fee2e2; color: #ef4444; }
 
     /* Alert */
@@ -193,7 +227,6 @@
         align-items: center;
         gap: 10px;
     }
-
 </style>
 @endpush
 
@@ -216,6 +249,32 @@
         </div>
     </div>
 
+    {{-- Dashboard Cards --}}
+    <!--<div class="row mb-4">-->
+    <!--    <div class="col-md-6 mb-3 mb-md-0">-->
+    <!--        <div class="stat-card">-->
+    <!--            <div class="stat-icon icon-active">-->
+    <!--                <i class="bi bi-shield-check"></i>-->
+    <!--            </div>-->
+    <!--            <div class="stat-info">-->
+    <!--                <p>Total SKP Aktif (5 Thn Terakhir)</p>-->
+    <!--                <h3>{{ $skpAktif ?? 0 }} <span style="font-size: 1rem; color: #64748b; font-weight: 500;">SKP</span></h3>-->
+    <!--            </div>-->
+    <!--        </div>-->
+    <!--    </div>-->
+    <!--    <div class="col-md-6">-->
+    <!--        <div class="stat-card">-->
+    <!--            <div class="stat-icon icon-inactive">-->
+    <!--                <i class="bi bi-shield-x"></i>-->
+    <!--            </div>-->
+    <!--            <div class="stat-info">-->
+    <!--                <p>Total SKP Non-Aktif (Kadaluarsa)</p>-->
+    <!--                <h3>{{ $skpNonAktif ?? 0 }} <span style="font-size: 1rem; color: #64748b; font-weight: 500;">SKP</span></h3>-->
+    <!--            </div>-->
+    <!--        </div>-->
+    <!--    </div>-->
+    <!--</div>-->
+
     {{-- Alert --}}
     @if(session('success'))
         <div class="alert-blue">
@@ -229,10 +288,12 @@
             <table class="custom-table">
                 <thead>
                     <tr>
-                        <th width="35%">Nama Pelatihan</th>
-                        <th width="20%">Penyelenggara</th>
+                        {{-- Disesuaikan lebarnya agar 100% --}}
+                        <th width="30%">Nama Pelatihan</th>
+                        <th width="15%">Penyelenggara</th>
                         <th width="15%">Waktu</th>
                         <th width="10%">Durasi</th>
+                        <th width="10%">SKP</th> {{-- Kolom Baru --}}
                         <th width="10%">Bukti</th>
                         <th width="10%" class="text-end">Aksi</th>
                     </tr>
@@ -269,11 +330,20 @@
                                 {{ $row->durasi ?? '-' }}
                             </td>
 
+                            {{-- SKP --}}
+                            <td>
+                                @if($row->skp)
+                                    <span class="badge-skp">{{ $row->skp }}</span>
+                                @else
+                                    -
+                                @endif
+                            </td>
+
                             {{-- Dokumen (Link Biru) --}}
                             <td>
                                 @if($row->dokumen_path)
                                     <a href="{{ asset('storage/'.$row->dokumen_path) }}" target="_blank" class="link-blue">
-                                        <i class="bi bi-file-earmark-pdf"></i> 
+                                        <i class="bi bi-file-earmark-pdf"></i> Lihat
                                     </a>
                                 @else
                                     <span class="text-muted text-sm">-</span>
@@ -299,7 +369,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-5">
+                            {{-- colspan 7 untuk mengakomodasi kolom SKP --}}
+                            <td colspan="7" class="text-center py-5">
                                 <div class="text-muted" style="opacity: 0.6;">
                                     <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                                     Belum ada data pelatihan.

@@ -17,10 +17,9 @@ class CreatePerawatStrsTable extends Migration
         $table->id();
         $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
         $table->string('nama');
-        $table->string('lembaga');
         $table->string('nomor');
         $table->date('tgl_terbit');
-        $table->date('tgl_expired');
+        $table->date('tgl_expired')->nullable();
         $table->string('file_path')->nullable();
 
         $table->timestamps();

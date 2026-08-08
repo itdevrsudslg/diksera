@@ -11,10 +11,10 @@ class DatabaseSeeder extends Seeder
         // Panggil seeder user
         $this->call([
             UserSeeder::class,
-            PerawatDokumenSeeder::class,
-            PerawatDataDiriSeeder::class,
-            PenanggungJawabUjianSeeder::class,
-            FormSeeder::class,
+            // PerawatDokumenSeeder::class,
+            // PerawatDataDiriSeeder::class,
+            // PenanggungJawabUjianSeeder::class,
+            // FormSeeder::class,
         ]);
     }
 }

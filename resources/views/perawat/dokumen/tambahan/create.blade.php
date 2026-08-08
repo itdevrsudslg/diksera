@@ -169,14 +169,6 @@
                         @csrf
                         <div class="row g-4">
 
-                            {{-- Jenis Dokumen (TEXT MANUAL) --}}
-                            <div class="col-md-6">
-                                <label class="form-label">Jenis Dokumen <span class="required-star">*</span></label>
-                                <input type="text" name="jenis"
-                                    class="form-control @error('jenis') is-invalid @enderror" value="{{ old('jenis') }}"
-                                    placeholder="Contoh: Sertifikat, SK, Surat Tugas" required>
-                            </div>
-
                             {{-- Nama Dokumen --}}
                             <div class="col-md-6">
                                 <label class="form-label">Nama Dokumen <span class="required-star">*</span></label>
@@ -222,7 +214,17 @@
                             </div>
 
                             {{-- Upload --}}
-                            <div class="col-12">
+                         {{-- SKP & Upload --}}
+                            <div class="col-md-6">
+                                <label class="form-label">Total SKP</label>
+                                <input type="number" name="skp" class="form-control @error('skp') is-invalid @enderror" 
+                                    value="{{ old('skp', 0) }}" min="0" placeholder="Contoh: 5">
+                                <div class="form-text text-muted mt-2 small">
+                                    <i class="bi bi-info-circle me-1"></i> Kosongkan (0) jika tidak memiliki SKP.
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
                                 <label class="form-label">Upload Dokumen (PDF/Gambar, Max 5MB) <span
                                         class="required-star">*</span></label>
                                 <input type="file" name="dokumen"

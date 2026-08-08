@@ -17,7 +17,7 @@ class CreateExamResultsTable extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('form_id')->constrained()->onDelete('cascade');
-
+            $table->boolean('remidi')->default(false);
             $table->integer('total_nilai'); // Total skor
             $table->integer('total_benar'); // Jumlah soal benar
             $table->integer('total_salah'); // Jumlah soal salah

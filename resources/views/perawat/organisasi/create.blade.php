@@ -206,6 +206,15 @@
                                 <i class="bi bi-info-circle me-1"></i> Format PDF, Maksimal 4MB.
                             </div>
                         </div>
+                        <div class="col-md-12">
+    <label class="form-label">Kategori Masa Organisasi <span class="required-star">*</span></label>
+    <select name="masa_organisasi" class="form-select" required>
+        <option value="">- Pilih Kategori Waktu Organisasi -</option>
+        <option value="SLTA" {{ old('masa_organisasi') == 'SLTA' ? 'selected' : '' }}>Semasa Pendidikan SLTA ke bawah</option>
+        <option value="PT" {{ old('masa_organisasi') == 'PT' ? 'selected' : '' }}>Semasa Pendidikan Perguruan Tinggi</option>
+        <option value="Bekerja" {{ old('masa_organisasi') == 'Bekerja' ? 'selected' : '' }}>Sesudah selesai pendidikan / selama menjadi pegawai</option>
+    </select>
+</div>
                     </div>
 
                     <div class="mt-5">

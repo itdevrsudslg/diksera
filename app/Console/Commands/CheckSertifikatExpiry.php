@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\User;
 use App\Models\PerawatSip;
 use App\Models\PerawatStr;
 use App\Models\PerawatLisensi;
@@ -17,6 +16,9 @@ class CheckSertifikatExpiry extends Command
     protected $description = 'Cek masa berlaku sertifikat perawat dan kirim notifikasi';
 
     protected $telegramService;
+    protected $notificationSent = 0;
+    // Daftar hari pengingat
+    protected $reminderDays = [90, 60, 30, 14, 7, 3, 1, 0];
 
     public function __construct(TelegramService $telegramService)
     {
@@ -26,113 +28,84 @@ class CheckSertifikatExpiry extends Command
 
     public function handle()
     {
-        $this->info('Memulai pengecekan masa berlaku sertifikat...');
+        $this->info('🚀 Memulai pengecekan masa berlaku sertifikat...');
+        $start = microtime(true);
 
-        $reminderDays = [90, 60, 30, 14, 7, 3, 1, 0];
-        $notificationSent = 0;
+        // 1. Cek SIP
+        $this->processDocuments(PerawatSip::with('user.profile'), 'SIP');
 
-        // Cek SIP
-        $this->info('Mengecek SIP...');
-        $sips = PerawatSip::with('user.profile')->get();
-        foreach ($sips as $sip) {
-            $daysLeft = Carbon::now()->diffInDays(Carbon::parse($sip->tgl_expired), false);
+        // 2. Cek STR
+        $this->processDocuments(PerawatStr::with('user.profile'), 'STR');
 
-            if (in_array($daysLeft, $reminderDays) || $daysLeft < 0) {
-                // Kirim ke admin (chat_id global)
-                $this->telegramService->notifySertifikatExpiring($sip->user, $sip, 'SIP', $daysLeft);
+        // 3. Cek Lisensi
+        $this->processDocuments(PerawatLisensi::with('user.profile'), 'LISENSI');
 
-                // Kirim ke user jika punya telegram_chat_id
-                if ($sip->user->telegram_chat_id) {
-                    $this->telegramService->notifySertifikatExpiringToUser(
-                        $sip->user->telegram_chat_id,
-                        $sip,
-                        'SIP',
-                        $daysLeft
-                    );
-                }
+        // 4. Cek Data Tambahan
+        // Khusus data tambahan perlu logic sedikit berbeda karena ada field 'jenis'
+        PerawatDataTambahan::with('user.profile')->chunk(100, function ($items) {
+            foreach ($items as $data) {
+                if (!$data->tgl_expired) continue;
 
-                $notificationSent++;
-                $this->line("✓ Notifikasi SIP: {$sip->user->name} (Sisa {$daysLeft} hari)");
+                $jenis = strtoupper($data->jenis ?? 'DOKUMEN LAIN');
+                $this->checkAndNotify($data, $jenis, $data->tgl_expired);
             }
-        }
+        });
 
-        // Cek STR
-        $this->info('Mengecek STR...');
-        $strs = PerawatStr::with('user.profile')->get();
-        foreach ($strs as $str) {
-            $daysLeft = Carbon::now()->diffInDays(Carbon::parse($str->tgl_expired), false);
-
-            if (in_array($daysLeft, $reminderDays) || $daysLeft < 0) {
-                $this->telegramService->notifySertifikatExpiring($str->user, $str, 'STR', $daysLeft);
-
-                if ($str->user->telegram_chat_id) {
-                    $this->telegramService->notifySertifikatExpiringToUser(
-                        $str->user->telegram_chat_id,
-                        $str,
-                        'STR',
-                        $daysLeft
-                    );
-                }
-
-                $notificationSent++;
-                $this->line("✓ Notifikasi STR: {$str->user->name} (Sisa {$daysLeft} hari)");
-            }
-        }
-
-        // Cek Lisensi
-        $this->info('Mengecek Lisensi...');
-        $lisensis = PerawatLisensi::with('user.profile')->get();
-        foreach ($lisensis as $lisensi) {
-            $daysLeft = Carbon::now()->diffInDays(Carbon::parse($lisensi->tgl_expired), false);
-
-            if (in_array($daysLeft, $reminderDays) || $daysLeft < 0) {
-                $this->telegramService->notifySertifikatExpiring($lisensi->user, $lisensi, 'LISENSI', $daysLeft);
-
-                if ($lisensi->user->telegram_chat_id) {
-                    $this->telegramService->notifySertifikatExpiringToUser(
-                        $lisensi->user->telegram_chat_id,
-                        $lisensi,
-                        'LISENSI',
-                        $daysLeft
-                    );
-                }
-
-                $notificationSent++;
-                $this->line("✓ Notifikasi Lisensi: {$lisensi->user->name} (Sisa {$daysLeft} hari)");
-            }
-        }
-
-        // Cek Data Tambahan
-        $this->info('Mengecek Data Tambahan...');
-        $dataTambahans = PerawatDataTambahan::with('user.profile')->get();
-        foreach ($dataTambahans as $data) {
-            if ($data->tgl_expired) {
-                $daysLeft = Carbon::now()->diffInDays(Carbon::parse($data->tgl_expired), false);
-
-                if (in_array($daysLeft, $reminderDays) || $daysLeft < 0) {
-                    $this->telegramService->notifySertifikatExpiring(
-                        $data->user,
-                        $data,
-                        strtoupper($data->jenis),
-                        $daysLeft
-                    );
-
-                    if ($data->user->telegram_chat_id) {
-                        $this->telegramService->notifySertifikatExpiringToUser(
-                            $data->user->telegram_chat_id,
-                            $data,
-                            strtoupper($data->jenis),
-                            $daysLeft
-                        );
-                    }
-
-                    $notificationSent++;
-                    $this->line("✓ Notifikasi {$data->jenis}: {$data->user->name} (Sisa {$daysLeft} hari)");
-                }
-            }
-        }
-
-        $this->info("✓ Selesai! Total {$notificationSent} notifikasi terkirim.");
+        $duration = round(microtime(true) - $start, 2);
+        $this->info("✓ Selesai dalam {$duration} detik! Total {$this->notificationSent} notifikasi terkirim.");
         return 0;
+    }
+
+    /**
+     * Fungsi helper untuk memproses query dengan chunking
+     */
+    private function processDocuments($queryBuilder, $jenisDokumen)
+    {
+        $this->info("Mengecek {$jenisDokumen}...");
+
+        // Gunakan chunk(100) untuk menghemat RAM
+        $queryBuilder->chunk(100, function ($items) use ($jenisDokumen) {
+            foreach ($items as $item) {
+                if (!$item->tgl_expired) continue;
+                $this->checkAndNotify($item, $jenisDokumen, $item->tgl_expired);
+            }
+        });
+    }
+
+    /**
+     * Logika pengecekan tanggal dan pengiriman notifikasi
+     */
+    private function checkAndNotify($item, $jenis, $expiryDate)
+    {
+        try {
+            // Pastikan user ada
+            if (!$item->user) return;
+
+            $daysLeft = Carbon::now()->diffInDays(Carbon::parse($expiryDate), false);
+            // Cast ke int agar pencocokan array akurat
+            $daysLeftInt = (int) $daysLeft;
+
+            // Cek apakah hari ini jadwal kirim notifikasi ATAU sudah kadaluarsa (minus)
+            if (in_array($daysLeftInt, $this->reminderDays) || $daysLeftInt < 0) {
+
+                // 1. Kirim ke Admin/Group Global
+                $this->telegramService->notifySertifikatExpiring($item->user, $item, $jenis, $daysLeftInt);
+
+                // 2. Kirim Personal ke User
+                if ($item->user->telegram_chat_id) {
+                    $this->telegramService->notifySertifikatExpiringToUser(
+                        $item->user->telegram_chat_id,
+                        $item,
+                        $jenis,
+                        $daysLeftInt
+                    );
+                }
+
+                $this->notificationSent++;
+                $this->line("  ✓ Notifikasi {$jenis}: {$item->user->name} (Sisa {$daysLeftInt} hari)");
+            }
+        } catch (\Exception $e) {
+            $this->error("  x Error pada ID {$item->id}: " . $e->getMessage());
+        }
     }
 }

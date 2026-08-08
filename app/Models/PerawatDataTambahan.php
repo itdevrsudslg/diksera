@@ -10,14 +10,14 @@ class PerawatDataTambahan extends Model
     use HasFactory;
 
     protected $table = 'perawat_data_tambahans';
-    protected $fillable = [
+protected $fillable = [
         'user_id',
-        'jenis',
         'nomor',
         'nama',
         'lembaga',
         'tgl_terbit',
         'tgl_expired',
+        'skp', // <-- TAMBAHKAN INI
         'is_lifetime',
         'lifetime_approved',
         'file_path',

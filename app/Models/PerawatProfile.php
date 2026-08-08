@@ -10,13 +10,16 @@ class PerawatProfile extends Model
 
     protected $fillable = [
         'user_id',
-
+        'is_oppe_manual_open',
+        'profesi',              // <--- TAMBAH INI
+    'status_kepegawaian',
+    'oppe_status',// <--- TAMBAH INI
         // Identitas Utama
         'nik',
         'nip',
         'nirp',
         'nama_lengkap',
-
+'jabatan_struktural',
         // Biodata
         'tempat_lahir',
         'tanggal_lahir',
@@ -49,6 +52,10 @@ class PerawatProfile extends Model
 
         // Tipe Perawat
         'type_perawat',
+        
+        'npwp', 'tmt_cpns', 'tmt_pns', 'tmt_jabatan', 'masa_kerja_tahun', 'masa_kerja_bulan', 
+'kelurahan_desa', 'kecamatan', 'skck_pejabat', 'skck_nomor', 'skck_tanggal', 
+'sehat_pejabat', 'sehat_nomor', 'sehat_tanggal', 'ket_lain_pejabat', 'ket_lain_nomor', 'ket_lain_tanggal',
     ];
 
 

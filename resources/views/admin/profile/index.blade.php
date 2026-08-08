@@ -47,6 +47,37 @@
             color: #166534;
         }
 
+        /* Instruction List Style */
+        .instruction-list {
+            text-align: left;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+        }
+        .instruction-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #475569;
+        }
+        .instruction-number {
+            background: var(--telegram-color);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
         /* OTP Code Display */
         .otp-box {
             background: #f8fafc;
@@ -73,7 +104,7 @@
 
         /* Steps Container */
         .step-container {
-            max-width: 400px;
+            max-width: 450px;
             margin: 0 auto;
             text-align: center;
         }
@@ -95,13 +126,11 @@
 
                             <h4 class="fw-bold mb-2">Terhubung!</h4>
                             <p class="text-muted mb-4 small px-4">
-                                Akun Anda sudah terhubung dengan Telegram.<br>
-                                ID Chat: <span
-                                    class="font-monospace text-dark bg-light px-2 rounded">{{ auth()->user()->telegram_chat_id }}</span>
+                                Akun Administrator sudah terhubung.<br>
+                                ID Chat: <span class="font-monospace text-dark bg-light px-2 rounded">{{ auth()->user()->telegram_chat_id }}</span>
                             </p>
 
                             <div class="d-flex justify-content-center gap-2">
-                                {{-- Tombol Tes --}}
                                 <form action="{{ route('admin.telegram.test') }}" method="POST">
                                     @csrf
                                     <button type="submit" class="btn btn-outline-primary" style="border-radius: 8px;">
@@ -109,7 +138,6 @@
                                     </button>
                                 </form>
 
-                                {{-- Tombol Putus Koneksi --}}
                                 <form action="{{ route('admin.telegram.unlink') }}" method="POST"
                                     onsubmit="return confirm('Yakin ingin memutuskan koneksi Telegram?');">
                                     @csrf
@@ -120,17 +148,44 @@
                             </div>
                         </div>
 
-                        {{-- KONDISI 2: BELUM TERHUBUNG --}}
+                    {{-- KONDISI 2: BELUM TERHUBUNG --}}
                     @else
-                        {{-- STEP 1: TOMBOL GENERATE --}}
+                        {{-- STEP 1: TOMBOL GENERATE & INSTRUKSI --}}
                         <div id="step-start" class="step-container py-3">
                             <div class="icon-box telegram mb-3">
                                 <i class="bi bi-telegram"></i>
                             </div>
-                            <h5 class="fw-bold mb-2">Hubungkan Telegram</h5>
+                            <h5 class="fw-bold mb-2">Hubungkan Telegram Admin</h5>
                             <p class="text-muted small mb-4">
-                                Dapatkan notifikasi sistem secara realtime langsung ke aplikasi Telegram Anda.
+                                Pantau sistem secara realtime melalui notifikasi bot.
                             </p>
+
+                            <div class="instruction-list shadow-sm">
+                                <div class="fw-bold mb-3 border-bottom pb-2" style="font-size: 14px; color: var(--telegram-color);">
+                                    <i class="bi bi-info-circle me-1"></i> Langkah-langkah:
+                                </div>
+                                <div class="instruction-item">
+                                    <div class="instruction-number">1</div>
+                                    <div>
+                                        <a href="https://t.me/diksera_bot" target="_blank" class="fw-bold text-decoration-none" style="color: #1d4ed8;">
+                                            KLIK DISINI UNTUK MASUK DIKSERA BOT
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="instruction-item">
+                                    <div class="instruction-number">2</div>
+                                    <div>Klik tombol <b>Mulai (Start)</b> atau ketik <code>/start</code>.</div>
+                                </div>
+                                <div class="instruction-item">
+                                    <div class="instruction-number">3</div>
+                                    <div>Klik <b>Buat Kode Koneksi</b> di bawah ini.</div>
+                                </div>
+                                <div class="instruction-item">
+                                    <div class="instruction-number">4</div>
+                                    <div>Masukkan kode OTP yang muncul ke chat <b>@diksera_bot</b>.</div>
+                                </div>
+                            </div>
+
                             <button class="btn btn-primary px-4 py-2 w-100 shadow-sm"
                                 style="background-color: var(--telegram-color); border:none; border-radius: 8px;"
                                 onclick="generateCode()">
@@ -138,30 +193,29 @@
                             </button>
                         </div>
 
-                        {{-- STEP 2: TAMPILKAN KODE (Hidden by default) --}}
+                        {{-- STEP 2: TAMPILKAN KODE --}}
                         <div id="step-verify" class="step-container py-3" style="display: none;">
                             <div class="mb-3">
-                                <span
-                                    class="badge bg-warning text-dark bg-opacity-25 text-opacity-75 px-3 py-2 rounded-pill small">
+                                <span class="badge bg-warning text-dark bg-opacity-25 text-opacity-75 px-3 py-2 rounded-pill small">
                                     <i class="bi bi-hourglass-split me-1"></i> Menunggu Verifikasi
                                 </span>
                             </div>
 
-                            <p class="small text-muted mb-0">Kirim kode berikut ke Bot Telegram kami:</p>
+                            <p class="small text-muted mb-0">Segera masukkan kode verifikasi berikut ke:</p>
+                            <a href="https://t.me/diksera_bot" target="_blank" class="fw-bold text-decoration-none d-block mb-3">@diksera_bot</a>
 
                             {{-- Area Kode OTP --}}
                             <div class="otp-box">
                                 <span id="display-code" class="otp-code">...</span>
                                 <div class="mt-2 border-top pt-2">
-                                    <span class="otp-timer">Berlaku sampai: <span id="display-time"
-                                            class="fw-bold text-dark">-</span></span>
+                                    <span class="otp-timer">Berlaku sampai: <span id="display-time" class="fw-bold text-dark">-</span></span>
                                 </div>
                             </div>
 
                             <div class="d-grid gap-2">
-                                <a href="#" id="link-bot" target="_blank" class="btn btn-primary"
+                                <a href="https://t.me/diksera_bot" target="_blank" class="btn btn-primary fw-bold"
                                     style="background-color: var(--telegram-color); border:none; border-radius: 8px;">
-                                    <i class="bi bi-telegram me-2"></i> Buka Bot & Kirim Kode
+                                    <i class="bi bi-telegram me-2"></i> KLIK DISINI UNTUK MASUK DIKSERA BOT
                                 </a>
                                 <button onclick="location.reload()" class="btn btn-light text-muted border"
                                     style="border-radius: 8px;">
@@ -175,14 +229,11 @@
         </div>
     </div>
 
-    {{-- Script JavaScript Tetap Sama --}}
     <script>
         function generateCode() {
-            // Ubah tombol jadi loading
             const btn = document.querySelector('#step-start button');
             const originalText = btn.innerHTML;
-            btn.innerHTML =
-                '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memproses...';
             btn.disabled = true;
 
             fetch("{{ route('admin.telegram.generate') }}", {
@@ -195,17 +246,10 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Animasi transisi smooth (opsional, ganti display basic juga oke)
                         document.getElementById('step-start').style.display = 'none';
                         document.getElementById('step-verify').style.display = 'block';
-
-                        // Isi data
                         document.getElementById('display-code').innerText = data.code;
-
-                        // Format waktu agar lebih cantik (Opsional, tergantung format data.expires_at)
                         document.getElementById('display-time').innerText = data.expires_at;
-
-                        document.getElementById('link-bot').href = "https://t.me/" + data.bot_username;
                     } else {
                         alert('Gagal membuat kode. Silakan coba lagi.');
                         btn.innerHTML = originalText;

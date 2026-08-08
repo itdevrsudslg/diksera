@@ -14,6 +14,7 @@ class CreatePengajuanWawancaraTables extends Migration
             $table->foreignId('penanggung_jawab_id')->constrained('penanggung_jawab_ujians');
             $table->dateTime('waktu_wawancara');
             $table->string('lokasi');
+            $table->text('deskripsi_skill')->nullable();
             $table->string('status')->default('pending');
             $table->text('catatan_admin')->nullable();
             $table->timestamps();

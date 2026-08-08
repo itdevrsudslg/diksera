@@ -58,7 +58,7 @@
         color: #ef4444;
     }
 
-    .form-control {
+    .form-control, .form-select {
         border: 1px solid var(--input-border);
         border-radius: 10px;
         padding: 12px 16px;
@@ -66,9 +66,10 @@
         color: var(--text-dark);
         background-color: #fff;
         transition: all 0.2s ease;
+        width: 100%;
     }
 
-    .form-control:focus {
+    .form-control:focus, .form-select:focus {
         border-color: var(--primary-blue);
         box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
         outline: none;
@@ -132,6 +133,10 @@
         border-radius: 10px;
         font-size: 0.9rem;
     }
+
+    .invalid-feedback {
+        font-size: 0.85rem;
+    }
 </style>
 @endpush
 
@@ -155,7 +160,8 @@
 
                 @if($errors->any())
                     <div class="alert alert-danger py-3 px-4 mb-4">
-                        <ul class="mb-0 ps-3">
+                        <strong>Terdapat kesalahan:</strong>
+                        <ul class="mb-0 ps-3 mt-1">
                             @foreach($errors->all() as $e) <li>{{ $e }}</li> @endforeach
                         </ul>
                     </div>
@@ -165,47 +171,108 @@
                     @csrf
 
                     <div class="row g-4">
-                        {{-- Jenjang & Institusi --}}
+                        {{-- Jenjang --}}
                         <div class="col-md-4">
                             <label class="form-label">Jenjang <span class="required-star">*</span></label>
-                            <input type="text" name="jenjang" class="form-control" value="{{ old('jenjang') }}" placeholder="Contoh: S1 / D3" required>
+                            <select name="jenjang" class="form-select @error('jenjang') is-invalid @enderror" required>
+                                <option value="">- Pilih Jenjang -</option>
+                                <option value="SD" {{ old('jenjang') == 'SD' ? 'selected' : '' }}>SD</option>
+                                <option value="SMP" {{ old('jenjang') == 'SMP' ? 'selected' : '' }}>SMP</option>
+                                <option value="SMA" {{ old('jenjang') == 'SMA' ? 'selected' : '' }}>SMA</option>
+                                <option value="SMK" {{ old('jenjang') == 'SMK' ? 'selected' : '' }}>SMK</option>
+                                <option value="D3" {{ old('jenjang') == 'D3' ? 'selected' : '' }}>D3</option>
+                                <option value="D4" {{ old('jenjang') == 'D4' ? 'selected' : '' }}>D4</option>
+                                <option value="S1" {{ old('jenjang') == 'S1' ? 'selected' : '' }}>S1</option>
+                                <option value="S2" {{ old('jenjang') == 'S2' ? 'selected' : '' }}>S2</option>
+                                <option value="S3" {{ old('jenjang') == 'S3' ? 'selected' : '' }}>S3</option>
+                                <option value="Profesi" {{ old('jenjang') == 'Profesi' ? 'selected' : '' }}>Profesi</option>
+                            </select>
+                            @error('jenjang')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
+
+                        {{-- Nama Institusi --}}
                         <div class="col-md-8">
                             <label class="form-label">Nama Institusi <span class="required-star">*</span></label>
-                            <input type="text" name="nama_institusi" class="form-control" value="{{ old('nama_institusi') }}" placeholder="Nama Universitas / Sekolah" required>
+                            <input type="text" name="nama_institusi" class="form-control @error('nama_institusi') is-invalid @enderror" 
+                                   value="{{ old('nama_institusi') }}" placeholder="Nama Universitas / Sekolah" maxlength="255" required>
+                            @error('nama_institusi')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
-                        {{-- Jurusan & Tempat --}}
+                        {{-- Jurusan --}}
                         <div class="col-md-6">
                             <label class="form-label">Jurusan</label>
-                            <input type="text" name="jurusan" class="form-control" value="{{ old('jurusan') }}" placeholder="Ilmu Keperawatan">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Tempat / Kota</label>
-                            <input type="text" name="tempat" class="form-control" value="{{ old('tempat') }}">
+                            <input type="text" name="jurusan" class="form-control @error('jurusan') is-invalid @enderror" 
+                                   value="{{ old('jurusan') }}" placeholder="Contoh: Ilmu Keperawatan" maxlength="255">
+                            @error('jurusan')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
-                        {{-- Akreditasi & Tahun --}}
+                        {{-- Tempat --}}
+                        <div class="col-md-6">
+                            <label class="form-label">Tempat / Kota</label>
+                            <input type="text" name="tempat" class="form-control @error('tempat') is-invalid @enderror" 
+                                   value="{{ old('tempat') }}" placeholder="Contoh: Jakarta" maxlength="255">
+                            @error('tempat')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+
+                        {{-- Akreditasi --}}
                         <div class="col-md-4">
                             <label class="form-label">Akreditasi</label>
-                            <input type="text" name="akreditasi" class="form-control" value="{{ old('akreditasi') }}" placeholder="A / B / Unggul">
+                            <select name="akreditasi" class="form-select @error('akreditasi') is-invalid @enderror">
+                                <option value="">- Pilih -</option>
+                                <option value="Unggul" {{ old('akreditasi') == 'Unggul' ? 'selected' : '' }}>Unggul</option>
+                                <option value="A" {{ old('akreditasi') == 'A' ? 'selected' : '' }}>A</option>
+                                <option value="B" {{ old('akreditasi') == 'B' ? 'selected' : '' }}>B</option>
+                                <option value="C" {{ old('akreditasi') == 'C' ? 'selected' : '' }}>C</option>
+                                <option value="Baik Sekali" {{ old('akreditasi') == 'Baik Sekali' ? 'selected' : '' }}>Baik Sekali</option>
+                                <option value="Baik" {{ old('akreditasi') == 'Baik' ? 'selected' : '' }}>Baik</option>
+                            </select>
+                            @error('akreditasi')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
+
+                        {{-- Tahun Masuk (Validasi 4 Digit) --}}
                         <div class="col-md-4">
-                            <label class="form-label">Tahun Masuk</label>
-                            <input type="number" name="tahun_masuk" class="form-control" value="{{ old('tahun_masuk') }}" placeholder="YYYY">
+                            <label class="form-label">Thn Masuk</label>
+                            <input type="number" name="tahun_masuk" class="form-control @error('tahun_masuk') is-invalid @enderror" 
+                                   value="{{ old('tahun_masuk') }}" placeholder="YYYY"
+                                   min="1950" max="{{ date('Y') + 5 }}" 
+                                   oninput="if(this.value.length > 4) this.value = this.value.slice(0, 4);">
+                            @error('tahun_masuk')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
+
+                        {{-- Tahun Lulus (Validasi 4 Digit) --}}
                         <div class="col-md-4">
-                            <label class="form-label">Tahun Lulus</label>
-                            <input type="number" name="tahun_lulus" class="form-control" value="{{ old('tahun_lulus') }}" placeholder="YYYY">
+                            <label class="form-label">Thn Lulus</label>
+                            <input type="number" name="tahun_lulus" class="form-control @error('tahun_lulus') is-invalid @enderror" 
+                                   value="{{ old('tahun_lulus') }}" placeholder="YYYY"
+                                   min="1950" max="{{ date('Y') + 10 }}" 
+                                   oninput="if(this.value.length > 4) this.value = this.value.slice(0, 4);">
+                            @error('tahun_lulus')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+
+                        {{-- Nomor Ijazah --}}
+                        <div class="col-md-6">
+                            <label class="form-label">Nomor Ijazah</label>
+                            <input type="text" name="nomor_ijazah" class="form-control @error('nomor_ijazah') is-invalid @enderror" 
+                                   value="{{ old('nomor_ijazah') }}" placeholder="No. Seri Ijazah" maxlength="100">
+                            @error('nomor_ijazah')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+
+                        {{-- Nama Kepala Institusi --}}
+                        <div class="col-md-6">
+                            <label class="form-label">Nama Kepala / Rektor <span class="required-star">*</span></label>
+                            <input type="text" name="nama_kepala_institusi" class="form-control @error('nama_kepala_institusi') is-invalid @enderror" 
+                                   value="{{ old('nama_kepala_institusi') }}" placeholder="Penandatangan ijazah" maxlength="255" required>
+                            @error('nama_kepala_institusi')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
                         {{-- Upload Dokumen --}}
                         <div class="col-12">
                             <label class="form-label">Upload Ijazah (PDF/Image)</label>
-                            <input type="file" name="dokumen" class="form-control">
+                            <input type="file" name="dokumen" class="form-control @error('dokumen') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png">
                             <div class="form-text text-muted mt-2 small">
-                                <i class="bi bi-info-circle me-1"></i> Format PDF atau JPG, Pastikan tulisan terbaca jelas.
+                                <i class="bi bi-info-circle me-1"></i> Format PDF atau JPG/PNG. Pastikan tulisan terbaca jelas. (Maks 2MB)
                             </div>
+                            @error('dokumen')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                     </div>
 

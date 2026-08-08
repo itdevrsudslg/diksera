@@ -10,6 +10,10 @@ class ExamResult extends Model
     use HasFactory;
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'remidi' => 'boolean',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

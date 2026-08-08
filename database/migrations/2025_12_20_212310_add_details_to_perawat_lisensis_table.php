@@ -13,12 +13,7 @@ class AddDetailsToPerawatLisensisTable extends Migration
      */
     public function up()
 {
-    Schema::table('perawat_lisensis', function (Blueprint $table) {
-        $table->string('bidang')->nullable()->after('nomor'); // Sesuaikan posisi
-        $table->string('kfk')->nullable()->after('bidang');
-        $table->date('tgl_mulai')->nullable()->after('kfk');
-        $table->date('tgl_diselenggarakan')->nullable()->after('tgl_mulai');
-    });
+   
 }
 
     /**
@@ -28,8 +23,6 @@ class AddDetailsToPerawatLisensisTable extends Migration
      */
     public function down()
     {
-        Schema::table('perawat_lisensis', function (Blueprint $table) {
-            //
-        });
+        
     }
 }

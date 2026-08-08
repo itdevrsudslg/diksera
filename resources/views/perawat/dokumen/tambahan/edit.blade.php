@@ -187,13 +187,6 @@
 
                         <div class="row g-4">
 
-                            {{-- Jenis (TEXT MANUAL) --}}
-                            <div class="col-md-6">
-                                <label class="form-label">Jenis Dokumen <span class="required-star">*</span></label>
-                                <input type="text" name="jenis" class="form-control"
-                                    value="{{ old('jenis', $data->jenis) }}" required placeholder="Contoh: Sertifikat">
-                            </div>
-
                             {{-- Nama --}}
                             <div class="col-md-6">
                                 <label class="form-label">Nama Dokumen <span class="required-star">*</span></label>
@@ -233,19 +226,27 @@
                                         ACC Admin</label>
                                 </div>
                             </div>
+{{-- SKP & Upload --}}
+                            <div class="col-md-6">
+                                <label class="form-label">Total SKP</label>
+                                <input type="number" name="skp" class="form-control @error('skp') is-invalid @enderror" 
+                                    value="{{ old('skp', 0) }}" min="0" placeholder="Contoh: 5">
+                                <div class="form-text text-muted mt-2 small">
+                                    <i class="bi bi-info-circle me-1"></i> Kosongkan (0) jika tidak memiliki SKP.
+                                </div>
+                            </div>
 
                             {{-- Upload --}}
                             <div class="col-12">
                                 <label class="form-label">Upload Dokumen Baru</label>
                                 <input type="file" name="dokumen" class="form-control pt-2 pb-2">
                                 <div class="form-text">Biarkan kosong jika tidak ingin mengganti dokumen.</div>
-
-                                @if ($data->file_path)
-                                    <a href="{{ Storage::url($data->file_path) }}" target="_blank"
-                                        class="current-file-link">
-                                        <i class="bi bi-file-earmark-pdf"></i> Lihat Dokumen Saat Ini
-                                    </a>
-                                @endif
+@if ($data->file_path)
+    <a href="{{ asset('storage/' . $data->file_path) }}" target="_blank"
+        class="current-file-link">
+        <i class="bi bi-file-earmark-pdf"></i> Lihat Dokumen Saat Ini
+    </a>
+@endif
                             </div>
                         </div>
 

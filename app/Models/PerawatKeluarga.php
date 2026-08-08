@@ -17,6 +17,7 @@ class PerawatKeluarga extends Model
         'nama',
         'tanggal_lahir',
         'pekerjaan',
+        'tempat_lahir', 'jenis_kelamin', 'tanggal_nikah', 'keterangan', 'no_darurat',
     ];
 
     /**

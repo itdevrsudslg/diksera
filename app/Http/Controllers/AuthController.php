@@ -15,24 +15,80 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 class AuthController extends Controller
 {
-    /**
-     * Tampilkan form login.
-     */
+    
+    public function showForgetPasswordForm()
+{
+    return view('auth.passwords.email');
+}
+
+// 2. Kirim Link Reset ke Email
+public function sendResetLinkEmail(Request $request)
+{
+    $request->validate(['email' => 'required|email|exists:users,email']);
+
+    $status = Password::sendResetLink($request->only('email'));
+
+    if ($status === Password::RESET_LINK_SENT) {
+        return back()->with('swal', [
+            'icon' => 'success',
+            'title' => 'Email Terkirim',
+            'text' => 'Kami telah mengirimkan link reset password ke email Anda.',
+        ]);
+    }
+
+    return back()->withErrors(['email' => __($status)]);
+}
+
+// 3. Tampilkan Form Password Baru (dari Link Email)
+public function showResetPasswordForm($token, Request $request)
+{
+    return view('auth.passwords.reset')->with(['token' => $token, 'email' => $request->email]);
+}
+
+// 4. Proses Update Password Baru
+public function resetPassword(Request $request)
+{
+    $request->validate([
+        'token' => 'required',
+        'email' => 'required|email',
+        'password' => 'required|min:6|confirmed',
+    ]);
+
+    $status = Password::reset(
+        $request->only('email', 'password', 'password_confirmation', 'token'),
+        function ($user, $password) {
+            $user->forceFill([
+                'password' => Hash::make($password)
+            ])->setRememberToken(Str::random(60));
+            $user->save();
+        }
+    );
+
+    if ($status === Password::PASSWORD_RESET) {
+        return redirect()->route('login')->with('swal', [
+            'icon' => 'success',
+            'title' => 'Password Diperbarui',
+            'text' => 'Silakan masuk dengan password baru Anda.',
+        ]);
+    }
+
+    return back()->withErrors(['email' => [__($status)]]);
+}
+    // =========================================================================
+    // LOGIN
+    // =========================================================================
     public function showLoginForm()
     {
         if (Auth::check()) {
             return redirect()->route('dashboard');
         }
-
         return view('auth.login');
     }
 
-    /**
-     * Proses login.
-     */
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -49,244 +105,192 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $user = Auth::user();
 
-            // ============================================================
-            // CEK STATUS AKUN
-            // ============================================================
-            // Update logika: Admin DAN Pewawancara bebas dari cek status "pending".
-            // Pengecekan status hanya berlaku untuk user biasa (Perawat).
+            // Cek Status Akun (Kecuali Admin/Pewawancara)
             if (!in_array($user->role, ['admin', 'pewawancara']) && $user->status_akun !== 'active') {
-
                 Auth::logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
 
                 $pesanError = 'Akun Anda sedang menunggu persetujuan Admin. Mohon tunggu verifikasi.';
-
                 if ($user->status_akun === 'rejected') {
                     $pesanError = 'Mohon maaf, pendaftaran akun Anda telah ditolak oleh Admin.';
                 }
 
-                return back()
-                    ->withInput()
-                    ->with('swal', [
-                        'icon'  => 'warning',
-                        'title' => 'Akses Dibatasi',
-                        'text'  => $pesanError,
-                    ]);
+                return back()->withInput()->with('swal', [
+                    'icon'  => 'warning',
+                    'title' => 'Akses Dibatasi',
+                    'text'  => $pesanError,
+                ]);
             }
-            // ============================================================
 
             $request->session()->regenerate();
 
-            // 1. Redirect Admin
             if ($user->role === 'admin') {
-                return redirect()
-                    ->route('dashboard.admin')
-                    ->with('swal', [
-                        'icon'  => 'success',
-                        'title' => 'Berhasil masuk',
-                        'text'  => 'Selamat datang di DIKSERA, Admin ' . $user->name . '.',
-                    ]);
+                return redirect()->route('dashboard.admin')->with('swal', ['icon' => 'success', 'title' => 'Berhasil masuk', 'text' => 'Selamat datang Admin.']);
             }
-
-            // 2. Redirect Pewawancara (INI YANG SEBELUMNYA KURANG)
             if ($user->role === 'pewawancara') {
-                return redirect()
-                    ->route('dashboard.pewawancara')
-                    ->with('swal', [
-                        'icon'  => 'success',
-                        'title' => 'Login Berhasil',
-                        'text'  => 'Selamat bertugas, ' . $user->name . '.',
-                    ]);
+                return redirect()->route('dashboard.pewawancara')->with('swal', ['icon' => 'success', 'title' => 'Login Berhasil', 'text' => 'Selamat bertugas.']);
             }
 
-            // 3. Redirect User Biasa (Perawat)
-            return redirect()
-                ->route('dashboard')
-                ->with('swal', [
-                    'icon'  => 'success',
-                    'title' => 'Berhasil masuk',
-                    'text'  => 'Selamat datang di DIKSERA, ' . $user->name . '.',
-                ]);
+            return redirect()->route('dashboard')->with('swal', [
+                'icon'  => 'success',
+                'title' => 'Berhasil masuk',
+                'text'  => 'Selamat datang di DIKSERA, ' . $user->name . '.',
+            ]);
         }
 
-        // Jika password/email salah
-        return back()
-            ->withErrors([
-                'email' => 'Email atau password yang Anda masukkan tidak sesuai.',
-            ])
-            ->withInput()
-            ->with('swal', [
-                'icon'  => 'error',
-                'title' => 'Gagal masuk',
-                'text'  => 'Email atau password tidak cocok. Silakan cek kembali.',
-            ]);
+        return back()->withErrors(['email' => 'Email atau password tidak sesuai.'])->withInput()->with('swal', [
+            'icon'  => 'error',
+            'title' => 'Gagal masuk',
+            'text'  => 'Email atau password tidak cocok.',
+        ]);
     }
 
-    /**
-     * Logout user.
-     */
     public function logout(Request $request)
     {
         Auth::logout();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()
-            ->route('landing')
-            ->with('swal', [
-                'icon'  => 'success',
-                'title' => 'Berhasil keluar',
-                'text'  => 'Anda telah keluar dari DIKSERA.',
-            ]);
+        return redirect()->route('landing')->with('swal', [
+            'icon'  => 'success',
+            'title' => 'Berhasil keluar',
+            'text'  => 'Anda telah keluar dari DIKSERA.',
+        ]);
     }
 
-    /**
-     * Tampilkan form registrasi perawat (stepper DRH).
-     */
+    // =========================================================================
+    // REGISTRASI PERAWAT
+    // =========================================================================
     public function showPerawatRegisterForm()
     {
         if (Auth::check()) {
             return redirect()->route('dashboard');
         }
-
         return view('auth.register-perawat');
     }
 
-    /**
-     * Proses registrasi perawat + simpan DRH.
-     */
     public function registerPerawat(Request $request)
     {
-        // VALIDASI
+        // 1. LOGIKA VALIDASI DINAMIS (NIP vs NIRP)
+        $status   = $request->status_kepegawaian;
+        $isNonAsn = str_contains($status, 'NON ASN'); // True jika ada kata "NON ASN"
+        $isAsn    = str_contains($status, 'ASN') && !$isNonAsn; // True jika "ASN" tapi bukan "NON"
+
         $request->validate([
-            // Step 1: akun + identitas utama
-            'name'             => 'required|string|max:150',
-            'email'            => 'required|email|unique:users,email',
-            'password'         => 'required|string|min:6|confirmed',
+            // --- Step 1: Akun & Identitas ---
+            'name'                => 'required|string|max:150',
+            'email'               => 'required|email|unique:users,email',
+            'password'            => 'required|string|min:6|confirmed',
+            'nik'                 => 'required|string|max:30',
+            
+            // LOGIKA BARU DI SINI
+            'profesi'             => 'required|in:Perawat,Bidan',
+            'status_kepegawaian'  => 'required|string',
+            'jabatan'             => 'required|string|max:150', // Jabatan wajib diisi (dropdown otomatis)
 
-            'nik'              => 'nullable|string|max:30',
-            'nip'              => 'nullable|string|max:50',
-            'nirp'             => 'nullable|string|max:50',
-            'tempat_lahir'     => 'nullable|string|max:100',
-            'tanggal_lahir'    => 'nullable|date',
-            'jenis_kelamin'    => 'nullable|string|max:20',
-            'agama'            => 'nullable|string|max:30',
-            'aliran_kepercayaan' => 'nullable|string|max:100',
-            'status_perkawinan' => 'nullable|string|max:50',
-            'jabatan'          => 'nullable|string|max:100',
-            'pangkat'          => 'nullable|string|max:50',
-            'golongan'         => 'nullable|string|max:20',
-            'hobby'            => 'nullable|string|max:150',
+            // NIP Wajib jika ASN, NIRP Wajib jika NON ASN
+            'nip'                 => $isAsn ? 'required|string|max:50' : 'nullable|string|max:50',
+            'nirp'                => $isNonAsn ? 'required|string|max:50' : 'nullable|string|max:50',
 
-            // Step 2: alamat + badan + foto
-            'no_hp'            => 'required|string|max:30',
-            'alamat_jalan'     => 'required|string|max:150',
-            'alamat_kelurahan' => 'required|string|max:100',
-            'alamat_kecamatan' => 'required|string|max:100',
-            'alamat_kabkota'   => 'required|string|max:100',
-            'alamat_provinsi'  => 'required|string|max:100',
+            'tempat_lahir'        => 'nullable|string|max:100',
+            'tanggal_lahir'       => 'nullable|date',
+            'jenis_kelamin'       => 'nullable|string|max:20',
+            'agama'               => 'nullable|string|max:30',
+            'status_perkawinan'   => 'nullable|string|max:50',
+            'pangkat'             => 'nullable|string|max:50',
+            'golongan'            => 'nullable|string|max:20',
+            'hobby'               => 'nullable|string|max:150',
 
-            'golongan_darah'   => 'nullable|string|max:5',
-            'tinggi_badan'     => 'nullable|integer',
-            'berat_badan'      => 'nullable|integer',
-            'rambut'           => 'nullable|string|max:100',
-            'bentuk_muka'      => 'nullable|string|max:100',
-            'warna_kulit'      => 'nullable|string|max:100',
-            'ciri_khas'        => 'nullable|string|max:150',
-            'cacat_tubuh'      => 'nullable|string|max:150',
-            'foto_3x4'         => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            // --- Step 2: Kontak & Fisik ---
+            'no_hp'               => 'required|string|max:30',
+            'alamat_jalan'        => 'required|string|max:150',
+            'alamat_kelurahan'    => 'required|string|max:100',
+            'alamat_kecamatan'    => 'required|string|max:100',
+            'alamat_kabkota'      => 'required|string|max:100',
+            'alamat_provinsi'     => 'required|string|max:100',
+            'golongan_darah'      => 'nullable|string|max:100',
+            'tinggi_badan'        => 'nullable|integer',
+            'berat_badan'         => 'nullable|integer',
+            'rambut'              => 'nullable|string|max:100',
+            'bentuk_muka'         => 'nullable|string|max:100',
+            'warna_kulit'         => 'nullable|string|max:100',
+            'ciri_khas'           => 'nullable|string|max:150',
+            'cacat_tubuh'         => 'nullable|string|max:150',
+            'foto_3x4'            => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
 
-            // Arrays Pendidikan
-            'pendidikan_jenjang.*'     => 'nullable|string|max:50',
-            'pendidikan_nama.*'        => 'nullable|string|max:150',
-            'pendidikan_akreditasi.*'  => 'nullable|string|max:20',
-            'pendidikan_tempat.*'      => 'nullable|string|max:100',
-            'pendidikan_file.*'        => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+            // --- Step 3 & 4: Array Data ---
+            'pendidikan_jenjang.*'=> 'nullable|string|max:50',
+            'pendidikan_nama.*'   => 'nullable|string|max:150',
+            'pendidikan_file.*'   => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
 
-            // Arrays Pelatihan / Kursus
-            'pelatihan_nama.*'          => 'nullable|string|max:150',
-            'pelatihan_durasi.*'        => 'nullable|string|max:50',
-            'pelatihan_mulai.*'         => 'nullable|date',
-            'pelatihan_selesai.*'       => 'nullable|date',
-            'pelatihan_file.*'          => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+            'pelatihan_nama.*'    => 'nullable|string|max:150',
+            'pelatihan_file.*'    => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
 
-            // Arrays Pekerjaan
-            'pekerjaan_instansi.*' => 'nullable|string|max:150',
-            'pekerjaan_jabatan.*'  => 'nullable|string|max:150',
-            'pekerjaan_mulai.*'    => 'nullable|date',
-            'pekerjaan_selesai.*'  => 'nullable|date',
-            'pekerjaan_file.*'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+            'pekerjaan_instansi.*'=> 'nullable|string|max:150',
+            'pekerjaan_file.*'    => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
 
-            // Arrays Keluarga
-            'keluarga_hubungan.*'  => 'nullable|string|max:50',
-            'keluarga_nama.*'      => 'nullable|string|max:150',
-            'keluarga_ttl.*'       => 'nullable|string|max:150',
-            'keluarga_pekerjaan.*' => 'nullable|string|max:150',
+            'keluarga_nama.*'     => 'nullable|string|max:150',
 
-            // Arrays Organisasi
-            'organisasi_nama.*'    => 'nullable|string|max:150',
-            'organisasi_jabatan.*' => 'nullable|string|max:150',
-            'organisasi_mulai.*'   => 'nullable|date',
-            'organisasi_selesai.*' => 'nullable|date',
-            'organisasi_file.*'    => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+            'organisasi_nama.*'   => 'nullable|string|max:150',
+            'organisasi_file.*'   => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
 
-            // Arrays Tanda Jasa
-            'tandajasa_nama.*'     => 'nullable|string|max:150',
-            'tandajasa_instansi.*' => 'nullable|string|max:150',
-            'tandajasa_tahun.*'    => 'nullable|string|max:4',
-            'tandajasa_file.*'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+            'tandajasa_nama.*'    => 'nullable|string|max:150',
+            'tandajasa_file.*'    => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
         ]);
 
         DB::beginTransaction();
 
         try {
-            // 1. Buat user dengan role perawat
-            // Pastikan di database column status_akun defaultnya 'pending'
+            // 2. BUAT USER
             $user = User::create([
                 'name'     => $request->name,
                 'email'    => $request->email,
                 'password' => Hash::make($request->password),
-                'role'     => 'perawat',
-                // 'status_akun' => 'pending' // ini otomatis jika default di migration sudah diset
+                'role'     => 'perawat', 
+                // status_akun default 'pending' dari database migration
             ]);
 
-            // 2. Simpan foto 3x4
+            // 3. HANDLE FOTO UTAMA
             $fotoPath = null;
             if ($request->hasFile('foto_3x4')) {
                 $fotoPath = $request->file('foto_3x4')->store('perawat/foto', 'public');
             }
 
-            // 3. Gabungkan alamat jadi satu string
+            // 4. GABUNG ALAMAT
             $alamatGabungan = trim(
                 ($request->alamat_jalan ?? '') . ', Kel. ' . ($request->alamat_kelurahan ?? '') .
-                    ', Kec. ' . ($request->alamat_kecamatan ?? '') . ', ' . ($request->alamat_kabkota ?? '') .
-                    ', ' . ($request->alamat_provinsi ?? '')
+                ', Kec. ' . ($request->alamat_kecamatan ?? '') . ', ' . ($request->alamat_kabkota ?? '') .
+                ', ' . ($request->alamat_provinsi ?? '')
             );
 
-            // 4. Profile perawat
+            // 5. BUAT PROFILE (UPDATE LOGIKA)
             PerawatProfile::create([
                 'user_id'            => $user->id,
                 'nik'                => $request->nik,
-                'nip'                => $request->nip,
-                'nirp'               => $request->nirp,
+                
+                // DATA BARU
+                'profesi'            => $request->profesi,
+                'status_kepegawaian' => $request->status_kepegawaian,
+                // Kondisional: Jika ASN simpan NIP (NIRP null), Jika Non ASN simpan NIRP (NIP null)
+                'nip'                => $isAsn ? $request->nip : null,
+                'nirp'               => $isNonAsn ? $request->nirp : null,
+                
                 'nama_lengkap'       => $request->name,
+                'jabatan'            => $request->jabatan,
+                'pangkat'            => $request->pangkat,
+                'golongan'           => $request->golongan,
+                
                 'tempat_lahir'       => $request->tempat_lahir,
                 'tanggal_lahir'      => $request->tanggal_lahir,
                 'jenis_kelamin'      => $request->jenis_kelamin,
                 'agama'              => $request->agama,
-                'aliran_kepercayaan' => $request->aliran_kepercayaan,
                 'status_perkawinan'  => $request->status_perkawinan,
-
-                'jabatan'            => $request->jabatan,
-                'pangkat'            => $request->pangkat,
-                'golongan'           => $request->golongan,
-
+                
                 'alamat'             => $alamatGabungan ?: null,
                 'kota'               => $request->alamat_kabkota,
                 'no_hp'              => $request->no_hp,
-
+                
                 'golongan_darah'     => $request->golongan_darah,
                 'tinggi_badan'       => $request->tinggi_badan,
                 'berat_badan'        => $request->berat_badan,
@@ -296,60 +300,54 @@ class AuthController extends Controller
                 'ciri_khas'          => $request->ciri_khas,
                 'cacat_tubuh'        => $request->cacat_tubuh,
                 'hobby'              => $request->hobby,
-
                 'foto_3x4'           => $fotoPath,
+
+                'type_perawat'       => $request->type_perawat ?? null,
             ]);
 
-            // ==== HANDLE FILE MULTI ====
-            $pendFiles  = $request->file('pendidikan_file', []);
-            $pelatFiles = $request->file('pelatihan_file', []);
-            $pekFiles   = $request->file('pekerjaan_file', []);
-            $orgFiles   = $request->file('organisasi_file', []);
-            $tjFiles    = $request->file('tandajasa_file', []);
-
-            /**
-             * Pendidikan
-             */
-            $jenjangs    = $request->pendidikan_jenjang ?? [];
-            $p_nama      = $request->pendidikan_nama ?? [];
-            $p_akre      = $request->pendidikan_akreditasi ?? [];
-            $p_tempat    = $request->pendidikan_tempat ?? [];
+            // =========================================================
+            // 6. SIMPAN DATA RELASI (Verbose Mode - Lengkap & Aman)
+            // =========================================================
+            
+            // --- A. PENDIDIKAN ---
+            $pendFiles = $request->file('pendidikan_file', []);
+            $jenjangs  = $request->pendidikan_jenjang ?? [];
+            $p_nama    = $request->pendidikan_nama ?? [];
+            $p_akre    = $request->pendidikan_akreditasi ?? [];
+            $p_tempat  = $request->pendidikan_tempat ?? [];
 
             foreach ($jenjangs as $i => $jenjang) {
-                $nama    = $p_nama[$i]   ?? null;
-                $akre    = $p_akre[$i]   ?? null;
-                $tempat  = $p_tempat[$i] ?? null;
+                $nama   = $p_nama[$i] ?? null;
+                $akre   = $p_akre[$i] ?? null;
+                $tempat = $p_tempat[$i] ?? null;
 
                 $filePath = null;
                 if (is_array($pendFiles) && array_key_exists($i, $pendFiles) && $pendFiles[$i]) {
                     $filePath = $pendFiles[$i]->store('perawat/pendidikan', 'public');
                 }
 
-                if (!$jenjang && !$nama && !$akre && !$tempat && !$filePath) {
-                    continue;
-                }
+                if (!$jenjang && !$nama && !$akre && !$tempat && !$filePath) continue;
 
                 PerawatPendidikan::create([
-                    'user_id'          => $user->id,
-                    'jenjang'          => $jenjang,
-                    'nama_institusi'   => $nama,
-                    'akreditasi'       => $akre,
-                    'tempat'           => $tempat,
-                    'dokumen_path'     => $filePath,
+                    'user_id'        => $user->id,
+                    'jenjang'        => $jenjang,
+                    'nama_institusi' => $nama,
+                    'akreditasi'     => $akre,
+                    'tempat'         => $tempat,
+                    'dokumen_path'   => $filePath,
                 ]);
             }
 
-            /**
-             * Pelatihan / Kursus
-             */
+            // --- B. PELATIHAN ---
+            $pelatFiles = $request->file('pelatihan_file', []);
             $pel_nama   = $request->pelatihan_nama ?? [];
             $pel_durasi = $request->pelatihan_durasi ?? [];
             $pel_mulai  = $request->pelatihan_mulai ?? [];
-            $pel_selesai = $request->pelatihan_selesai ?? [];
+            $pel_selesai= $request->pelatihan_selesai ?? [];
 
             foreach ($pel_nama as $i => $namaPel) {
-                $dur   = $pel_durasi[$i]  ?? null;
-                $mulai = $pel_mulai[$i]   ?? null;
+                $dur   = $pel_durasi[$i] ?? null;
+                $mulai = $pel_mulai[$i] ?? null;
                 $sel   = $pel_selesai[$i] ?? null;
 
                 $filePath = null;
@@ -357,23 +355,20 @@ class AuthController extends Controller
                     $filePath = $pelatFiles[$i]->store('perawat/pelatihan', 'public');
                 }
 
-                if (!$namaPel && !$dur && !$mulai && !$sel && !$filePath) {
-                    continue;
-                }
+                if (!$namaPel && !$dur && !$mulai && !$sel && !$filePath) continue;
 
                 PerawatPelatihan::create([
-                    'user_id'        => $user->id,
-                    'nama_pelatihan' => $namaPel,
-                    'durasi'         => $dur,
-                    'tanggal_mulai'  => $mulai,
+                    'user_id'         => $user->id,
+                    'nama_pelatihan'  => $namaPel,
+                    'durasi'          => $dur,
+                    'tanggal_mulai'   => $mulai,
                     'tanggal_selesai' => $sel,
-                    'dokumen_path'   => $filePath,
+                    'dokumen_path'    => $filePath,
                 ]);
             }
 
-            /**
-             * Riwayat Pekerjaan
-             */
+            // --- C. PEKERJAAN ---
+            $pekFiles = $request->file('pekerjaan_file', []);
             $instansi = $request->pekerjaan_instansi ?? [];
             $jabatan  = $request->pekerjaan_jabatan ?? [];
             $mulai    = $request->pekerjaan_mulai ?? [];
@@ -381,7 +376,7 @@ class AuthController extends Controller
 
             foreach ($instansi as $i => $ins) {
                 $jab = $jabatan[$i] ?? null;
-                $m   = $mulai[$i]   ?? null;
+                $m   = $mulai[$i] ?? null;
                 $s   = $selesai[$i] ?? null;
 
                 $filePath = null;
@@ -389,23 +384,19 @@ class AuthController extends Controller
                     $filePath = $pekFiles[$i]->store('perawat/pekerjaan', 'public');
                 }
 
-                if (!$ins && !$jab && !$m && !$s && !$filePath) {
-                    continue;
-                }
+                if (!$ins && !$jab && !$m && !$s && !$filePath) continue;
 
                 PerawatPekerjaan::create([
-                    'user_id'       => $user->id,
-                    'nama_instansi' => $ins,
-                    'jabatan'       => $jab,
-                    'tanggal_mulai' => $m,
+                    'user_id'         => $user->id,
+                    'nama_instansi'   => $ins,
+                    'jabatan'         => $jab,
+                    'tanggal_mulai'   => $m,
                     'tanggal_selesai' => $s,
-                    'dokumen_path'  => $filePath,
+                    'dokumen_path'    => $filePath,
                 ]);
             }
 
-            /**
-             * Riwayat Keluarga
-             */
+            // --- D. KELUARGA ---
             $kHub  = $request->keluarga_hubungan ?? [];
             $kNama = $request->keluarga_nama ?? [];
             $kTTL  = $request->keluarga_ttl ?? [];
@@ -416,30 +407,27 @@ class AuthController extends Controller
                 $ttl = $kTTL[$i] ?? null;
                 $pek = $kPek[$i] ?? null;
 
-                if (!$hub && !$namaKel && !$ttl && !$pek) {
-                    continue;
-                }
+                if (!$hub && !$namaKel && !$ttl && !$pek) continue;
 
                 PerawatKeluarga::create([
-                    'user_id'  => $user->id,
-                    'hubungan' => $hub,
-                    'nama'     => $namaKel,
-                    'ttl'      => $ttl,
+                    'user_id'   => $user->id,
+                    'hubungan'  => $hub,
+                    'nama'      => $namaKel,
+                    'ttl'       => $ttl,
                     'pekerjaan' => $pek,
                 ]);
             }
 
-            /**
-             * Organisasi
-             */
+            // --- E. ORGANISASI ---
+            $orgFiles = $request->file('organisasi_file', []);
             $oNama    = $request->organisasi_nama ?? [];
             $oJab     = $request->organisasi_jabatan ?? [];
             $oMulai   = $request->organisasi_mulai ?? [];
             $oSelesai = $request->organisasi_selesai ?? [];
 
             foreach ($oNama as $i => $namaOrg) {
-                $jab = $oJab[$i]     ?? null;
-                $m   = $oMulai[$i]   ?? null;
+                $jab = $oJab[$i] ?? null;
+                $m   = $oMulai[$i] ?? null;
                 $s   = $oSelesai[$i] ?? null;
 
                 $filePath = null;
@@ -447,9 +435,7 @@ class AuthController extends Controller
                     $filePath = $orgFiles[$i]->store('perawat/organisasi', 'public');
                 }
 
-                if (!$namaOrg && !$jab && !$m && !$s && !$filePath) {
-                    continue;
-                }
+                if (!$namaOrg && !$jab && !$m && !$s && !$filePath) continue;
 
                 PerawatOrganisasi::create([
                     'user_id'         => $user->id,
@@ -461,25 +447,22 @@ class AuthController extends Controller
                 ]);
             }
 
-            /**
-             * Tanda Jasa
-             */
-            $tNama = $request->tandajasa_nama ?? [];
-            $tIns  = $request->tandajasa_instansi ?? [];
-            $tThn  = $request->tandajasa_tahun ?? [];
+            // --- F. TANDA JASA ---
+            $tjFiles = $request->file('tandajasa_file', []);
+            $tNama   = $request->tandajasa_nama ?? [];
+            $tIns    = $request->tandajasa_instansi ?? [];
+            $tThn    = $request->tandajasa_tahun ?? [];
 
             foreach ($tNama as $i => $namaJasa) {
-                $ins  = $tIns[$i]  ?? null;
-                $thn  = $tThn[$i]  ?? null;
+                $ins = $tIns[$i] ?? null;
+                $thn = $tThn[$i] ?? null;
 
                 $filePath = null;
                 if (is_array($tjFiles) && array_key_exists($i, $tjFiles) && $tjFiles[$i]) {
                     $filePath = $tjFiles[$i]->store('perawat/tandajasa', 'public');
                 }
 
-                if (!$namaJasa && !$ins && !$thn && !$filePath) {
-                    continue;
-                }
+                if (!$namaJasa && !$ins && !$thn && !$filePath) continue;
 
                 PerawatTandaJasa::create([
                     'user_id'          => $user->id,
@@ -492,39 +475,28 @@ class AuthController extends Controller
 
             DB::commit();
 
-            // PENTING: Jangan Auth::login($user) di sini!
-            // Agar user harus login manual dan melewati pengecekan status di fungsi login().
+            return redirect()->route('login')->with('swal', [
+                'icon'  => 'success',
+                'title' => 'Registrasi Berhasil',
+                'text'  => 'Data Anda telah tersimpan. Mohon tunggu verifikasi Admin.',
+            ]);
 
-            return redirect()
-                ->route('login') // Arahkan ke login, bukan dashboard
-                ->with('swal', [
-                    'icon'  => 'success',
-                    'title' => 'Registrasi Berhasil',
-                    'text'  => 'Data Anda telah tersimpan. Mohon tunggu verifikasi Admin sebelum bisa masuk.',
-                ]);
         } catch (\Throwable $th) {
             DB::rollBack();
 
             if (config('app.debug')) {
-                return back()
-                    ->withInput()
-                    ->with('swal', [
-                        'icon'  => 'error',
-                        'title' => 'Terjadi kesalahan sistem',
-                        'text'  => $th->getMessage(),
-                    ]);
+                return back()->withInput()->with('swal', [
+                    'icon'  => 'error',
+                    'title' => 'Terjadi kesalahan sistem',
+                    'text'  => $th->getMessage(),
+                ]);
             }
 
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'system' => 'Terjadi kesalahan sistem. Silakan coba lagi atau hubungi admin.',
-                ])
-                ->with('swal', [
-                    'icon'  => 'error',
-                    'title' => 'Terjadi kesalahan',
-                    'text'  => 'Silakan cek kembali isian Anda atau coba beberapa saat lagi.',
-                ]);
+            return back()->withInput()->with('swal', [
+                'icon'  => 'error',
+                'title' => 'Terjadi kesalahan',
+                'text'  => 'Silakan cek kembali isian Anda atau coba beberapa saat lagi.',
+            ]);
         }
     }
 }

@@ -93,12 +93,19 @@
         <input type="checkbox" class="form-check-input" id="remember" name="remember">
         <label for="remember" class="form-check-label small text-muted">Ingat saya</label>
     </div>
+    
+    
 
     <div class="d-grid mt-3">
         <button type="submit" class="btn btn-solid-blue">
             Masuk
         </button>
     </div>
+    
+    {{-- Di bawah input password --}}
+<div class="text-end mt-1">
+    <a href="{{ route('forget.password.get') }}" class="small text-muted text-decoration-none">Lupa password?</a>
+</div>
 </form>
 
 <div class="bottom-link">

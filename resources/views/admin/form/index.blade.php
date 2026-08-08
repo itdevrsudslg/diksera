@@ -210,12 +210,16 @@
                                             <i class="bi bi-people"></i> {{ ucfirst($form->target_peserta) }}
                                         </span>
                                     </div>
-                                    <div class="text-muted" style="font-size: 11px;">
-                                        <div><i class="bi bi-calendar-event me-1"></i>
-                                            {{ $form->waktu_mulai->format('d M/y H:i') }}</div>
-                                        <div><i class="bi bi-arrow-right me-1"></i>
-                                            {{ $form->waktu_selesai->format('d M/y H:i') }}</div>
-                                    </div>
+                                  <div class="text-muted" style="font-size: 11px;">
+    <div><i class="bi bi-calendar-event me-1"></i>
+        {{ $form->waktu_mulai->format('d M/y H:i') }}</div>
+    <div><i class="bi bi-arrow-right me-1"></i>
+        {{ $form->waktu_selesai->format('d M/y H:i') }}</div>
+    {{-- TAMBAHAN DURASI DI SINI --}}
+    <div class="mt-1 text-primary fw-bold">
+        <i class="bi bi-stopwatch me-1"></i> Durasi: {{ $form->durasi ?? 90 }} Menit
+    </div>
+</div>
                                 </div>
                             </td>
                             <td>

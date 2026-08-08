@@ -17,36 +17,44 @@ use App\Models\PerawatSip;
 use App\Models\PerawatStr;
 use App\Models\PerawatDataTambahan;
 use App\Models\PerawatLisensi;
-
+use App\Services\PkRecommendationService;
 class AdminPerawatController extends Controller
 {
     // LIST SEMUA PERAWAT
-    public function index(Request $request)
-    {
-        $search = $request->input('search');
+    // public function index(Request $request)
+    // {
+    //      $search = $request->input('search');
 
-        $perawat = User::where('role', 'perawat')
-            ->with(['profile', 'strs', 'sips', 'lisensis', 'dataTambahans'])
-            ->when($search, function ($q) use ($search) {
-                $q->where('name', 'like', "%$search%")
-                    ->orWhereHas('profile', function ($q) use ($search) {
-                        $q->where('nik', 'like', "%$search%")
-                            ->orWhere('no_hp', 'like', "%$search%")
-                            ->orWhere('alamat', 'like', "%$search%");
-                    });
-            })
-            ->orderBy('name')
-            ->paginate(10)
-            ->withQueryString();
+    //      $perawat = User::where('role', 'perawat')
+    //          ->with(['profile', 'strs', 'sips', 'lisensis', 'dataTambahans'])
+    //          ->when($search, function ($q) use ($search) {
+    //              $q->where('name', 'like', "%$search%")
+    //                  ->orWhereHas('profile', function ($q) use ($search) {
+    //                      $q->where('nik', 'like', "%$search%")
+    //                          ->orWhere('no_hp', 'like', "%$search%")
+    //                          ->orWhere('alamat', 'like', "%$search%");
+    //                  });
+    //          })
+    //          ->orderBy('name')
+    //          ->paginate(10)
+    //          ->withQueryString();
+            
+            
+    //      $allKfk = PerawatProfile::whereNotNull('type_perawat')
+    //      ->pluck('type_perawat')
+    //      ->flatten()
+    //      ->unique()
+    //      ->sort()
+    //      ->values();
 
-        // Hitung jumlah dokumen expired untuk setiap perawat
-        $now = now();
-        foreach ($perawat as $p) {
-            $p->expired_docs_count = self::countExpiredDocuments($p, $now);
-        }
+    //      // Hitung jumlah dokumen expired untuk setiap perawat
+    //      $now = now();
+    //      foreach ($perawat as $p) {
+    //          $p->expired_docs_count = self::countExpiredDocuments($p, $now);
+    //      }
 
-        return view('admin.perawat.index', compact('perawat', 'search'));
-    }
+    //    return view('admin.perawat.index', compact('perawat', 'search', 'allKfk'));
+    // }
 
     /**
      * Hitung jumlah dokumen expired untuk 1 user
@@ -72,13 +80,88 @@ class AdminPerawatController extends Controller
         return $count;
     }
 
+// ==========================================
+    // FUNGSI UPDATE SERTIFIKAT DARI HALAMAN EDIT
+    // ==========================================
+    public function updateStr(Request $request, $id)
+    {
+        $str = \App\Models\PerawatStr::findOrFail($id);
+        $str->nomor = $request->nomor;
+        $str->tgl_terbit = $request->tgl_terbit;
+        $str->tgl_expired = $request->tgl_expired;
+        
+        if ($request->hasFile('dokumen')) {
+            if ($str->file_path && \Storage::disk('public')->exists($str->file_path)) {
+                \Storage::disk('public')->delete($str->file_path);
+            }
+            $str->file_path = $request->file('dokumen')->store('dokumen_str', 'public');
+        }
+        $str->save();
+        return back()->with('success', 'Data STR berhasil diupdate.');
+    }
 
+    public function updateSip(Request $request, $id)
+    {
+        $sip = \App\Models\PerawatSip::findOrFail($id);
+        $sip->nomor = $request->nomor;
+        $sip->tgl_terbit = $request->tgl_terbit;
+        $sip->tgl_expired = $request->tgl_expired;
+        
+        if ($request->hasFile('dokumen')) {
+            if ($sip->file_path && \Storage::disk('public')->exists($sip->file_path)) {
+                \Storage::disk('public')->delete($sip->file_path);
+            }
+            $sip->file_path = $request->file('dokumen')->store('dokumen_sip', 'public');
+        }
+        $sip->save();
+        return back()->with('success', 'Data SIP berhasil diupdate.');
+    }
+
+    public function updateLisensi(Request $request, $id)
+    {
+        $lisensi = \App\Models\PerawatLisensi::findOrFail($id);
+        $lisensi->nomor = $request->nomor;
+        $lisensi->nama = $request->nama;
+        $lisensi->lembaga = $request->lembaga;
+        $lisensi->tgl_terbit = $request->tgl_terbit;
+        $lisensi->tgl_expired = $request->tgl_expired;
+        
+        if ($request->hasFile('dokumen')) {
+            if ($lisensi->file_path && \Storage::disk('public')->exists($lisensi->file_path)) {
+                \Storage::disk('public')->delete($lisensi->file_path);
+            }
+            $lisensi->file_path = $request->file('dokumen')->store('dokumen_lisensi', 'public');
+        }
+        $lisensi->save();
+        return back()->with('success', 'Data Lisensi berhasil diupdate.');
+    }
+
+    public function updateTambahan(Request $request, $id)
+    {
+        $tambahan = \App\Models\PerawatDataTambahan::findOrFail($id);
+        $tambahan->nomor = $request->nomor;
+        $tambahan->nama = $request->nama;
+        $tambahan->lembaga = $request->lembaga;
+        $tambahan->tgl_terbit = $request->tgl_terbit;
+        $tambahan->tgl_expired = $request->tgl_expired;
+        $tambahan->skp = $request->skp;
+        $tambahan->is_lifetime = $request->has('is_lifetime') ? 1 : 0;
+        
+        if ($request->hasFile('dokumen')) {
+            if ($tambahan->file_path && \Storage::disk('public')->exists($tambahan->file_path)) {
+                \Storage::disk('public')->delete($tambahan->file_path);
+            }
+            $tambahan->file_path = $request->file('dokumen')->store('dokumen_tambahan', 'public');
+        }
+        $tambahan->save();
+        return back()->with('success', 'Data Tambahan berhasil diupdate.');
+    }
     // DETAIL DRH PER PERAWAT
     public function show($id)
     {
         $user = User::where('role', 'perawat')->findOrFail($id);
 
-        $profile   = PerawatProfile::where('user_id', $user->id)->first();
+        $profile    = PerawatProfile::where('user_id', $user->id)->first();
         $pendidikan = PerawatPendidikan::where('user_id', $user->id)->get();
         $pelatihan  = PerawatPelatihan::where('user_id', $user->id)->get();
         $pekerjaan  = PerawatPekerjaan::where('user_id', $user->id)->get();
@@ -144,6 +227,355 @@ class AdminPerawatController extends Controller
             'lisensi'
         ));
     }
+// public function index(Request $request, PkRecommendationService $pkService) // <-- Inject Service
+//     {
+//         $search = $request->input('search');
+
+//         $perawat = User::where('role', 'perawat')
+//             ->with(['profile', 'strs', 'sips', 'lisensis', 'dataTambahans', 'perawatPekerjaans']) // Pastikan perawatPekerjaans ikut di-load
+//             ->when($search, function ($q) use ($search) {
+//                 $q->where('name', 'like', "%$search%")
+//                     ->orWhereHas('profile', function ($q) use ($search) {
+//                         $q->where('nik', 'like', "%$search%")
+//                             ->orWhere('no_hp', 'like', "%$search%");
+//                     });
+//             })
+//             ->orderBy('name')
+//             ->paginate(10)
+//             ->withQueryString();
+
+//         $allKfk = PerawatProfile::whereNotNull('type_perawat')
+//             ->get()
+//             ->pluck('type_perawat')
+//             ->flatten()
+//             ->filter()
+//             ->unique()
+//             ->sort()
+//             ->values();
+
+//         $now = now();
+//         foreach ($perawat as $p) {
+//             $p->expired_docs_count = self::countExpiredDocuments($p, $now);
+//             // SISIPKAN HASIL REKOMENDASI PK KE SETIAP USER
+//             $p->rekomendasiPk = $pkService->getRecommendation($p->id);
+//         }
+
+//         return view('admin.perawat.index', compact('perawat', 'search', 'allKfk'));
+//     }
+
+    // 2. TAMBAHKAN FUNGSI EXPORT BARU
+    public function exportDataByPkKfk(Request $request)
+    {
+        $reqPk = $request->input('filter_pk');
+        $reqKfk = $request->input('filter_kfk');
+
+        $query = User::where('role', 'perawat')->with(['profile', 'perawatPekerjaans']);
+
+        if ($reqPk || $reqKfk) {
+            $query->whereHas('profile', function($q) use ($reqPk, $reqKfk) {
+                if ($reqPk && $reqKfk) {
+                     $q->where('type_perawat', 'LIKE', "%{$reqPk}%")
+                       ->where('type_perawat', 'LIKE', "%{$reqKfk}%");
+                } elseif ($reqPk) {
+                     $q->where('type_perawat', 'LIKE', "%{$reqPk}%");
+                } elseif ($reqKfk) {
+                     $q->where('type_perawat', 'LIKE', "%{$reqKfk}%");
+                }
+            });
+        }
+
+        $data = $query->get();
+
+        $namaFile = "Data_Perawat_" . ($reqPk ? str_replace(' ', '', $reqPk) : 'ALLPK') . "_" . ($reqKfk ? str_replace(' ', '', $reqKfk) : 'ALLKFK') . "_" . date('Ymd') . ".xls";
+
+        header("Content-Type: application/vnd.ms-excel");
+        header("Content-Disposition: attachment; filename=$namaFile");
+        header("Pragma: no-cache");
+        header("Expires: 0");
+
+        echo '<table border="1">';
+        echo '<tr>
+                <th style="background-color: #D3D3D3;">NO</th>
+                <th style="background-color: #D3D3D3;">NAMA LENGKAP</th>
+                <th style="background-color: #D3D3D3;">NIK</th>
+                <th style="background-color: #D3D3D3;">RUANGAN (UNIT KERJA)</th>
+                <th style="background-color: #D3D3D3;">JENJANG PK</th>
+                <th style="background-color: #D3D3D3;">KFK</th>
+              </tr>';
+
+        foreach ($data as $i => $u) {
+            $p = $u->profile;
+            
+            // Ambil Ruangan/Unit Kerja dari riwayat pekerjaan terbaru
+            $pekerjaanAktif = $u->perawatPekerjaans->sortByDesc('tahun_mulai')->first();
+            $ruangan = $pekerjaanAktif ? $pekerjaanAktif->unit_kerja : '-';
+
+            // Pisahkan array JSON type_perawat menjadi PK dan KFK
+            $types = is_string($p->type_perawat) ? json_decode($p->type_perawat, true) : ($p->type_perawat ?? []);
+            $kfkList = [];
+            $pkList = [];
+            
+            if(is_array($types)) {
+                foreach($types as $t) {
+                    if(str_contains(strtoupper($t), 'KFK')) {
+                        $kfkList[] = $t;
+                    } else if(str_contains(strtoupper($t), 'PK') || str_contains(strtoupper($t), 'BK')) {
+                        $pkList[] = $t;
+                    }
+                }
+            }
+            
+            $strPk = !empty($pkList) ? implode(', ', $pkList) : 'PRA PK';
+            $strKfk = !empty($kfkList) ? implode(', ', $kfkList) : '-';
+
+            echo '<tr>';
+            echo '<td>' . ($i + 1) . '</td>';
+            echo '<td>' . $u->name . '</td>';
+            echo '<td>' . ($p->nik ?? '-') . '&nbsp;</td>'; // Tambah &nbsp; agar NIK tidak jadi scientific format di Excel
+            echo '<td>' . $ruangan . '</td>';
+            echo '<td>' . $strPk . '</td>';
+            echo '<td>' . $strKfk . '</td>';
+            echo '</tr>';
+        }
+        echo '</table>';
+        exit;
+    }
+ // TOGGLE OPPE (AUTO, ON, OFF)
+    public function toggleOppe($id)
+    {
+        $profile = \App\Models\PerawatProfile::where('user_id', $id)->first();
+        if (!$profile) {
+            return back()->with('error', 'Profil perawat tidak ditemukan.');
+        }
+
+        // 1. Cek apakah masuk jalur AUTO ON (Tanggal 7-10 Januari ATAU Bulan Terbit RKK)
+        $isAutoOpen = false;
+        $today = now();
+        
+        // Cek Jalur Serentak (7 - 10 Januari)
+        if ($today->month == 7 && $today->day >= 1 && $today->day <= 30) {
+            $isAutoOpen = true;
+        }
+
+        // Cek Jalur RKK
+        $user = \App\Models\User::with('lisensis')->find($id);
+        $rkkActive = $user->lisensis->where('status', 'active')->sortByDesc('tgl_terbit')->first();
+        
+        if ($rkkActive && $rkkActive->tgl_terbit) {
+            $mTerbit = \Carbon\Carbon::parse($rkkActive->tgl_terbit)->month;
+            $mAfter = ($mTerbit % 12) + 1;
+            if ($today->month == $mTerbit || $today->month == $mAfter) {
+                $isAutoOpen = true;
+            }
+        }
+
+        // 2. Tentukan status NYATA saat ini (Nyala atau Mati?)
+        $isCurrentlyOn = false;
+        if ($profile->oppe_status === 'on') {
+            $isCurrentlyOn = true;
+        } elseif ($profile->oppe_status === 'off') {
+            $isCurrentlyOn = false;
+        } else {
+            // Kalau 'auto', maka status nyata mengikuti jadwal
+            $isCurrentlyOn = $isAutoOpen; 
+        }
+
+        // 3. Kita BALIKKAN keadaannya
+        if ($isCurrentlyOn) {
+            $profile->oppe_status = 'off';
+            $msg = "Akses OPPE berhasil ditutup paksa (MANUAL OFF).";
+        } else {
+            $profile->oppe_status = 'on';
+            $msg = "Akses OPPE berhasil dibuka paksa (MANUAL ON).";
+        }
+
+        $profile->save();
+        return back()->with('success', $msg);
+    }
+    // Tambahkan fungsi ini di AdminPerawatController
+public function index(Request $request, PkRecommendationService $pkService)
+    {
+        $search = $request->input('search');
+        $filterPk = $request->input('filter_pk');
+        $filterRuangan = $request->input('filter_ruangan');
+
+        // 1. Query Dasar
+        // 1. Query Dasar
+$perawatQuery = User::where('role', 'perawat')
+    ->with(['profile', 'strs', 'sips', 'lisensis', 'dataTambahans', 'perawatPekerjaans', 'arsipDokumens']);
+        // 2. Filter Search (Nama, NIK, HP)
+        if ($search) {
+            $perawatQuery->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                    ->orWhereHas('profile', function ($qProfile) use ($search) {
+                        $qProfile->where('nik', 'like', "%$search%")
+                            ->orWhere('no_hp', 'like', "%$search%");
+                    });
+            });
+        }
+
+        // 3. Filter berdasarkan PK/BK
+        if ($filterPk) {
+            $perawatQuery->whereHas('profile', function ($qProfile) use ($filterPk) {
+                $qProfile->where('type_perawat', 'LIKE', "%{$filterPk}%");
+            });
+        }
+
+        // 4. Filter berdasarkan Ruangan (Unit Kerja)
+        if ($filterRuangan) {
+            $perawatQuery->whereHas('perawatPekerjaans', function ($qPekerjaan) use ($filterRuangan) {
+                $qPekerjaan->where('unit_kerja', $filterRuangan);
+            });
+        }
+
+        // Eksekusi Query Pagination
+        $perawat = $perawatQuery->orderBy('name')
+            ->paginate(10)
+            ->withQueryString();
+
+        // --- EKSTRAK KFK, PK, DAN RUANGAN UNTUK DROPDOWN ---
+        $rawTypes = PerawatProfile::whereNotNull('type_perawat')->pluck('type_perawat');
+        $kfkArray = [];
+        $pkArray = [];
+
+        foreach ($rawTypes as $raw) {
+            $decoded = is_string($raw) ? json_decode($raw, true) : $raw;
+            if (is_array($decoded)) {
+                foreach ($decoded as $item) {
+                    $item = trim($item);
+                    if (str_contains(strtoupper($item), 'KFK')) {
+                        $kfkArray[] = $item;
+                    } elseif (str_contains(strtoupper($item), 'PK') || str_contains(strtoupper($item), 'BK') || str_contains(strtoupper($item), 'PRA')) {
+                        $pkArray[] = $item;
+                    }
+                }
+            }
+        }
+
+        $allKfk = collect($kfkArray)->unique()->sort()->values();
+        $allPk = collect($pkArray)->unique()->sort()->values();
+        
+        // Ekstrak Semua Unit Kerja yang pernah diinput
+        $allRuangan = \App\Models\PerawatPekerjaan::whereNotNull('unit_kerja')
+            ->pluck('unit_kerja')
+            ->unique()
+            ->sort()
+            ->values();
+        // -----------------------------------------------------
+
+        $now = now();
+        foreach ($perawat as $p) {
+            $p->expired_docs_count = self::countExpiredDocuments($p, $now);
+            $p->rekomendasiPk = $pkService->getRecommendation($p->id);
+        }
+
+        // Sertakan semua variabel filter ke compact
+        return view('admin.perawat.index', compact(
+            'perawat', 'search', 'filterPk', 'filterRuangan', 'allKfk', 'allPk', 'allRuangan'
+        ));
+    }
+// GANTI FUNGSI EXPORT LAMA DENGAN INI
+    public function exportCustom(Request $request)
+    {
+        // Tangkap kolom yang diceklis dari modal (default minimal 'nama' ke-bawa)
+        $kolom = $request->input('kolom', ['nama']); 
+
+        // Ambil data perawat dengan relasi yang mungkin dibutuhkan
+        $data = User::where('role', 'perawat')
+            ->with([
+                'profile', 'pendidikan', 'perawatPekerjaans', 
+                'strs', 'sips'
+            ])
+            ->get();
+
+        $fileName = "Data_Kustom_Perawat_RSUD_SLG_" . date('Ymd_His') . ".xls";
+
+        header("Content-Type: application/vnd.ms-excel");
+        header("Content-Disposition: attachment; filename=$fileName");
+        header("Pragma: no-cache");
+        header("Expires: 0");
+
+        echo '<table border="1">';
+        
+        // --- 1. RENDER HEADER TABEL DINAMIS ---
+        echo '<tr>';
+        echo '<th style="background-color: #D3D3D3;">NO</th>';
+        if (in_array('nama', $kolom)) echo '<th style="background-color: #D3D3D3;">NAMA LENGKAP</th>';
+        if (in_array('nik', $kolom)) echo '<th style="background-color: #D3D3D3;">NIK</th>';
+        if (in_array('nohp', $kolom)) echo '<th style="background-color: #D3D3D3;">NO. WHATSAPP</th>';
+        if (in_array('alamat', $kolom)) echo '<th style="background-color: #D3D3D3;">ALAMAT</th>';
+        if (in_array('ruangan', $kolom)) echo '<th style="background-color: #D3D3D3;">RUANGAN (UNIT KERJA)</th>';
+        if (in_array('pk', $kolom)) echo '<th style="background-color: #D3D3D3;">JENJANG PK</th>';
+        if (in_array('kfk', $kolom)) echo '<th style="background-color: #D3D3D3;">KFK</th>';
+        if (in_array('str', $kolom)) echo '<th style="background-color: #D3D3D3;">NO. STR (EXPIRED)</th>';
+        if (in_array('sip', $kolom)) echo '<th style="background-color: #D3D3D3;">NO. SIP (EXPIRED)</th>';
+        if (in_array('pendidikan', $kolom)) echo '<th style="background-color: #D3D3D3;">PENDIDIKAN TERAKHIR</th>';
+        echo '</tr>';
+
+        // --- 2. RENDER ISI DATA ---
+        foreach ($data as $i => $u) {
+            $p = $u->profile;
+            
+            // Ekstrak Ruangan
+            $pekerjaanAktif = $u->perawatPekerjaans->sortByDesc('tahun_mulai')->first();
+            $ruangan = $pekerjaanAktif ? $pekerjaanAktif->unit_kerja : '-';
+
+            // Ekstrak PK & KFK
+            $types = is_string($p->type_perawat) ? json_decode($p->type_perawat, true) : ($p->type_perawat ?? []);
+            $kfkList = [];
+            $pkList = [];
+            if(is_array($types)) {
+                foreach($types as $t) {
+                    if(str_contains(strtoupper($t), 'KFK')) $kfkList[] = $t;
+                    else if(str_contains(strtoupper($t), 'PK') || str_contains(strtoupper($t), 'BK')) $pkList[] = $t;
+                }
+            }
+            $strPk = !empty($pkList) ? implode(', ', $pkList) : 'PRA PK';
+            $strKfk = !empty($kfkList) ? implode(', ', $kfkList) : '-';
+
+            // Ekstrak Pendidikan
+            $pendidikanAktif = $u->pendidikan->sortByDesc('tahun_lulus')->first();
+            $pendidikanText = $pendidikanAktif ? $pendidikanAktif->jenjang . ' - ' . $pendidikanAktif->nama_institusi : '-';
+
+            // Ekstrak Dokumen STR/SIP
+            $strObj = $u->strs->first();
+            $strText = $strObj ? $strObj->nomor . ' (' . $strObj->tgl_expired . ')' : '-';
+
+            $sipObj = $u->sips->first();
+            $sipText = $sipObj ? $sipObj->nomor . ' (' . $sipObj->tgl_expired . ')' : '-';
+
+            // Print Row
+            echo '<tr>';
+            echo '<td>' . ($i + 1) . '</td>';
+            if (in_array('nama', $kolom)) echo '<td>' . $u->name . '</td>';
+            if (in_array('nik', $kolom)) echo '<td>' . ($p->nik ?? '-') . '&nbsp;</td>';
+            if (in_array('nohp', $kolom)) echo '<td>' . ($p->no_hp ?? '-') . '&nbsp;</td>';
+            if (in_array('alamat', $kolom)) echo '<td>' . ($p->alamat ?? '-') . '</td>';
+            if (in_array('ruangan', $kolom)) echo '<td>' . $ruangan . '</td>';
+            if (in_array('pk', $kolom)) echo '<td>' . $strPk . '</td>';
+            if (in_array('kfk', $kolom)) echo '<td>' . $strKfk . '</td>';
+            if (in_array('str', $kolom)) echo '<td>' . $strText . '</td>';
+            if (in_array('sip', $kolom)) echo '<td>' . $sipText . '</td>';
+            if (in_array('pendidikan', $kolom)) echo '<td>' . $pendidikanText . '</td>';
+            echo '</tr>';
+        }
+        echo '</table>';
+        exit;
+    }
+public function exportData()
+    {
+        // Ambil SEMUA perawat dengan SEMUA relasi dalam format JSON
+        $data = User::where('role', 'perawat')
+            ->with([
+                'profile', 'pendidikan', 'pelatihan', 'perawatPekerjaans', 
+                'keluarga', 'organisasi', 'tandajasa', 'strs', 
+                'sips', 'lisensis', 'dataTambahans'
+            ])
+            ->get();
+
+        // Kembalikan respons dalam bentuk JSON murni agar bisa dibaca Javascript
+        return response()->json($data);
+    }
 
     // UPDATE DATA PERAWAT
     public function update(Request $request, $id)
@@ -185,7 +617,7 @@ class AdminPerawatController extends Controller
         $profile->golongan_darah = $request->golongan_darah;
         $profile->save();
 
-        // 4-7. Update Riwayat (sama seperti sebelumnya)
+        // 4-7. Update Riwayat
         PerawatPendidikan::where('user_id', $user->id)->delete();
         if ($request->has('pendidikan')) {
             foreach ($request->pendidikan as $row) {
@@ -194,7 +626,7 @@ class AdminPerawatController extends Controller
                         'user_id' => $user->id,
                         'jenjang' => $row['jenjang'] ?? '',
                         'nama_institusi' => $row['nama_institusi'] ?? '',
-                        'tahun_lulus' => $row['tahun_lulus'] ?? '',
+                        'tahun_lulus' => $row['tahun_lulus'] ?: null, // Perbaikan: ubah ke null jika kosong
                     ]);
                 }
             }
@@ -208,7 +640,7 @@ class AdminPerawatController extends Controller
                         'user_id' => $user->id,
                         'nama_pelatihan' => $row['nama_pelatihan'] ?? '',
                         'penyelenggara' => $row['penyelenggara'] ?? '',
-                        'tanggal_mulai' => $row['tanggal_mulai'] ?? '',
+                        'tanggal_mulai' => $row['tanggal_mulai'] ?: null, // Perbaikan: ubah ke null jika kosong
                     ]);
                 }
             }
@@ -222,8 +654,8 @@ class AdminPerawatController extends Controller
                         'user_id' => $user->id,
                         'nama_instansi' => $row['nama_instansi'] ?? '',
                         'jabatan' => $row['jabatan'] ?? '',
-                        'tahun_mulai' => $row['tahun_mulai'] ?? '',
-                        'tahun_selesai' => $row['tahun_selesai'] ?? '',
+                        'tahun_mulai' => $row['tahun_mulai'] ?: null, // Perbaikan: ubah ke null jika kosong
+                        'tahun_selesai' => $row['tahun_selesai'] ?: null, // Perbaikan: ubah ke null jika kosong
                     ]);
                 }
             }
@@ -237,7 +669,7 @@ class AdminPerawatController extends Controller
                         'user_id' => $user->id,
                         'nama_organisasi' => $row['nama_organisasi'] ?? '',
                         'jabatan' => $row['jabatan'] ?? '',
-                        'tahun_mulai' => $row['tahun_mulai'] ?? '',
+                        'tahun_mulai' => $row['tahun_mulai'] ?: null, // Perbaikan: ubah ke null jika kosong
                     ]);
                 }
             }
@@ -318,6 +750,7 @@ class AdminPerawatController extends Controller
 
     public function verifikasiKelayakan(Request $request)
     {
+        // 1. Validasi Input
         $request->validate([
             'tipe' => 'required|in:str,sip,lisensi,tambahan',
             'id' => 'required|integer',
@@ -326,36 +759,45 @@ class AdminPerawatController extends Controller
         ]);
 
         $model = null;
+        
+        // 2. Gunakan find() alih-alih findOrFail() agar tidak melempar 404
         switch ($request->tipe) {
             case 'str':
-                $model = \App\Models\PerawatStr::findOrFail($request->id);
+                $model = \App\Models\PerawatStr::find($request->id);
                 break;
             case 'sip':
-                $model = \App\Models\PerawatSip::findOrFail($request->id);
+                $model = \App\Models\PerawatSip::find($request->id);
                 break;
             case 'lisensi':
-                $model = \App\Models\PerawatLisensi::findOrFail($request->id);
+                $model = \App\Models\PerawatLisensi::find($request->id);
                 break;
             case 'tambahan':
-                $model = \App\Models\PerawatDataTambahan::findOrFail($request->id);
+                $model = \App\Models\PerawatDataTambahan::find($request->id);
                 break;
         }
 
-        if ($model) {
-            $model->kelayakan = $request->kelayakan;
-
-            // Jika dokumen tambahan dan admin menekan approve_lifetime,
-            // set lifetime_approved fields and mark as layak.
-            if ($request->tipe === 'tambahan' && $request->has('approve_lifetime') && $request->input('approve_lifetime') == '1') {
-                $model->lifetime_approved = true;
-                $model->lifetime_approved_by = auth()->id();
-                $model->lifetime_approved_at = now();
-                $model->kelayakan = 'layak';
-            }
-
-            $model->save();
+        // 3. Tangkap error jika ID tidak ada di tabel (Mencegah 404)
+        if (!$model) {
+            return redirect()->back()->with(
+                'error', 
+                'Verifikasi Gagal: Data ' . strtoupper($request->tipe) . ' tidak ditemukan.'
+            );
         }
 
+        // 4. Update data jika model ditemukan
+        $model->kelayakan = $request->kelayakan;
+
+        // Jika dokumen tambahan dan admin menekan approve_lifetime
+        if ($request->tipe === 'tambahan' && $request->has('approve_lifetime') && $request->input('approve_lifetime') == '1') {
+            $model->lifetime_approved = true;
+            $model->lifetime_approved_by = auth()->id();
+            $model->lifetime_approved_at = now();
+            $model->kelayakan = 'layak';
+        }
+
+        $model->save();
+
+        // 5. Redirect kembali dengan pesan sukses
         return redirect()->back()->with('success', 'Status kelayakan dokumen berhasil diperbarui.');
     }
 }

@@ -183,13 +183,18 @@
                         </div>
 
                         {{-- Tempat & Durasi --}}
-                        <div class="col-md-6">
+                     {{-- Tempat, Durasi & SKP --}}
+                        <div class="col-md-4">
                             <label class="form-label">Tempat</label>
                             <input type="text" name="tempat" class="form-control" value="{{ old('tempat', $pelatihan->tempat) }}">
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label">Durasi</label>
                             <input type="text" name="durasi" class="form-control" value="{{ old('durasi', $pelatihan->durasi) }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Total SKP</label>
+                            <input type="number" name="skp" class="form-control" value="{{ old('skp', $pelatihan->skp ?? 0) }}" min="0" placeholder="0">
                         </div>
 
                         {{-- Tanggal --}}

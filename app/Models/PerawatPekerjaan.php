@@ -16,6 +16,7 @@ class PerawatPekerjaan extends Model
         'nama_instansi',
         'unit_kerja',
         'jabatan',
+        'level_pk',
         'tahun_mulai',
         'tahun_selesai',
         'keterangan',
@@ -24,6 +25,9 @@ class PerawatPekerjaan extends Model
         'kfk',
         'tgl_mulai',
         'tgl_diselenggarakan',
+        'pangkat',
+        'status_kepegawaian',
+        'gol_ruang', 'gaji_pokok', 'pejabat_sk', 'nomor_sk', 'tanggal_sk',
     ];
 
     /**

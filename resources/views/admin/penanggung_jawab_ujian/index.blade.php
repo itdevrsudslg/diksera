@@ -117,49 +117,53 @@
 
         <div class="table-responsive">
             <table class="table table-custom table-hover mb-0">
-                <thead class="bg-light">
-                    <tr>
-                        <th width="5%" class="text-center">No</th>
-                        <th>Nama & Akun Login</th>
-                        {{-- Kolom Tipe Petugas Dihapus --}}
-                        <th>Jabatan</th>
-                        <th>Kontak</th>
-                        <th class="text-center" width="120">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($data as $key => $item)
-                        <tr>
-                            <td class="text-center text-muted align-middle">{{ $loop->iteration }}</td>
-                            <td class="align-middle">
-                                <div class="d-flex align-items-center">
-                                    {{-- Logic Avatar Inisial --}}
-                                    @php
-                                        $initials = collect(explode(' ', $item->nama))
-                                            ->map(function ($word) {
-                                                return strtoupper(substr($word, 0, 1));
-                                            })
-                                            ->take(2)
-                                            ->join('');
-                                    @endphp
-                                    <div class="avatar-initial rounded-circle bg-light text-primary d-flex align-items-center justify-content-center fw-bold me-3"
-                                        style="width: 40px; height: 40px; font-size: 14px; border: 1px solid #e2e8f0;">
-                                        {{ $initials }}
-                                    </div>
-                                    <div>
-                                        <div class="fw-bold text-dark">{{ $item->nama }}</div>
-                                        <div class="text-muted small" style="font-size: 11px;">
-                                            <i class="bi bi-envelope me-1"></i> {{ $item->user->email ?? 'Belum ada akun' }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
+              <thead class="bg-light">
+    <tr>
+        <th width="5%" class="text-center">No</th>
+        <th>Nama & Akun Login</th>
+        <th>Jabatan</th>
+        <th class="text-center">Statistik Ujian</th> <!-- Tambah Kolom Ini -->
+        <th>Kontak</th>
+        <th class="text-center" width="120">Aksi</th>
+    </tr>
+</thead>
+<tbody>
+    @forelse($data as $key => $item)
+        <tr>
+            <td class="text-center text-muted align-middle">{{ $loop->iteration }}</td>
+            <td class="align-middle">
+                <div class="d-flex align-items-center">
+                    <!-- ... (Script inisial avatar biarkan seperti aslinya) ... -->
+                    
+                    <div>
+                        <!-- NAMA DIBUAT JADI LINK -->
+                        <a href="{{ route('admin.penanggung-jawab.show', $item->id) }}" class="fw-bold text-primary text-decoration-none hover-dark">
+                            {{ $item->nama }}
+                        </a>
+                        <div class="text-muted small" style="font-size: 11px;">
+                            <i class="bi bi-envelope me-1"></i> {{ $item->user->email ?? 'Belum ada akun' }}
+                        </div>
+                    </div>
+                </div>
+            </td>
 
-                            {{-- TD Tipe Petugas Dihapus --}}
+            <td class="align-middle">
+                <span class="text-dark small fw-medium">{{ $item->jabatan }}</span>
+            </td>
 
-                            <td class="align-middle">
-                                <span class="text-dark small fw-medium">{{ $item->jabatan }}</span>
-                            </td>
+            <!-- TAMBAH TD INI UNTUK SPILL DATA -->
+            <td class="text-center align-middle">
+                <div class="d-flex flex-column gap-1 align-items-center">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 11px;">
+                        Uji Komp: {{ $item->total_uji_komp }}
+                    </span>
+                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" style="font-size: 11px;">
+                        Kredensial: {{ $item->total_kredensial }}
+                    </span>
+                </div>
+            </td>
+
+            <!-- ... (Sisa kolom Kontak dan Aksi biarkan seperti aslinya) ... -->
 
                             <td class="align-middle">
                                 @if ($item->no_hp)

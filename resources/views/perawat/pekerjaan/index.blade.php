@@ -142,12 +142,15 @@
             font-size: 1rem;
         }
 
-        .data-sub {
-            font-size: 0.85rem;
-            color: var(--text-gray);
-            display: flex;
-            align-items: center;
-            gap: 5px;
+        .badge-pk {
+            background-color: #f1f5f9;
+            color: #334155;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid #e2e8f0;
+            display: inline-block;
         }
 
         /* Link & Actions */
@@ -234,9 +237,12 @@
                 <table class="custom-table">
                     <thead>
                         <tr>
-                            <th width="35%">Instansi & Jabatan</th>
-                            <th width="20%">Periode</th>
-                            <th width="25%">Keterangan</th>
+                            {{-- Lebar (width) disesuaikan agar total 100% --}}
+                            <th width="20%">Instansi & Unit</th>
+                            <th width="20%">Jabatan & Pangkat</th>
+                            <th width="10%">Jenjang PK</th> {{-- Kolom Baru --}}
+                            <th width="15%">Periode</th>
+                            <th width="15%">Keterangan</th>
                             <th width="10%">Dokumen</th>
                             <th width="10%" class="text-end">Aksi</th>
                         </tr>
@@ -244,38 +250,58 @@
                     <tbody>
                         @forelse($pekerjaan as $row)
                             <tr>
-                                {{-- Instansi & Jabatan digabung agar rapi --}}
+                                {{-- Kolom 1: Instansi & Unit Kerja --}}
                                 <td>
-                                    {{-- Nama Instansi --}}
                                     <span class="data-title">{{ $row->nama_instansi }}</span>
-
-                                    {{-- Unit Kerja & Jabatan --}}
-                                    <div class="d-flex flex-column gap-1 mt-1">
-                                        {{-- Unit Kerja --}}
-                                        <span class="data-sub text-primary" style="font-size: 0.8rem;">
-                                            <i class="bi bi-building"></i> {{ $row->unit_kerja }}
-                                        </span>
-                                        {{-- Jabatan --}}
-                                        <span class="data-sub">
-                                            <i class="bi bi-briefcase"></i> {{ $row->jabatan }}
-                                        </span>
+                                    <div class="d-flex align-items-center gap-1 mt-1 text-primary">
+                                        <i class="bi bi-building"></i>
+                                        <span class="fw-medium" style="font-size: 0.85rem;">{{ $row->unit_kerja }}</span>
                                     </div>
                                 </td>
 
-                                {{-- Periode --}}
+                                {{-- Kolom 2: Jabatan & Pangkat --}}
                                 <td>
-                                    <span class="fw-medium text-dark">
+                                    <div class="d-flex flex-column gap-1">
+                                        <span class="fw-bold text-dark" style="font-size: 0.95rem;">
+                                            {{ $row->jabatan }}
+                                        </span>
+
+                                        @if($row->pangkat)
+                                            <span class="badge-soft text-start" style="width: fit-content;">
+                                                <i class="bi bi-star-fill me-1" style="font-size: 10px;"></i>
+                                                {{ $row->pangkat }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </td>
+
+                                {{-- Kolom 3: Jenjang PK (BARU) --}}
+                                <td>
+                                    @if($row->level_pk)
+                                        <span class="badge-pk">{{ $row->level_pk }}</span>
+                                    @else
+                                        <span class="text-muted small">-</span>
+                                    @endif
+                                </td>
+
+                                {{-- Kolom 4: Periode --}}
+                                <td>
+                                    <span class="text-muted fw-medium" style="font-size: 0.9rem;">
                                         {{ $row->tahun_mulai }} -
                                         {{ $row->tahun_selesai ? $row->tahun_selesai : 'Sekarang' }}
                                     </span>
                                 </td>
 
-                                {{-- Keterangan --}}
+                                {{-- Kolom 5: Keterangan --}}
                                 <td>
-                                    {{ $row->keterangan ?? '-' }}
+                                    @if($row->keterangan)
+                                        <span class="text-gray" style="font-size: 0.9rem;">{{ $row->keterangan }}</span>
+                                    @else
+                                        <span class="text-muted small">-</span>
+                                    @endif
                                 </td>
 
-                                {{-- Dokumen --}}
+                                {{-- Kolom 6: Dokumen --}}
                                 <td>
                                     @if ($row->dokumen_path)
                                         <a href="{{ asset('storage/' . $row->dokumen_path) }}" target="_blank"
@@ -287,7 +313,7 @@
                                     @endif
                                 </td>
 
-                                {{-- Aksi --}}
+                                {{-- Kolom 7: Aksi --}}
                                 <td class="text-end">
                                     <div class="d-flex gap-1 justify-content-end">
                                         <a href="{{ route('perawat.pekerjaan.edit', $row->id) }}" class="action-btn"
@@ -308,7 +334,8 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center py-5">
+                                {{-- colspan diubah dari 6 ke 7 --}}
+                                <td colspan="7" class="text-center py-5">
                                     <div class="text-muted" style="opacity: 0.6;">
                                         <i class="bi bi-briefcase fs-1 d-block mb-2"></i>
                                         Belum ada riwayat pekerjaan.

@@ -73,9 +73,40 @@
 
         /* Layout */
         .step-container {
-            max-width: 400px;
+            max-width: 450px; /* Sedikit diperlebar untuk list instruksi */
             margin: 0 auto;
             text-align: center;
+        }
+
+        /* Instruction List */
+        .instruction-list {
+            text-align: left;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+        }
+        .instruction-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #475569;
+        }
+        .instruction-number {
+            background: var(--telegram-color);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            flex-shrink: 0;
+            margin-top: 2px;
         }
     </style>
 @endpush
@@ -115,9 +146,9 @@
                             </form>
                         </div>
 
-                        {{-- KONDISI 2: BELUM TERHUBUNG --}}
+                    {{-- KONDISI 2: BELUM TERHUBUNG --}}
                     @else
-                        {{-- STEP 1: TOMBOL GENERATE --}}
+                        {{-- STEP 1: TOMBOL GENERATE & INSTRUKSI --}}
                         <div id="step-start" class="step-container py-3">
                             <div class="icon-box telegram mb-3">
                                 <i class="bi bi-telegram"></i>
@@ -126,13 +157,36 @@
                             <p class="text-muted small mb-4">
                                 Dapatkan pengingat otomatis untuk masa berlaku STR, SIP, dan Sertifikat Anda.
                             </p>
+
+                            <div class="instruction-list shadow-sm">
+                                <div class="fw-bold mb-3 border-bottom pb-2" style="font-size: 14px; color: var(--telegram-color);">
+                                    <i class="bi bi-info-circle me-1"></i> Cara Menghubungkan:
+                                </div>
+                                <div class="instruction-item">
+                                    <div class="instruction-number">1</div>
+                                    <div>Buka Bot Telegram <a href="https://t.me/diksera_bot" target="_blank" class="fw-bold text-decoration-none">@diksera_bot</a></div>
+                                </div>
+                                <div class="instruction-item">
+                                    <div class="instruction-number">2</div>
+                                    <div>Klik tombol <b>Mulai (Start)</b> atau ketik <code>/start</code> pada chat bot.</div>
+                                </div>
+                                <div class="instruction-item">
+                                    <div class="instruction-number">3</div>
+                                    <div>Klik tombol <b>Generate Kode</b> di bawah ini untuk mendapatkan kode verifikasi.</div>
+                                </div>
+                                <div class="instruction-item">
+                                    <div class="instruction-number">4</div>
+                                    <div>Kirimkan kode tersebut ke dalam chat bot <b>@diksera_bot</b>.</div>
+                                </div>
+                            </div>
+
                             <button id="generateBtn" class="btn btn-primary px-4 py-2 w-100 shadow-sm"
                                 style="background-color: var(--telegram-color); border:none; border-radius: 8px;">
                                 <i class="bi bi-magic me-2"></i> Generate Kode
                             </button>
                         </div>
 
-                        {{-- STEP 2: TAMPILKAN KODE (Hidden by default) --}}
+                        {{-- STEP 2: TAMPILKAN KODE --}}
                         <div id="step-verify" class="step-container py-3" style="display: none;">
                             <div class="mb-3">
                                 <span
@@ -141,7 +195,7 @@
                                 </span>
                             </div>
 
-                            <p class="small text-muted mb-0">Kirim kode verifikasi di bawah ini ke Bot Telegram:</p>
+                            <p class="small text-muted mb-0">Segera kirimkan kode verifikasi di bawah ini ke <br> <a href="https://t.me/diksera_bot" target="_blank" class="fw-bold text-decoration-none">@diksera_bot</a>:</p>
 
                             {{-- Area Kode OTP --}}
                             <div class="otp-box">
@@ -153,10 +207,10 @@
                             </div>
 
                             <div class="d-grid gap-2">
-                                <a href="https://t.me/{{ env('TELEGRAM_BOT_USERNAME') }}" id="botLink" target="_blank"
+                                <a href="https://t.me/diksera_bot" target="_blank"
                                     class="btn btn-primary"
                                     style="background-color: var(--telegram-color); border:none; border-radius: 8px;">
-                                    <i class="bi bi-telegram me-2"></i> Buka Bot Telegram
+                                    <i class="bi bi-telegram me-2"></i> Buka Chat Bot Sekarang
                                 </a>
                                 <button id="checkBtn" class="btn btn-light text-muted border" style="border-radius: 8px;">
                                     <i class="bi bi-arrow-clockwise me-1"></i> Saya sudah kirim, Cek Status
@@ -177,7 +231,7 @@
 
             // Loading state
             btn.innerHTML =
-                '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+                '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sedang memproses...';
             btn.disabled = true;
 
             try {
@@ -194,11 +248,6 @@
                 if (data.success) {
                     document.getElementById('codeDisplay').textContent = data.code;
                     document.getElementById('expiresAt').textContent = data.expires_at;
-
-                    // Update link bot jika ada username dari response (opsional, fallback ke env di blade)
-                    if (data.bot_username) {
-                        document.getElementById('botLink').href = "https://t.me/" + data.bot_username;
-                    }
 
                     document.getElementById('step-start').style.display = 'none';
                     document.getElementById('step-verify').style.display = 'block';

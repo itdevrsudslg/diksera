@@ -36,7 +36,7 @@ class CreatePerawatProfilesTable extends Migration
             $table->string('no_hp', 30)->nullable();
 
             // Keterangan badan
-            $table->string('golongan_darah', 5)->nullable();
+            $table->string('golongan_darah', 20)->nullable();
             $table->integer('tinggi_badan')->nullable();
             $table->integer('berat_badan')->nullable();
 

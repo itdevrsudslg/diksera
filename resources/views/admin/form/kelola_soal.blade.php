@@ -12,7 +12,6 @@
         /* Container Utama yang Flexibel */
         .page-container {
             height: calc(100vh - 120px);
-            /* Sesuaikan dengan tinggi header navbar */
             display: flex;
             flex-direction: column;
             gap: 16px;
@@ -27,11 +26,8 @@
             display: flex;
             flex-direction: column;
             flex: 1;
-            /* Mengisi sisa ruang */
             overflow: hidden;
-            /* Kunci agar child scrollable */
             padding: 0;
-            /* Padding dihandle child */
         }
 
         /* Toolbar Area (Generator & Search) */
@@ -154,11 +150,11 @@
 
         <div class="content-card">
 
-            {{-- SECTION 1: TOOLBAR (Generator & Search) --}}
+            {{-- SECTION 1: TOOLBAR (Generator & Search/Filter) --}}
             <div class="toolbar-section">
                 <div class="row g-3 align-items-center">
 
-                    {{-- Kolom Kiri: Generator --}}
+                    {{-- Kolom Kiri: Generator Multi-Kategori --}}
                     <div class="col-lg-7">
                         <div class="generator-box">
                             <div class="d-flex align-items-center gap-2 mb-2">
@@ -171,12 +167,31 @@
                                 class="row g-2">
                                 @csrf
                                 <div class="col-md-5">
-                                    <select name="kategori" class="form-select form-select-sm" required>
-                                        <option value="Semua">Semua Kategori</option>
-                                        @foreach (\App\Models\BankSoal::distinct()->pluck('kategori') as $cat)
-                                            <option value="{{ $cat }}">{{ $cat }}</option>
-                                        @endforeach
-                                    </select>
+                                    {{-- Dropdown Checkbox untuk Multi-Kategori Generator --}}
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary text-start w-100 dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                                            Pilih Kategori...
+                                        </button>
+                                        <ul class="dropdown-menu w-100 p-2 shadow-sm" style="max-height: 200px; overflow-y: auto;">
+                                            <li>
+                                                <div class="form-check">
+                                                    <input class="form-check-input gen-kategori-semua" type="checkbox" value="Semua" name="kategori[]" id="gen_semua" checked>
+                                                    <label class="form-check-label small fw-bold" for="gen_semua">Semua Kategori</label>
+                                                </div>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            @if(isset($kategoris))
+                                                @foreach($kategoris as $kat)
+                                                <li>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input gen-kategori-item" type="checkbox" value="{{ $kat }}" name="kategori[]" id="gen_{{ Str::slug($kat) }}">
+                                                        <label class="form-check-label small" for="gen_{{ Str::slug($kat) }}">{{ $kat }}</label>
+                                                    </div>
+                                                </li>
+                                                @endforeach
+                                            @endif
+                                        </ul>
+                                    </div>
                                 </div>
                                 <div class="col-md-3">
                                     <input type="number" name="jumlah_soal" class="form-control form-control-sm"
@@ -191,7 +206,7 @@
                         </div>
                     </div>
 
-                    {{-- Kolom Kanan: Search & Info --}}
+                    {{-- Kolom Kanan: Search & Filters --}}
                     <div class="col-lg-5">
                         <div class="d-flex flex-column gap-2 h-100 justify-content-center">
                             {{-- Search Input --}}
@@ -206,11 +221,32 @@
                                 </button>
                             </div>
 
-                            {{-- Info Badge --}}
-                            <div class="d-flex gap-2 justify-content-end">
-                                <span class="badge bg-white border text-secondary fw-normal">
-                                    Total Bank Soal: <strong>{{ $allSoals->count() }}</strong>
-                                </span>
+                            {{-- Filter Tools (Kategori & Hanya Terpilih) --}}
+                            <div class="d-flex gap-2 align-items-center justify-content-between">
+                                {{-- Switch Hanya Terpilih --}}
+                                <div class="form-check form-switch m-0">
+                                    <input class="form-check-input" type="checkbox" id="filterSelectedOnly">
+                                    <label class="form-check-label small fw-bold" for="filterSelectedOnly">Lihat Terpilih Saja</label>
+                                </div>
+                                
+                                {{-- Dropdown Filter Kategori Multi-select --}}
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                                        <i class="bi bi-funnel"></i> Kategori
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end p-2 shadow-sm" style="max-height: 250px; overflow-y: auto;">
+                                        @if(isset($kategoris))
+                                            @foreach($kategoris as $kat)
+                                            <li>
+                                                <div class="form-check">
+                                                    <input class="form-check-input filter-kategori" type="checkbox" value="{{ $kat }}" id="kat_{{ Str::slug($kat) }}">
+                                                    <label class="form-check-label small" for="kat_{{ Str::slug($kat) }}">{{ $kat }}</label>
+                                                </div>
+                                            </li>
+                                            @endforeach
+                                        @endif
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -238,8 +274,10 @@
                         <tbody>
                             @forelse($allSoals as $soal)
                                 @php $isSelected = in_array($soal->id, $existingSoalIds); @endphp
-                                <tr class="{{ $isSelected ? 'selected' : '' }} searchable-row" onclick="toggleRow(this)">
-                                    <td class="text-center" onclick="event.stopPropagation()">
+                                <tr class="{{ $isSelected ? 'selected' : '' }} searchable-row" 
+                                    data-kategori="{{ $soal->kategori }}" 
+                                    onclick="toggleRow(event, this)">
+                                    <td class="text-center">
                                         <input type="checkbox" name="soal_ids[]" value="{{ $soal->id }}"
                                             class="form-check-input soal-checkbox" {{ $isSelected ? 'checked' : '' }}
                                             onchange="highlightRow(this)">
@@ -306,6 +344,8 @@
             const rows = document.querySelectorAll('.searchable-row');
             const checkAll = document.getElementById('checkAll');
             const selectedCountSpan = document.getElementById('selectedCount');
+            const filterSelectedOnly = document.getElementById('filterSelectedOnly');
+            const kategoriFilters = document.querySelectorAll('.filter-kategori');
 
             // --- 1. Selection Logic ---
             function updateCounter() {
@@ -315,21 +355,35 @@
 
             window.highlightRow = function(checkbox) {
                 const row = checkbox.closest('tr');
-                if (checkbox.checked) row.classList.add('selected');
-                else row.classList.remove('selected');
+                if (checkbox.checked) {
+                    row.classList.add('selected');
+                } else {
+                    row.classList.remove('selected');
+                }
                 updateCounter();
             }
 
-            window.toggleRow = function(row) {
+            window.toggleRow = function(event, row) {
+                // Mencegah double select saat user klik checkbox langsung
+                if (event && event.target.tagName.toLowerCase() === 'input') {
+                    highlightRow(event.target);
+                    // Refresh view jika switch filter aktif
+                    if (filterSelectedOnly.checked) performSearch(); 
+                    return;
+                }
+
                 const checkbox = row.querySelector('.soal-checkbox');
                 checkbox.checked = !checkbox.checked;
                 highlightRow(checkbox);
+                
+                // Refresh view jika switch filter aktif
+                if (filterSelectedOnly.checked) performSearch();
             }
 
             checkAll.addEventListener('change', function() {
                 const isChecked = this.checked;
                 rows.forEach(row => {
-                    // Hanya centang baris yang visible (hasil search)
+                    // Hanya centang baris yang visible (hasil search/filter)
                     if (row.style.display !== 'none') {
                         const cb = row.querySelector('.soal-checkbox');
                         cb.checked = isChecked;
@@ -338,26 +392,74 @@
                 });
             });
 
-            // --- 2. Search Logic ---
-            function performSearch() {
-                const filter = searchInput.value.toLowerCase();
+            // --- 2. Advanced Search & Filter Logic ---
+            window.performSearch = function() {
+                const textFilter = searchInput.value.toLowerCase();
+                const showSelectedOnly = filterSelectedOnly.checked;
+                
+                // Ambil kategori yang dicentang
+                const checkedCategories = Array.from(document.querySelectorAll('.filter-kategori:checked')).map(cb => cb.value);
 
-                // Show/Hide Reset Button
-                resetSearchBtn.style.display = filter.length > 0 ? 'block' : 'none';
+                resetSearchBtn.style.display = textFilter.length > 0 ? 'block' : 'none';
 
                 rows.forEach(row => {
                     const text = row.innerText.toLowerCase();
-                    row.style.display = text.includes(filter) ? '' : 'none';
+                    const isSelected = row.querySelector('.soal-checkbox').checked;
+                    const category = row.getAttribute('data-kategori');
+
+                    // Syarat 1: Cocok dengan teks
+                    let matchText = text.includes(textFilter);
+                    
+                    // Syarat 2: Cocok dengan kategori (jika kosong, anggap cocok semua)
+                    let matchCategory = checkedCategories.length === 0 || checkedCategories.includes(category);
+                    
+                    // Syarat 3: Cocok dengan status terpilih
+                    let matchSelected = !showSelectedOnly || isSelected;
+
+                    // Tampilkan hanya jika KETIGA syarat terpenuhi
+                    if (matchText && matchCategory && matchSelected) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
                 });
             }
 
+            // --- 3. Event Listeners (Table Filtering) ---
             searchInput.addEventListener('keyup', performSearch);
-
+            
             resetSearchBtn.addEventListener('click', function() {
                 searchInput.value = '';
                 performSearch();
                 searchInput.focus();
             });
+
+            kategoriFilters.forEach(cb => cb.addEventListener('change', performSearch));
+            filterSelectedOnly.addEventListener('change', performSearch);
+
+            // --- 4. Logic Multi-Select Generator ---
+            const genSemua = document.getElementById('gen_semua');
+            const genItems = document.querySelectorAll('.gen-kategori-item');
+
+            if(genSemua && genItems.length > 0) {
+                genSemua.addEventListener('change', function() {
+                    if (this.checked) {
+                        genItems.forEach(cb => cb.checked = false);
+                    }
+                });
+
+                genItems.forEach(cb => {
+                    cb.addEventListener('change', function() {
+                        if (this.checked) {
+                            genSemua.checked = false;
+                        }
+                        const anyChecked = Array.from(genItems).some(item => item.checked);
+                        if (!anyChecked) {
+                            genSemua.checked = true;
+                        }
+                    });
+                });
+            }
 
             // Init
             updateCounter();

@@ -212,9 +212,11 @@
             <table class="custom-table">
                 <thead>
                     <tr>
-                        <th width="35%">Nama & Hubungan</th>
-                        <th width="20%">Tanggal Lahir</th>
-                        <th width="35%">Pekerjaan</th>
+                      {{-- Saya menyesuaikan lebar kolom agar muat 5 kolom --}}
+                        <th width="25%">Nama & Hubungan</th>
+                        <th width="15%">Tanggal Lahir</th>
+                        <th width="20%">Pekerjaan</th>
+                        <th width="20%">No. Darurat</th> {{-- Kolom Baru --}}
                         <th width="10%" class="text-end">Aksi</th>
                     </tr>
                 </thead>

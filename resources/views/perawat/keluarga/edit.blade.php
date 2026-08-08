@@ -194,8 +194,38 @@
                             <label class="form-label">Pekerjaan</label>
                             <input type="text" name="pekerjaan" class="form-control" value="{{ old('pekerjaan', $keluarga->pekerjaan) }}">
                         </div>
-                    </div>
+                    
+                    
+                   {{-- NEW: No Darurat --}}
+                        <div class="col-md-6">
+                            <label class="form-label">No. Telepon / Darurat</label>
+                            <input type="text" name="no_darurat" class="form-control" value="{{ old('no_darurat', $keluarga->no_darurat) }}" placeholder="Contoh: 081234567890">
+                        </div>
 
+                        <div class="col-md-6">
+                            <label class="form-label">Tempat Lahir</label>
+                            <input type="text" name="tempat_lahir" class="form-control" value="{{ old('tempat_lahir', $keluarga->tempat_lahir) }}" placeholder="Kota kelahiran">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Jenis Kelamin</label>
+                            <select name="jenis_kelamin" class="form-select">
+                                <option value="">- Pilih -</option>
+                                <option value="L" {{ old('jenis_kelamin', $keluarga->jenis_kelamin) == 'L' ? 'selected' : '' }}>Laki-laki</option>
+                                <option value="P" {{ old('jenis_kelamin', $keluarga->jenis_kelamin) == 'P' ? 'selected' : '' }}>Perempuan</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Tanggal Menikah <small class="text-muted">(Khusus Suami/Istri)</small></label>
+                            <input type="date" name="tanggal_nikah" class="form-control" value="{{ old('tanggal_nikah', $keluarga->tanggal_nikah) }}">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Keterangan Tambahan</label>
+                            <input type="text" name="keterangan" class="form-control" value="{{ old('keterangan', $keluarga->keterangan) }}" placeholder="Keterangan lain (opsional)">
+                        </div>
+                    </div> <!-- Penutup div.row.g-4 -->
                     <div class="mt-5">
                         <button type="submit" class="btn-submit-edit">
                             <i class="bi bi-check-lg"></i> Update Data Keluarga

@@ -152,13 +152,16 @@
 
 @section('content')
     @php
-        $isPass = $result->total_nilai >= 70;
+        $isRemidi = $result->remidi ?? ($result->total_nilai < 75);
+        $isPass = !$isRemidi && $result->total_nilai >= 70;
         $themeClass = $isPass ? 'theme-success' : 'theme-danger';
-        $statusText = $isPass ? 'LULUS' : 'REMEDIAL';
-        $statusIcon = $isPass ? 'bi-trophy-fill' : 'bi-exclamation-triangle-fill';
+        $statusText = $isPass ? 'LULUS' : ($isRemidi ? 'REMEDIAL' : 'TIDAK LULUS');
+        $statusIcon = $isPass ? 'bi-trophy-fill' : ($isRemidi ? 'bi-exclamation-triangle-fill' : 'bi-x-circle-fill');
         $message = $isPass
             ? 'Selamat! Hasil ujian Anda sangat memuaskan.'
-            : 'Nilai Anda belum memenuhi standar kelulusan.';
+            : ($isRemidi
+                ? 'Nilai Anda di bawah 75. Anda otomatis masuk program remidi. Silakan hubungi admin atau cek jadwal remidi.'
+                : 'Nilai Anda belum memenuhi standar kelulusan.');
     @endphp
 
     <div class="container py-5">
@@ -178,6 +181,9 @@
 
                                 <div class="status-badge">
                                     <i class="bi {{ $statusIcon }}"></i> {{ $statusText }}
+                                    @if($isRemidi)
+                                        <span class="badge bg-warning text-dark ms-2">Remidi Otomatis</span>
+                                    @endif
                                 </div>
                             </div>
                         </div>
