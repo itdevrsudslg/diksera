@@ -125,8 +125,15 @@ $age = ($profile && $profile->tanggal_lahir) ? \Carbon\Carbon::parse($profile->t
         $sipData = PerawatSip::where('user_id', $user->id)->latest()->first();
 
         // Helper untuk status dokumen
+       // Helper untuk status dokumen
         $checkDoc = function($doc) {
             if (!$doc) return ['status' => 'missing', 'msg' => 'Belum Upload', 'color' => 'secondary', 'days' => 0];
+            
+            // TAMBAHKAN LOGIKA INI UNTUK SEUMUR HIDUP
+            if (is_null($doc->tgl_expired)) {
+                return ['status' => 'active', 'msg' => 'Seumur Hidup', 'color' => 'success', 'days' => 9999];
+            }
+
             $days = now()->diffInDays($doc->tgl_expired, false);
             if ($days < 0) return ['status' => 'expired', 'msg' => 'Kadaluwarsa', 'color' => 'danger', 'days' => $days];
             if ($days < 180) return ['status' => 'warning', 'msg' => 'Segera Habis', 'color' => 'warning', 'days' => $days];

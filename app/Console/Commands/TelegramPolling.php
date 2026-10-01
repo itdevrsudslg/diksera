@@ -97,7 +97,7 @@ class TelegramPolling extends Command
 
         // --- 1. Handle START ---
         if ($text === '/START') {
-            $welcomeMsg = "👋 <b>Selamat Datang di Bot Notifikasi Kepegawaian</b>\n";
+            $welcomeMsg = "👋 <b>Selamat Datang di Bot Notifikasi Diksera</b>\n";
             $welcomeMsg .= "<b>RSUD Simpang Lima Gumul Kediri</b>\n\n";
             $welcomeMsg .= "Silahkan kirimkan <b>Kode Verifikasi</b> yang Anda dapatkan dari aplikasi web.\n";
             $welcomeMsg .= "⚠️ <i>Pastikan kode tersebut belum kadaluarsa.</i>";

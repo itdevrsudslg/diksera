@@ -19,41 +19,49 @@
             </div>
         </div>
     </div>
-    
 @if($lastMessage)
-<div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden {{ $unreadCount > 0 ? 'bg-danger text-white animate__animated animate__headShake' : 'bg-primary text-white' }}" 
-     style="box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;">
-    <div class="card-body p-4">
-        <div class="row align-items-center">
-            <div class="col-md-9 mb-3 mb-md-0">
-                <div class="d-flex align-items-start">
-                    <div class="bg-white text-{{ $unreadCount > 0 ? 'danger' : 'primary' }} rounded-circle d-flex align-items-center justify-content-center me-3 shadow" 
-                         style="min-width: 60px; height: 60px;">
-                        <i class="bi {{ $unreadCount > 0 ? 'bi-chat-right-text-fill' : 'bi-chat-left-dots-fill' }} fs-3"></i>
+    @if($unreadCount > 0)
+        {{-- KONDISI 1: ADA CHAT BARU DARI ADMIN (MUNCUL CARD MERAH) --}}
+        <div class="card border-0 shadow-sm rounded-3 mb-3 overflow-hidden bg-danger text-white animate__animated animate__headShake">
+            <div class="card-body p-3">
+                <div class="row align-items-center">
+                    <div class="col-md-9 mb-2 mb-md-0">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-white text-danger rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" 
+                                 style="min-width: 45px; height: 45px;">
+                                <i class="bi bi-chat-right-text-fill fs-5"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1 text-white" style="font-size: 14px;">
+                                    📢 ADA PESAN PENTING DARI ADMIN!
+                                </h6>
+                                <p class="mb-0 opacity-90" style="font-size: 12px; font-style: italic; line-height: 1.3;">
+                                    "{{ \Illuminate\Support\Str::limit($lastMessage->message, 80) }}"
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <h5 class="fw-bold mb-1 {{ $unreadCount > 0 ? 'text-white' : '' }}">
-                            {{ $unreadCount > 0 ? '📢 ADA PESAN PENTING DARI ADMIN!' : 'Percakapan Admin' }}
-                        </h5>
-                        <p class="mb-0 opacity-90" style="font-size: 15px; font-style: italic; line-height: 1.4;">
-                            "{{ $lastMessage->message }}"
-                        </p>
-                        <small class="opacity-75 mt-2 d-block" style="font-size: 11px;">
-                            <i class="bi bi-clock me-1"></i> Diterima pada: {{ $lastMessage->created_at->format('d M Y, H:i') }}
-                        </small>
+                    <div class="col-md-3 text-md-end">
+                        <button class="btn btn-light btn-sm text-danger fw-bold rounded-pill px-3 py-1 shadow-sm w-100 w-md-auto" 
+                                onclick="openChatModal({{ $lastMessage->sender_id }}, '{{ $adminName ?? 'Admin' }}')" 
+                                data-bs-toggle="modal" data-bs-target="#chatModal" style="font-size: 12px;">
+                            <i class="bi bi-reply-fill me-1"></i> Balas
+                        </button>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 text-md-end">
-                <button class="btn btn-light btn-lg text-{{ $unreadCount > 0 ? 'danger' : 'primary' }} fw-bold rounded-pill px-4 py-2 shadow-sm w-100 w-md-auto" 
-                        onclick="openChatModal({{ $lastMessage->sender_id }}, '{{ $adminName ?? 'Admin' }}')" 
-                        data-bs-toggle="modal" data-bs-target="#chatModal">
-                    <i class="bi bi-reply-fill me-1"></i> Buka & Balas
-                </button>
-            </div>
         </div>
-    </div>
-</div>
+    @else
+        {{-- KONDISI 2: LAST CHAT DI USER / TIDAK ADA PESAN BARU (HANYA MUNCUL BUTTON) --}}
+        <div class="mb-3 text-end">
+            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-4 shadow-sm"
+                    {{-- Logika ternary agar ID tujuan chat tetap ID Admin, bukan ID User sendiri --}}
+                    onclick="openChatModal({{ $lastMessage->receiver_id == Auth::id() ? $lastMessage->sender_id : $lastMessage->receiver_id }}, '{{ $adminName ?? 'Admin' }}')" 
+                    data-bs-toggle="modal" data-bs-target="#chatModal">
+                <i class="bi bi-chat-dots me-1"></i> 
+            </button>
+        </div>
+    @endif
 @endif
 {{-- ALERT KHUSUS TYPE PERAWAT --}}
 @if(!$isTypePerawatLengkap)
@@ -80,6 +88,7 @@
             <strong class="d-block text-danger">Tindakan Diperlukan</strong>
             <span class="small text-muted">Dokumen berikut mendekati kadaluwarsa: {{ implode(', ', $warnings) }}</span>
         </div>
+        
     </div>
     @endif
 
@@ -371,7 +380,7 @@
                     <h6 class="fw-bold mb-0">Legalitas Dokumen</h6>
                 </div>
                 <div class="card-body p-4">
-                    {{-- STR --}}
+              {{-- STR --}}
                     <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
                         <div class="rounded p-2 me-3 {{ $legalitas['str']['data'] ? ($legalitas['str']['status'] == 'active' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger') : 'bg-light text-muted' }}">
                             <i class="bi bi-card-heading fs-5"></i>
@@ -379,7 +388,7 @@
                         <div class="flex-grow-1">
                             <h6 class="mb-0 fw-bold small">STR (Registrasi)</h6>
                             <small class="text-muted" style="font-size: 11px;">
-                                {{ $legalitas['str']['data'] ? 'Exp: '.\Carbon\Carbon::parse($legalitas['str']['data']->tgl_expired)->format('d M Y') : 'Belum diupload' }}
+                                {{ $legalitas['str']['data'] ? ($legalitas['str']['data']->tgl_expired ? 'Exp: '.\Carbon\Carbon::parse($legalitas['str']['data']->tgl_expired)->format('d M Y') : 'Seumur Hidup') : 'Belum diupload' }}
                             </small>
                         </div>
                         <span class="badge {{ $legalitas['str']['data'] ? ($legalitas['str']['status'] == 'active' ? 'bg-success' : 'bg-danger') : 'bg-secondary' }} rounded-pill" style="font-size: 10px;">
@@ -395,7 +404,7 @@
                         <div class="flex-grow-1">
                             <h6 class="mb-0 fw-bold small">SIP (Praktik)</h6>
                             <small class="text-muted" style="font-size: 11px;">
-                                {{ $legalitas['sip']['data'] ? 'Exp: '.\Carbon\Carbon::parse($legalitas['sip']['data']->tgl_expired)->format('d M Y') : 'Belum diupload' }}
+                                {{ $legalitas['sip']['data'] ? ($legalitas['sip']['data']->tgl_expired ? 'Exp: '.\Carbon\Carbon::parse($legalitas['sip']['data']->tgl_expired)->format('d M Y') : 'Seumur Hidup') : 'Belum diupload' }}
                             </small>
                         </div>
                         <span class="badge {{ $legalitas['sip']['data'] ? ($legalitas['sip']['status'] == 'active' ? 'bg-success' : 'bg-danger') : 'bg-secondary' }} rounded-pill" style="font-size: 10px;">

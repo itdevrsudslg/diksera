@@ -392,17 +392,17 @@ class AdminPerawatController extends Controller
         $profile->save();
         return back()->with('success', $msg);
     }
-    // Tambahkan fungsi ini di AdminPerawatController
 public function index(Request $request, PkRecommendationService $pkService)
     {
         $search = $request->input('search');
         $filterPk = $request->input('filter_pk');
         $filterRuangan = $request->input('filter_ruangan');
+        $filterStatus = $request->input('filter_status'); // <-- TAMBAHAN BARU
 
         // 1. Query Dasar
-        // 1. Query Dasar
-$perawatQuery = User::where('role', 'perawat')
-    ->with(['profile', 'strs', 'sips', 'lisensis', 'dataTambahans', 'perawatPekerjaans', 'arsipDokumens']);
+        $perawatQuery = User::where('role', 'perawat')
+            ->with(['profile', 'strs', 'sips', 'lisensis', 'dataTambahans', 'perawatPekerjaans', 'arsipDokumens']);
+            
         // 2. Filter Search (Nama, NIK, HP)
         if ($search) {
             $perawatQuery->where(function ($q) use ($search) {
@@ -425,6 +425,13 @@ $perawatQuery = User::where('role', 'perawat')
         if ($filterRuangan) {
             $perawatQuery->whereHas('perawatPekerjaans', function ($qPekerjaan) use ($filterRuangan) {
                 $qPekerjaan->where('unit_kerja', $filterRuangan);
+            });
+        }
+
+        // 5. Filter berdasarkan Status Kepegawaian <-- TAMBAHAN BARU
+        if ($filterStatus) {
+            $perawatQuery->whereHas('perawatPekerjaans', function ($qPekerjaan) use ($filterStatus) {
+                $qPekerjaan->where('status_kepegawaian', $filterStatus);
             });
         }
 
@@ -461,6 +468,13 @@ $perawatQuery = User::where('role', 'perawat')
             ->unique()
             ->sort()
             ->values();
+
+        // Ekstrak Semua Status Kepegawaian <-- TAMBAHAN BARU
+        $allStatus = \App\Models\PerawatPekerjaan::whereNotNull('status_kepegawaian')
+            ->pluck('status_kepegawaian')
+            ->unique()
+            ->sort()
+            ->values();
         // -----------------------------------------------------
 
         $now = now();
@@ -471,16 +485,13 @@ $perawatQuery = User::where('role', 'perawat')
 
         // Sertakan semua variabel filter ke compact
         return view('admin.perawat.index', compact(
-            'perawat', 'search', 'filterPk', 'filterRuangan', 'allKfk', 'allPk', 'allRuangan'
+            'perawat', 'search', 'filterPk', 'filterRuangan', 'filterStatus', 'allKfk', 'allPk', 'allRuangan', 'allStatus'
         ));
     }
-// GANTI FUNGSI EXPORT LAMA DENGAN INI
-    public function exportCustom(Request $request)
+public function exportCustom(Request $request)
     {
-        // Tangkap kolom yang diceklis dari modal (default minimal 'nama' ke-bawa)
         $kolom = $request->input('kolom', ['nama']); 
 
-        // Ambil data perawat dengan relasi yang mungkin dibutuhkan
         $data = User::where('role', 'perawat')
             ->with([
                 'profile', 'pendidikan', 'perawatPekerjaans', 
@@ -505,6 +516,7 @@ $perawatQuery = User::where('role', 'perawat')
         if (in_array('nohp', $kolom)) echo '<th style="background-color: #D3D3D3;">NO. WHATSAPP</th>';
         if (in_array('alamat', $kolom)) echo '<th style="background-color: #D3D3D3;">ALAMAT</th>';
         if (in_array('ruangan', $kolom)) echo '<th style="background-color: #D3D3D3;">RUANGAN (UNIT KERJA)</th>';
+        if (in_array('status_kepegawaian', $kolom)) echo '<th style="background-color: #D3D3D3;">STATUS KEPEGAWAIAN</th>'; // <-- TAMBAHAN
         if (in_array('pk', $kolom)) echo '<th style="background-color: #D3D3D3;">JENJANG PK</th>';
         if (in_array('kfk', $kolom)) echo '<th style="background-color: #D3D3D3;">KFK</th>';
         if (in_array('str', $kolom)) echo '<th style="background-color: #D3D3D3;">NO. STR (EXPIRED)</th>';
@@ -516,9 +528,10 @@ $perawatQuery = User::where('role', 'perawat')
         foreach ($data as $i => $u) {
             $p = $u->profile;
             
-            // Ekstrak Ruangan
+            // Ekstrak Ruangan & Status Kepegawaian
             $pekerjaanAktif = $u->perawatPekerjaans->sortByDesc('tahun_mulai')->first();
             $ruangan = $pekerjaanAktif ? $pekerjaanAktif->unit_kerja : '-';
+            $statusPegawai = $pekerjaanAktif ? ($pekerjaanAktif->status_kepegawaian ?? '-') : '-'; // <-- TAMBAHAN
 
             // Ekstrak PK & KFK
             $types = is_string($p->type_perawat) ? json_decode($p->type_perawat, true) : ($p->type_perawat ?? []);
@@ -552,6 +565,7 @@ $perawatQuery = User::where('role', 'perawat')
             if (in_array('nohp', $kolom)) echo '<td>' . ($p->no_hp ?? '-') . '&nbsp;</td>';
             if (in_array('alamat', $kolom)) echo '<td>' . ($p->alamat ?? '-') . '</td>';
             if (in_array('ruangan', $kolom)) echo '<td>' . $ruangan . '</td>';
+            if (in_array('status_kepegawaian', $kolom)) echo '<td>' . $statusPegawai . '</td>'; // <-- TAMBAHAN
             if (in_array('pk', $kolom)) echo '<td>' . $strPk . '</td>';
             if (in_array('kfk', $kolom)) echo '<td>' . $strKfk . '</td>';
             if (in_array('str', $kolom)) echo '<td>' . $strText . '</td>';

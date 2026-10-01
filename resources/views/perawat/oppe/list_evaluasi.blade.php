@@ -71,7 +71,7 @@
                         <option value="">-- Semua Status --</option>
                         <option value="pending_self" {{ request('status') == 'pending_self' ? 'selected' : '' }}>Asesmen Diri</option>
                         <option value="pending_peer" {{ request('status') == 'pending_peer' ? 'selected' : '' }}>Menunggu Sejawat</option>
-                        <option value="pending_karu" {{ request('status') == 'pending_karu' ? 'selected' : '' }}>Menunggu Karu</option>
+                        <option value="pending_karu" {{ request('status') == 'pending_karu' ? 'selected' : '' }}>Menunggu Karu/Kasi</option>
                         <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Selesai</option>
                     </select>
                 </div>
@@ -145,7 +145,7 @@
                                         </span>
                                     </div>
                                     <div>
-                                        <span class="text-muted" style="font-size: 0.75rem;">Atasan / Karu:</span><br>
+                                        <span class="text-muted" style="font-size: 0.75rem;">Atasan :</span><br>
                                         <span class="fw-medium text-dark">
                                             <i class="bi bi-person-badge text-primary me-1"></i> 
                                             {{ $oppe->evaluator->profile->nama_lengkap ?? $oppe->evaluator->name ?? '-' }}
@@ -168,7 +168,7 @@
                                     $statusConfig = [
                                         'pending_self' => ['label' => 'Asesmen Diri', 'class' => 'bg-info bg-opacity-10 text-info border border-info'],
                                         'pending_peer' => ['label' => 'Menunggu Sejawat', 'class' => 'bg-warning bg-opacity-10 text-warning border border-warning'],
-                                        'pending_karu' => ['label' => 'Menunggu Karu', 'class' => 'bg-primary bg-opacity-10 text-primary border border-primary'],
+                                        'pending_karu' => ['label' => 'Menunggu Karu/Kasi', 'class' => 'bg-primary bg-opacity-10 text-primary border border-primary'],
                                         'completed' => ['label' => 'Selesai', 'class' => 'bg-success bg-opacity-10 text-success border border-success']
                                     ];
 
