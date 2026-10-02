@@ -250,30 +250,30 @@
     </div>
 
     {{-- Dashboard Cards --}}
-    <!--<div class="row mb-4">-->
-    <!--    <div class="col-md-6 mb-3 mb-md-0">-->
-    <!--        <div class="stat-card">-->
-    <!--            <div class="stat-icon icon-active">-->
-    <!--                <i class="bi bi-shield-check"></i>-->
-    <!--            </div>-->
-    <!--            <div class="stat-info">-->
-    <!--                <p>Total SKP Aktif (5 Thn Terakhir)</p>-->
-    <!--                <h3>{{ $skpAktif ?? 0 }} <span style="font-size: 1rem; color: #64748b; font-weight: 500;">SKP</span></h3>-->
-    <!--            </div>-->
-    <!--        </div>-->
-    <!--    </div>-->
-    <!--    <div class="col-md-6">-->
-    <!--        <div class="stat-card">-->
-    <!--            <div class="stat-icon icon-inactive">-->
-    <!--                <i class="bi bi-shield-x"></i>-->
-    <!--            </div>-->
-    <!--            <div class="stat-info">-->
-    <!--                <p>Total SKP Non-Aktif (Kadaluarsa)</p>-->
-    <!--                <h3>{{ $skpNonAktif ?? 0 }} <span style="font-size: 1rem; color: #64748b; font-weight: 500;">SKP</span></h3>-->
-    <!--            </div>-->
-    <!--        </div>-->
-    <!--    </div>-->
-    <!--</div>-->
+    {{--<div class="row mb-4">--}}
+    {{--    <div class="col-md-6 mb-3 mb-md-0">--}}
+    {{--        <div class="stat-card">--}}
+    {{--            <div class="stat-icon icon-active">--}}
+    {{--                <i class="bi bi-shield-check"></i>--}}
+    {{--            </div>--}}
+    {{--            <div class="stat-info">--}}
+    {{--                <p>Total SKP Aktif (5 Thn Terakhir)</p>--}}
+    {{--                <h3>{{ $skpAktif ?? 0 }} <span style="font-size: 1rem; color: #64748b; font-weight: 500;">SKP</span></h3>--}}
+    {{--            </div>--}}
+    {{--        </div>--}}
+    {{--    </div>--}}
+    {{--    <div class="col-md-6">--}}
+    {{--        <div class="stat-card">--}}
+    {{--            <div class="stat-icon icon-inactive">--}}
+    {{--                <i class="bi bi-shield-x"></i>--}}
+    {{--            </div>--}}
+    {{--            <div class="stat-info">--}}
+    {{--                <p>Total SKP Non-Aktif (Kadaluarsa)</p>--}}
+    {{--                <h3>{{ $skpNonAktif ?? 0 }} <span style="font-size: 1rem; color: #64748b; font-weight: 500;">SKP</span></h3>--}}
+    {{--            </div>--}}
+    {{--        </div>--}}
+    {{--    </div>--}}
+    {{--</div>--}}
 
     {{-- Alert --}}
     @if(session('success'))

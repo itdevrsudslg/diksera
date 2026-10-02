@@ -285,58 +285,58 @@
     {{-- Efek Glow Halus (Opsional, agar tidak flat) --}}
     <div class="position-absolute top-0 start-0 w-100 h-100 bg-white opacity-0" 
          style="background: radial-gradient(circle at top right, rgba(255,255,255,0.15), transparent 60%);"></div>
-<!--<div class="card-body p-4 position-relative z-1">-->
-<!--    <div class="d-flex justify-content-between align-items-start mb-3">-->
-<!--        <h6 class="fw-bold text-white-50 text-uppercase" style="font-size: 11px; letter-spacing: 1.5px;">-->
-<!--            Status Pengajuan Kredensialing-->
-<!--        </h6>-->
+{{--<div class="card-body p-4 position-relative z-1">--}}
+{{--    <div class="d-flex justify-content-between align-items-start mb-3">--}}
+{{--        <h6 class="fw-bold text-white-50 text-uppercase" style="font-size: 11px; letter-spacing: 1.5px;">--}}
+{{--            Status Pengajuan Kredensialing--}}
+{{--        </h6>--}}
         
-<!--        @if($latestPengajuan && in_array($latestPengajuan->status, ['pending', 'method_selected', 'exam_passed', 'interview_scheduled']))-->
-<!--            <span class="position-relative d-flex h-10 w-10">-->
-<!--              <span class="animate-ping position-absolute d-inline-flex h-100 w-100 rounded-circle bg-warning opacity-75"></span>-->
-<!--              <span class="position-relative d-inline-flex rounded-circle h-10 w-10 bg-warning" style="width:10px; height:10px;"></span>-->
-<!--            </span>-->
-<!--        @endif-->
-<!--    </div>-->
+{{--        @if($latestPengajuan && in_array($latestPengajuan->status, ['pending', 'method_selected', 'exam_passed', 'interview_scheduled']))--}}
+{{--            <span class="position-relative d-flex h-10 w-10">--}}
+{{--              <span class="animate-ping position-absolute d-inline-flex h-100 w-100 rounded-circle bg-warning opacity-75"></span>--}}
+{{--              <span class="position-relative d-inline-flex rounded-circle h-10 w-10 bg-warning" style="width:10px; height:10px;"></span>--}}
+{{--            </span>--}}
+{{--        @endif--}}
+{{--    </div>--}}
 
-<!--    @if($latestPengajuan)-->
-<!--        <h3 class="fw-bold mb-2">{{ ucfirst($latestPengajuan->tipe_sertifikat ?? 'Kredensialing') }}</h3>-->
+{{--    @if($latestPengajuan)--}}
+{{--        <h3 class="fw-bold mb-2">{{ ucfirst($latestPengajuan->tipe_sertifikat ?? 'Kredensialing') }}</h3>--}}
         
-<!--        <div class="mb-4">-->
+{{--        <div class="mb-4">--}}
 <!--            {{-- JIKA SUDAH SELESAI 100% --}}-->
-<!--            @if($latestPengajuan->status == 'completed' || $latestPengajuan->status == 'disetujui')-->
-<!--                <div class="bg-white bg-opacity-25 p-3 rounded-3 mt-3">-->
-<!--                    <p class="small mb-2 fw-bold"><i class="bi bi-check-circle-fill text-success me-1"></i> Proses Selesai!</p>-->
-<!--                    <p class="small mb-3 text-white-50">Sertifikat Penugasan Klinis Anda sudah diterbitkan.</p>-->
+{{--            @if($latestPengajuan->status == 'completed' || $latestPengajuan->status == 'disetujui')--}}
+{{--                <div class="bg-white bg-opacity-25 p-3 rounded-3 mt-3">--}}
+{{--                    <p class="small mb-2 fw-bold"><i class="bi bi-check-circle-fill text-success me-1"></i> Proses Selesai!</p>--}}
+{{--                    <p class="small mb-3 text-white-50">Sertifikat Penugasan Klinis Anda sudah diterbitkan.</p>--}}
                     
-<!--                    <div class="d-flex gap-2">-->
-<!--                        <a href="{{ route('perawat.pengajuan.print_spk', $latestPengajuan->id) }}" target="_blank" class="btn btn-sm btn-light text-primary fw-bold rounded-pill w-100 shadow-sm">-->
-<!--                            <i class="bi bi-download"></i> Unduh SPK-->
-<!--                        </a>-->
-<!--                        <a href="{{ route('perawat.pengajuan.print_spkk', $latestPengajuan->id) }}" target="_blank" class="btn btn-sm btn-light text-primary fw-bold rounded-pill w-100 shadow-sm">-->
-<!--                            <i class="bi bi-download"></i> Unduh SPKK-->
-<!--                        </a>-->
-<!--                    </div>-->
-<!--                </div>-->
+{{--                    <div class="d-flex gap-2">--}}
+{{--                        <a href="{{ route('perawat.pengajuan.print_spk', $latestPengajuan->id) }}" target="_blank" class="btn btn-sm btn-light text-primary fw-bold rounded-pill w-100 shadow-sm">--}}
+{{--                            <i class="bi bi-download"></i> Unduh SPK--}}
+{{--                        </a>--}}
+{{--                        <a href="{{ route('perawat.pengajuan.print_spkk', $latestPengajuan->id) }}" target="_blank" class="btn btn-sm btn-light text-primary fw-bold rounded-pill w-100 shadow-sm">--}}
+{{--                            <i class="bi bi-download"></i> Unduh SPKK--}}
+{{--                        </a>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
 
 <!--            {{-- JIKA MASIH PROSES --}}-->
-<!--            @else-->
-<!--                <span class="badge bg-white text-warning border border-white px-3 py-2 rounded-pill fw-bold mb-3">-->
-<!--                    <i class="bi bi-hourglass-split me-1"></i> Sedang Diproses-->
-<!--                </span>-->
+{{--            @else--}}
+{{--                <span class="badge bg-white text-warning border border-white px-3 py-2 rounded-pill fw-bold mb-3">--}}
+{{--                    <i class="bi bi-hourglass-split me-1"></i> Sedang Diproses--}}
+{{--                </span>--}}
                 
-                <!-- Tombol Trigger Modal Tracking -->
-<!--                <button type="button" class="btn btn-sm btn-outline-light w-100 rounded-pill py-2 fw-semibold" data-bs-toggle="modal" data-bs-target="#trackingModal">-->
-<!--                    <i class="bi bi-search me-1"></i> Lihat Status Persetujuan-->
-<!--                </button>-->
-<!--            @endif-->
-<!--        </div>-->
-<!--    @else-->
-        <!-- Tampilan Belum Ada Pengajuan -->
-<!--    @endif-->
-<!--</div>-->
+                {{-- Tombol Trigger Modal Tracking --}}
+{{--                <button type="button" class="btn btn-sm btn-outline-light w-100 rounded-pill py-2 fw-semibold" data-bs-toggle="modal" data-bs-target="#trackingModal">--}}
+{{--                    <i class="bi bi-search me-1"></i> Lihat Status Persetujuan--}}
+{{--                </button>--}}
+{{--            @endif--}}
+{{--        </div>--}}
+{{--    @else--}}
+        {{-- Tampilan Belum Ada Pengajuan --}}
+{{--    @endif--}}
+{{--</div>--}}
 
-<!-- Modal Tracking Progress (Taruh di paling bawah sejajar dengan chatModal) -->
+{{-- Modal Tracking Progress (Taruh di paling bawah sejajar dengan chatModal) --}}
 @if($latestPengajuan && $latestPengajuan->status != 'completed')
 <div class="modal fade" id="trackingModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">

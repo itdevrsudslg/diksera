@@ -154,10 +154,10 @@
                     <div class="row g-4">
 
                         {{-- NEW: Nama & Lembaga --}}
-                        <!--<div class="col-md-6">-->
-                        <!--    <label class="form-label">Nama STR <span class="required-star">*</span></label>-->
-                        <!--    <input type="text" name="nama" class="form-control @error('nama') is-invalid @enderror" value="{{ old('nama') }}" placeholder="Contoh: STR Baru, STR Perpanjangan" required>-->
-                        <!--</div>-->
+                        {{--<div class="col-md-6">--}}
+                        {{--    <label class="form-label">Nama STR <span class="required-star">*</span></label>--}}
+                        {{--    <input type="text" name="nama" class="form-control @error('nama') is-invalid @enderror" value="{{ old('nama') }}" placeholder="Contoh: STR Baru, STR Perpanjangan" required>--}}
+                        {{--</div>--}}
                         {{-- Nomor STR --}}
                         <div class="col-12">
                             <label class="form-label">Nomor STR <span class="required-star">*</span></label>

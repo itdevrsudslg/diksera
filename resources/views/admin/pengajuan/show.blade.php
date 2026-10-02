@@ -221,9 +221,9 @@
                                             <small class="text-muted">Skor minimal Lulus: 75</small>
                                         </div>
                                         <div class="text-end">
-                                            <!--<span class="badge {{ $exam->lulus ? 'bg-success' : 'bg-warning' }} rounded-pill">-->
-                                            <!--    {{ $exam->lulus ? 'Disetujui Admin' : 'Menunggu Validasi' }}-->
-                                            <!--</span>-->
+                                            {{--<span class="badge {{ $exam->lulus ? 'bg-success' : 'bg-warning' }} rounded-pill">--}}
+                                            {{--    {{ $exam->lulus ? 'Disetujui Admin' : 'Menunggu Validasi' }}--}}
+                                            {{--</span>--}}
                                         </div>
                                     </div>
                                     <div class="mt-2 small text-muted">
@@ -360,35 +360,33 @@
                     @endif
                 </div>
             </div>
-{{-- Blok SPK nonaktif (pakai Blade comment agar route() di dalamnya tidak dieksekusi)
-<!--            <div class="card border-0 shadow-sm rounded-4 mt-4">-->
-<!--    <div class="card-header bg-white border-0 pt-4 px-4">-->
-<!--        <h6 class="fw-bold mb-0"><i class="bi bi-send-check text-primary me-2"></i>Penerbitan Dokumen SPK & SPKK</h6>-->
-<!--    </div>-->
-<!--    <div class="card-body p-4">-->
-<!--        @if($pengajuan->status == 'disetujui')-->
-<!--            <div class="alert alert-success border-0 mb-0">-->
-<!--                <i class="bi bi-check-circle-fill me-2"></i> Dokumen SPK & SPKK sudah diterbitkan dan terkirim ke Dashboard Perawat.-->
-<!--            </div>-->
+{{--            <div class="card border-0 shadow-sm rounded-4 mt-4">--}}
+{{--    <div class="card-header bg-white border-0 pt-4 px-4">--}}
+{{--        <h6 class="fw-bold mb-0"><i class="bi bi-send-check text-primary me-2"></i>Penerbitan Dokumen SPK & SPKK</h6>--}}
+{{--    </div>--}}
+{{--    <div class="card-body p-4">--}}
+{{--        @if($pengajuan->status == 'disetujui')--}}
+{{--            <div class="alert alert-success border-0 mb-0">--}}
+{{--                <i class="bi bi-check-circle-fill me-2"></i> Dokumen SPK & SPKK sudah diterbitkan dan terkirim ke Dashboard Perawat.--}}
+{{--            </div>--}}
             
-            <!-- Tombol untuk Admin ngintip PDF-nya -->
-<!--            <div class="mt-3">-->
-<!--                <a href="{{ route('pengajuan.print_spk', $pengajuan->id) }}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3">Lihat SPK</a>-->
-<!--                <a href="{{ route('pengajuan.print_spkk', $pengajuan->id) }}" target="_blank" class="btn btn-outline-info btn-sm rounded-pill px-3">Lihat SPKK</a>-->
-<!--            </div>-->
-<!--        @else-->
-<!--            <p class="small text-muted mb-3">Pastikan semua tahapan kredensialing sudah selesai sebelum menerbitkan dokumen ini ke perawat bersangkutan.</p>-->
+            {{-- Tombol untuk Admin ngintip PDF-nya --}}
+{{--            <div class="mt-3">--}}
+{{--                <a href="{{ route('pengajuan.print_spk', $pengajuan->id) }}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3">Lihat SPK</a>--}}
+{{--                <a href="{{ route('pengajuan.print_spkk', $pengajuan->id) }}" target="_blank" class="btn btn-outline-info btn-sm rounded-pill px-3">Lihat SPKK</a>--}}
+{{--            </div>--}}
+{{--        @else--}}
+{{--            <p class="small text-muted mb-3">Pastikan semua tahapan kredensialing sudah selesai sebelum menerbitkan dokumen ini ke perawat bersangkutan.</p>--}}
             
-<!--            <form action="{{ route('admin.pengajuan.terbitkan_spk', $pengajuan->id) }}" method="POST">-->
-<!--                @csrf-->
-<!--                <button type="submit" class="btn btn-primary fw-bold rounded-pill px-4 shadow-sm" onclick="return confirm('Terbitkan SPK dan kirim ke dashboard perawat sekarang?')">-->
-<!--                    <i class="bi bi-send-fill me-2"></i> Terbitkan & Kirim SPK-->
-<!--                </button>-->
-<!--            </form>-->
-<!--        @endif-->
-<!--    </div>-->
-<!--</div>-->
---}}
+{{--            <form action="{{ route('admin.pengajuan.terbitkan_spk', $pengajuan->id) }}" method="POST">--}}
+{{--                @csrf--}}
+{{--                <button type="submit" class="btn btn-primary fw-bold rounded-pill px-4 shadow-sm" onclick="return confirm('Terbitkan SPK dan kirim ke dashboard perawat sekarang?')">--}}
+{{--                    <i class="bi bi-send-fill me-2"></i> Terbitkan & Kirim SPK--}}
+{{--                </button>--}}
+{{--            </form>--}}
+{{--        @endif--}}
+{{--    </div>--}}
+{{--</div>--}}
         </div>
     </div>
 </div>

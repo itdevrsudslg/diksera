@@ -154,10 +154,10 @@
                     <div class="row g-4">
 
                         <!--{{-- NEW: Nama & Lembaga --}}-->
-                        <!--<div class="col-md-6">-->
-                        <!--    <label class="form-label">Nama SIP <span class="required-star">*</span></label>-->
-                        <!--    <input type="text" name="nama" class="form-control @error('nama') is-invalid @enderror" value="{{ old('nama') }}" placeholder="Contoh: SIP-I, SIP-II" required>-->
-                        <!--</div>-->
+                        {{--<div class="col-md-6">--}}
+                        {{--    <label class="form-label">Nama SIP <span class="required-star">*</span></label>--}}
+                        {{--    <input type="text" name="nama" class="form-control @error('nama') is-invalid @enderror" value="{{ old('nama') }}" placeholder="Contoh: SIP-I, SIP-II" required>--}}
+                        {{--</div>--}}
 
                         {{-- Nomor SIP --}}
                         <div class="col-12">

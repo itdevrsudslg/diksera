@@ -176,10 +176,10 @@
                     <div class="row g-4">
 
                         <!--{{-- NEW: Nama & Lembaga --}}-->
-                        <!--<div class="col-md-6">-->
-                        <!--    <label class="form-label">Nama SIP <span class="required-star">*</span></label>-->
-                        <!--    <input type="text" name="nama" class="form-control" value="{{ old('nama', $data->nama) }}" required placeholder="Contoh: SIP-I">-->
-                        <!--</div>-->
+                        {{--<div class="col-md-6">--}}
+                        {{--    <label class="form-label">Nama SIP <span class="required-star">*</span></label>--}}
+                        {{--    <input type="text" name="nama" class="form-control" value="{{ old('nama', $data->nama) }}" required placeholder="Contoh: SIP-I">--}}
+                        {{--</div>--}}
 
                         {{-- Nomor --}}
                         <div class="col-12">

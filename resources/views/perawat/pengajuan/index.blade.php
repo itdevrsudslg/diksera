@@ -519,17 +519,17 @@
                     <form action="{{ route('perawat.pengajuan.store_wawancara', $item->id) }}" method="POST">
                         @csrf
                         <div class="row g-3">
-                            <!--<div class="col-md-6">-->
-                            <!--    <label class="form-label-sm">Pilih Pewawancara</label>-->
-                            <!--    <select name="penanggung_jawab_id" class="form-select" required>-->
-                            <!--        <option value="">-- Pilih --</option>-->
-                            <!--        @foreach ($pjs as $pj) <option value="{{ $pj->id }}">{{ $pj->nama }}</option> @endforeach-->
-                            <!--    </select>-->
-                            <!--</div>-->
-                            <!--<div class="col-md-6">-->
-                            <!--    <label class="form-label-sm">Usulan Lokasi</label>-->
-                            <!--    <input type="text" name="lokasi_wawancara" class="form-control" placeholder="Contoh: R. Komite" required>-->
-                            <!--</div>-->
+                            {{--<div class="col-md-6">--}}
+                            {{--    <label class="form-label-sm">Pilih Pewawancara</label>--}}
+                            {{--    <select name="penanggung_jawab_id" class="form-select" required>--}}
+                            {{--        <option value="">-- Pilih --</option>--}}
+                            {{--        @foreach ($pjs as $pj) <option value="{{ $pj->id }}">{{ $pj->nama }}</option> @endforeach--}}
+                            {{--    </select>--}}
+                            {{--</div>--}}
+                            {{--<div class="col-md-6">--}}
+                            {{--    <label class="form-label-sm">Usulan Lokasi</label>--}}
+                            {{--    <input type="text" name="lokasi_wawancara" class="form-control" placeholder="Contoh: R. Komite" required>--}}
+                            {{--</div>--}}
                             <div class="col-md-3"><label class="form-label-sm">Tanggal</label><input type="date" name="tgl_wawancara" class="form-control" required></div>
                             <div class="col-md-3"><label class="form-label-sm">Jam</label><input type="time" name="jam_wawancara" class="form-control" required></div>
                             <div class="col-md-6 d-flex align-items-end">
@@ -553,9 +553,9 @@
                             <span class="badge bg-warning text-dark rounded-pill px-3">Menunggu Konfirmasi</span>
                         </div>
                         <div class="row g-4 mt-1">
-                            <!--<div class="col-sm-4"><small class="text-muted d-block mb-1">Pewawancara</small><div class="fw-semibold text-dark">{{ $jadwal->pewawancara->nama ?? '-' }}</div></div>-->
+                            {{--<div class="col-sm-4"><small class="text-muted d-block mb-1">Pewawancara</small><div class="fw-semibold text-dark">{{ $jadwal->pewawancara->nama ?? '-' }}</div></div>--}}
                             <div class="col-sm-4"><small class="text-muted d-block mb-1">Waktu</small><div class="fw-semibold text-dark">{{ \Carbon\Carbon::parse($jadwal->waktu_wawancara)->format('d M Y, H:i') }} WIB</div></div>
-                            <!--<div class="col-sm-4"><small class="text-muted d-block mb-1">Lokasi</small><div class="fw-semibold text-dark">{{ $jadwal->lokasi }}</div></div>-->
+                            {{--<div class="col-sm-4"><small class="text-muted d-block mb-1">Lokasi</small><div class="fw-semibold text-dark">{{ $jadwal->lokasi }}</div></div>--}}
                         </div>
                     </div>
                 @elseif ($jadwal->status == 'approved')

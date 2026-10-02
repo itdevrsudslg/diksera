@@ -113,7 +113,7 @@
     <label class="form-label">NIK (KTP)</label>
     <input type="text" name="nik" class="form-control" value="{{ old('nik', $profile->nik ?? '') }}" placeholder="16 digit angka">
 </div>
-<!-- TAMBAHKAN INI -->
+{{-- TAMBAHKAN INI --}}
 <div class="col-md-4">
     <label class="form-label">NPWP</label>
     <input type="text" name="npwp" class="form-control" value="{{ old('npwp', $profile->npwp ?? '') }}" placeholder="Nomor NPWP">
@@ -164,11 +164,11 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <!--<div class="col-md-4">-->
-                                <!--    <label class="form-label">Aliran Kepercayaan <small class="text-muted">(Opsional)</small></label>-->
-                                <!--    <input type="text" name="aliran_kepercayaan" class="form-control"-->
-                                <!--        value="{{ old('aliran_kepercayaan', $profile->aliran_kepercayaan ?? '') }}">-->
-                                <!--</div>-->
+                                {{--<div class="col-md-4">--}}
+                                {{--    <label class="form-label">Aliran Kepercayaan <small class="text-muted">(Opsional)</small></label>--}}
+                                {{--    <input type="text" name="aliran_kepercayaan" class="form-control"--}}
+                                {{--        value="{{ old('aliran_kepercayaan', $profile->aliran_kepercayaan ?? '') }}">--}}
+                                {{--</div>--}}
                                 <div class="col-md-12">
                                     <label class="form-label">Hobi / Kegemaran</label>
                                     <input type="text" name="hobby" class="form-control"
@@ -200,7 +200,7 @@
     <label class="form-label">Alamat Lengkap (Jalan / RT RW)</label>
     <textarea name="alamat" rows="2" class="form-control" placeholder="Jalan, RT/RW">{{ old('alamat', $profile->alamat ?? '') }}</textarea>
 </div>
-<!-- TAMBAHKAN INI -->
+{{-- TAMBAHKAN INI --}}
 <div class="col-md-6">
     <label class="form-label">Kelurahan / Desa</label>
     <input type="text" name="kelurahan_desa" class="form-control" value="{{ old('kelurahan_desa', $profile->kelurahan_desa ?? '') }}">
@@ -321,7 +321,7 @@
         <input type="hidden" id="old_jabatan" value="{{ old('jabatan', $profile->jabatan ?? '') }}">
     </div>
     
-    <!-- TAMBAHAN: JABATAN STRUKTURAL -->
+    {{-- TAMBAHAN: JABATAN STRUKTURAL --}}
     <div class="col-md-4">
         <label class="form-label">Jabatan Struktural <span class="text-danger">*</span></label>
         <select name="jabatan_struktural" class="form-select" required>
@@ -359,7 +359,7 @@
                                     </select>
                                 </div>
                             </div>
-<!-- TAMBAHKAN INI DI DALAM SECTION D -->
+{{-- TAMBAHKAN INI DI DALAM SECTION D --}}
 <div class="row g-3 mt-2">
     <div class="col-md-4">
         <label class="form-label">TMT CPNS <small class="text-muted">(Jika ASN)</small></label>
