@@ -310,12 +310,11 @@
                         {{-- 2. Selesaikan Proses (Jika status interview_scheduled & jadwal disetujui/completed) --}}
                         @php $jadwal = $pengajuan->jadwalWawancara; @endphp
                         @if ($pengajuan->status == 'interview_scheduled' && $jadwal && $jadwal->status == 'approved' && $jadwal->penilaian)
-                            <form action="{{ route('admin.pengajuan.completeProcess', $pengajuan->id) }}" method="POST">
-                                @csrf
-                                <button type="submit" class="btn btn-success w-100 fw-bold py-2 rounded-pill">
-                                    <i class="bi bi-patch-check me-1"></i> TERBITKAN LISENSI
-                                </button>
-                            </form>
+                            <a href="{{ route('admin.pengajuan.complete', $pengajuan->id) }}"
+                                class="btn btn-success w-100 fw-bold py-2 rounded-pill"
+                                onclick="return confirm('Terbitkan lisensi untuk pengajuan ini?')">
+                                <i class="bi bi-patch-check me-1"></i> TERBITKAN LISENSI
+                            </a>
                         @endif
                     </div>
 
@@ -361,6 +360,7 @@
                     @endif
                 </div>
             </div>
+{{-- Blok SPK nonaktif (pakai Blade comment agar route() di dalamnya tidak dieksekusi)
 <!--            <div class="card border-0 shadow-sm rounded-4 mt-4">-->
 <!--    <div class="card-header bg-white border-0 pt-4 px-4">-->
 <!--        <h6 class="fw-bold mb-0"><i class="bi bi-send-check text-primary me-2"></i>Penerbitan Dokumen SPK & SPKK</h6>-->
@@ -388,6 +388,7 @@
 <!--        @endif-->
 <!--    </div>-->
 <!--</div>-->
+--}}
         </div>
     </div>
 </div>

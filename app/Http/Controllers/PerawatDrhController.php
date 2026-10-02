@@ -269,9 +269,9 @@ $user->update([
             'nama_institusi' => 'required|string|max:150',
             'akreditasi'     => 'nullable|string|max:50',
             'tempat'         => 'nullable|string|max:100',
-            'tahun_lulus'    => 'nullable|string|max:10',
+            'tahun_lulus'    => 'nullable|digits:4',
             'jurusan'        => 'nullable|string|max:150',
-            'tahun_masuk'    => 'nullable|string|max:10',
+            'tahun_masuk'    => 'nullable|digits:4',
             'dokumen'        => 'nullable|mimes:pdf,jpg,jpeg,png|max:4096',
             'nomor_ijazah'   => 'nullable|string|max:100',
         ]);
@@ -311,9 +311,9 @@ $user->update([
             'nama_institusi' => 'required|string|max:150',
             'akreditasi'     => 'nullable|string|max:50',
             'tempat'         => 'nullable|string|max:100',
-            'tahun_lulus'    => 'nullable|string|max:10',
+            'tahun_lulus'    => 'nullable|digits:4',
             'jurusan'        => 'nullable|string|max:150',
-            'tahun_masuk'    => 'nullable|string|max:10',
+            'tahun_masuk'    => 'nullable|digits:4',
             'dokumen'        => 'nullable|mimes:pdf,jpg,jpeg,png|max:4096',
             'nomor_ijazah'   => 'nullable|string|max:100',
         ]);
@@ -414,6 +414,7 @@ $request->validate([
 
         $data = $request->except(['dokumen', '_token']);
         $data['user_id'] = $user->id;
+        $data['skp'] = $request->input('skp') ?? 0;
 
         if ($request->hasFile('dokumen')) {
             $data['dokumen_path'] = $request->file('dokumen')->store('perawat/pelatihan', 'public');
@@ -455,6 +456,7 @@ $request->validate([
 ]);
 
         $data = $request->except(['dokumen', '_token', '_method']);
+        $data['skp'] = $request->input('skp') ?? 0;
 
         if ($request->hasFile('dokumen')) {
             if ($pelatihan->dokumen_path && Storage::disk('public')->exists($pelatihan->dokumen_path)) {

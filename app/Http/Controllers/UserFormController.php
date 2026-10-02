@@ -299,8 +299,7 @@ if ($isRemidi && $currentAttemptNumber >= 3) {
         
         DB::commit();
 
-        return redirect()->route('perawat.ujian.selesai', [
-            'form' => $form->slug,
+        return redirect()->route('perawat.ujian.hasil', [
             'result_id' => $result->id
         ]);
 
