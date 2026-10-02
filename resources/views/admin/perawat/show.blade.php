@@ -119,7 +119,11 @@
 @section('content')
 
     {{-- Tombol Kembali --}}
-    <div class="d-flex justify-content-end mb-3">
+    <div class="d-flex flex-wrap justify-content-end gap-2 mb-3">
+        <a href="{{ route('admin.perawat.timeline', $user->id) }}" class="btn btn-sm btn-outline-primary px-3"
+            style="border-radius: 8px; font-size: 12px;">
+            <i class="bi bi-clock-history"></i> Riwayat Kredensialing
+        </a>
         <a href="{{ route('admin.perawat.index') }}" class="btn btn-sm btn-outline-secondary px-3"
             style="border-radius: 8px; font-size: 12px;">
             <i class="bi bi-arrow-left"></i> Kembali ke Daftar

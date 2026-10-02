@@ -65,9 +65,14 @@
             <h1 class="h3 fw-bold text-dark mb-1">Detail Verifikasi Berkas</h1>
             <p class="text-muted small mb-0">Verifikasi dokumen pengajuan dan tentukan metode evaluasi.</p>
         </div>
-        <a href="{{ route('admin.pengajuan.index') }}" class="btn btn-outline-secondary px-4 rounded-pill">
-            <i class="bi bi-arrow-left me-2"></i>Kembali
-        </a>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ route('admin.perawat.timeline', $pengajuan->user_id) }}" class="btn btn-outline-primary px-4 rounded-pill">
+                <i class="bi bi-clock-history me-2"></i>Riwayat Peserta
+            </a>
+            <a href="{{ route('admin.pengajuan.index') }}" class="btn btn-outline-secondary px-4 rounded-pill">
+                <i class="bi bi-arrow-left me-2"></i>Kembali
+            </a>
+        </div>
     </div>
 
     <div class="row g-4">

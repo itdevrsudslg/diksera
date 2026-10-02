@@ -108,6 +108,7 @@ Route::post('bank-item-rkk/import-json', [BankItemRkkController::class, 'importJ
         Route::put('/perawat/{id}', [AdminPerawatController::class, 'update'])->name('perawat.update');
         Route::delete('/perawat/{id}', [AdminPerawatController::class, 'destroy'])->name('perawat.destroy');
         Route::get('/perawat/{id}/sertifikat', [AdminPerawatController::class, 'sertifikat'])->name('perawat.sertifikat');
+        Route::get('/perawat/{id}/timeline', [AdminPerawatController::class, 'timeline'])->name('perawat.timeline');
         // Route Edit Dokumen Sertifikat dari Halaman Admin
 Route::put('/perawat/sertifikat/str/{id}', [AdminPerawatController::class, 'updateStr'])->name('perawat.sertifikat.update_str');
 Route::put('/perawat/sertifikat/sip/{id}', [AdminPerawatController::class, 'updateSip'])->name('perawat.sertifikat.update_sip');

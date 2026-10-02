@@ -17,6 +17,8 @@ use App\Models\PerawatSip;
 use App\Models\PerawatStr;
 use App\Models\PerawatDataTambahan;
 use App\Models\PerawatLisensi;
+use App\Models\PengajuanSertifikat;
+use App\Models\ExamResult;
 use App\Services\PkRecommendationService;
 class AdminPerawatController extends Controller
 {
@@ -189,6 +191,171 @@ class AdminPerawatController extends Controller
             'dataTambahan',
             'lisensi'
         ));
+    }
+
+    /**
+     * RIWAYAT TIMELINE KREDENSIALING / UKOM PER PESERTA
+     * Disusun dari data yang sudah ada (pengajuan, hasil ujian, jadwal & penilaian wawancara, lisensi).
+     */
+    public function timeline($id)
+    {
+        $user = User::where('role', 'perawat')->findOrFail($id);
+        $profile = PerawatProfile::where('user_id', $user->id)->first();
+
+        $pengajuans = PengajuanSertifikat::with(['jadwalWawancara.penilaian', 'jadwalWawancara.pewawancara', 'lisensiLama'])
+            ->where('user_id', $user->id)
+            ->orderBy('created_at')
+            ->get();
+
+        $exams = ExamResult::with('form')
+            ->where('user_id', $user->id)
+            ->orderBy('created_at')
+            ->get();
+
+        $metodeLabel = [
+            'pg_only'        => 'Ujian Tulis (PG)',
+            'pg_interview'   => 'Ujian Tulis + Wawancara',
+            'interview_only' => 'Wawancara Saja',
+        ];
+
+        $statusLabel = [
+            'pending'             => ['Menunggu Verifikasi', 'warning'],
+            'verified'            => ['Terverifikasi', 'info'],
+            'method_selected'     => ['Tahap Ujian', 'info'],
+            'exam_passed'         => ['Lulus Ujian, Menunggu Wawancara', 'info'],
+            'interview_scheduled' => ['Wawancara Terjadwal', 'info'],
+            'interview_failed'    => ['Tidak Lulus Wawancara', 'danger'],
+            'completed'           => ['Selesai - Lisensi Terbit', 'success'],
+            'disetujui'           => ['Selesai - Lisensi Terbit', 'success'],
+            'rejected'            => ['Ditolak', 'danger'],
+        ];
+
+        $tgl = fn($d) => $d ? \Carbon\Carbon::parse($d)->translatedFormat('d M Y') : '-';
+
+        $riwayat = $pengajuans->values()->map(function ($p, $i) use ($pengajuans, $exams, $metodeLabel, $statusLabel, $tgl) {
+            $next = $pengajuans->get($i + 1);
+            $steps = [];
+
+            // 1. Pengajuan dibuat
+            $steps[] = [
+                'state' => 'done',
+                'icon'  => 'bi-file-earmark-plus',
+                'title' => 'Pengajuan ' . ucfirst($p->jenis_pengajuan ?? '') . ' dibuat',
+                'time'  => $p->created_at,
+                'desc'  => $p->lisensiLama && $p->jenis_pengajuan === 'perpanjangan'
+                    ? 'Perpanjangan dari lisensi ' . ($p->lisensiLama->nomor ?? '-')
+                    : null,
+            ];
+
+            // 2. Verifikasi berkas & pemilihan metode
+            $lewatVerifikasi = !in_array($p->status, ['pending', 'rejected']) || $p->metode;
+            $steps[] = [
+                'state' => $lewatVerifikasi ? 'done' : ($p->status === 'rejected' ? 'skip' : 'current'),
+                'icon'  => 'bi-patch-check',
+                'title' => 'Verifikasi berkas & penentuan metode',
+                'time'  => null,
+                'desc'  => $p->metode ? 'Metode: ' . ($metodeLabel[$p->metode] ?? $p->metode) : 'Menunggu verifikasi admin',
+            ];
+
+            // 3. Ujian tulis (semua percobaan dalam rentang pengajuan ini)
+            if ($p->metode !== 'interview_only') {
+                $attempts = $exams->filter(function ($e) use ($p, $next) {
+                    return $e->created_at >= $p->created_at && (!$next || $e->created_at < $next->created_at);
+                })->values();
+
+                foreach ($attempts as $n => $e) {
+                    $lulus = $e->total_nilai >= 75;
+                    $steps[] = [
+                        'state' => $lulus ? 'done' : 'failed',
+                        'icon'  => 'bi-pencil-square',
+                        'title' => 'Ujian tulis' . ($attempts->count() > 1 ? ' (percobaan ' . ($n + 1) . ')' : '') . ($e->remidi ? ' - Remidi' : ''),
+                        'time'  => $e->waktu_selesai ?? $e->created_at,
+                        'desc'  => ($e->form->judul ?? 'Ujian') . ' · Nilai ' . $e->total_nilai
+                            . ' (benar ' . $e->total_benar . ', salah ' . $e->total_salah . ') · ' . ($lulus ? 'Memenuhi KKM' : 'Di bawah KKM 75'),
+                    ];
+                }
+
+                if ($attempts->isEmpty() && in_array($p->status, ['pending', 'verified', 'method_selected'])) {
+                    $steps[] = ['state' => $p->status === 'method_selected' ? 'current' : 'todo', 'icon' => 'bi-pencil-square',
+                        'title' => 'Ujian tulis', 'time' => null, 'desc' => 'Belum mengerjakan ujian'];
+                }
+
+                $nilaiValid = in_array($p->status, ['exam_passed', 'interview_scheduled', 'interview_failed', 'completed', 'disetujui']);
+                if ($attempts->isNotEmpty() || $nilaiValid) {
+                    $steps[] = [
+                        'state' => $nilaiValid ? 'done' : ($p->status === 'rejected' ? 'skip' : 'current'),
+                        'icon'  => 'bi-clipboard-check',
+                        'title' => 'Validasi nilai oleh admin',
+                        'time'  => null,
+                        'desc'  => $nilaiValid ? 'Nilai disetujui' : 'Menunggu validasi',
+                    ];
+                }
+            }
+
+            // 4. Wawancara / uji skill
+            if ($p->metode !== 'pg_only') {
+                $jadwal = $p->jadwalWawancara;
+                if ($jadwal) {
+                    $steps[] = [
+                        'state' => 'done',
+                        'icon'  => 'bi-calendar-event',
+                        'title' => 'Jadwal wawancara ditetapkan',
+                        'time'  => $jadwal->created_at,
+                        'desc'  => 'Pelaksanaan ' . optional($jadwal->waktu_wawancara)->translatedFormat('d M Y, H:i')
+                            . ' · ' . ($jadwal->lokasi ?? '-')
+                            . ($jadwal->pewawancara ? ' · Pewawancara: ' . $jadwal->pewawancara->nama : ''),
+                    ];
+
+                    if ($pen = $jadwal->penilaian) {
+                        $lulus = $pen->keputusan === 'lulus';
+                        $steps[] = [
+                            'state' => $lulus ? 'done' : 'failed',
+                            'icon'  => 'bi-person-check',
+                            'title' => 'Hasil wawancara: ' . ($lulus ? 'Lulus' : 'Tidak Lulus'),
+                            'time'  => $pen->created_at,
+                            'desc'  => $pen->catatan_pewawancara,
+                        ];
+                    } else {
+                        $steps[] = ['state' => in_array($p->status, ['rejected']) ? 'skip' : 'current', 'icon' => 'bi-person-check',
+                            'title' => 'Penilaian wawancara', 'time' => null, 'desc' => 'Menunggu penilaian pewawancara'];
+                    }
+                } elseif (!in_array($p->status, ['rejected', 'completed', 'disetujui'])) {
+                    $steps[] = ['state' => $p->status === 'exam_passed' || $p->metode === 'interview_only' ? 'current' : 'todo',
+                        'icon' => 'bi-calendar-event', 'title' => 'Wawancara / uji skill', 'time' => null, 'desc' => 'Belum dijadwalkan'];
+                }
+            }
+
+            // 5. Hasil akhir
+            if (in_array($p->status, ['completed', 'disetujui'])) {
+                $lis = $p->lisensiLama;
+                $steps[] = [
+                    'state' => 'done',
+                    'icon'  => 'bi-award',
+                    'title' => 'Lisensi / sertifikat terbit',
+                    'time'  => $p->updated_at,
+                    'desc'  => $lis
+                        ? ($lis->nomor ?? '-') . ' · Berlaku ' . $tgl($lis->tgl_terbit) . ' s/d ' . $tgl($lis->tgl_expired)
+                        : null,
+                ];
+            } elseif ($p->status === 'rejected') {
+                $steps[] = ['state' => 'failed', 'icon' => 'bi-x-octagon', 'title' => 'Pengajuan ditolak',
+                    'time' => $p->updated_at, 'desc' => $p->keterangan];
+            } elseif ($p->status === 'interview_failed') {
+                $steps[] = ['state' => 'failed', 'icon' => 'bi-x-octagon', 'title' => 'Proses berhenti: tidak lulus wawancara',
+                    'time' => $p->updated_at, 'desc' => $p->keterangan];
+            } else {
+                $steps[] = ['state' => 'todo', 'icon' => 'bi-award', 'title' => 'Lisensi / sertifikat terbit', 'time' => null, 'desc' => null];
+            }
+
+            return [
+                'pengajuan' => $p,
+                'metode'    => $metodeLabel[$p->metode] ?? '-',
+                'status'    => $statusLabel[$p->status] ?? [ucfirst(str_replace('_', ' ', $p->status)), 'secondary'],
+                'steps'     => $steps,
+            ];
+        })->reverse()->values();
+
+        return view('admin.perawat.timeline', compact('user', 'profile', 'riwayat'));
     }
 
     public function edit($id)
