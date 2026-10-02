@@ -201,6 +201,15 @@
             background: #fee2e2;
             color: #991b1b;
         }
+
+        .row-link {
+            cursor: pointer;
+        }
+
+        .row-link:hover .user-link {
+            color: var(--bs-primary) !important;
+            text-decoration: underline !important;
+        }
     </style>
 @endpush
 
@@ -287,7 +296,8 @@
                     </thead>
                     <tbody>
                         @forelse($users as $user)
-                            <tr>
+                            @php $detailUrl = $user->role === 'perawat' ? route('admin.perawat.show', $user->id) : null; @endphp
+                            <tr @if ($detailUrl) class="row-link" data-href="{{ $detailUrl }}" title="Lihat detail pegawai" @endif>
                                 <td class="text-center text-muted" style="font-size: 11px;">
                                     {{ ($users->currentPage() - 1) * $users->perPage() + $loop->iteration }}</td>
 
@@ -302,7 +312,11 @@
                                         @endphp
                                         <div class="avatar-initial">{{ $initials }}</div>
                                         <div style="line-height: 1.3;">
-                                            <div class="fw-bold text-dark">{{ $user->name }}</div>
+                                            @if ($detailUrl)
+                                                <a href="{{ $detailUrl }}" class="fw-bold text-dark text-decoration-none user-link">{{ $user->name }}</a>
+                                            @else
+                                                <div class="fw-bold text-dark">{{ $user->name }}</div>
+                                            @endif
                                             <div class="text-muted" style="font-size: 11px;">
                                                 {{ $user->email }}
                                             </div>
@@ -413,6 +427,18 @@
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
             var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+
+            // Klik baris -> detail pegawai (abaikan klik di tombol aksi / link)
+            document.querySelectorAll('tr.row-link').forEach(row => {
+                row.addEventListener('click', function(e) {
+                    if (e.target.closest('a, button, form, input, select')) return;
+                    if (e.ctrlKey || e.metaKey) {
+                        window.open(this.dataset.href, '_blank');
+                    } else {
+                        window.location.href = this.dataset.href;
+                    }
+                });
             });
 
             // Handle Flash Message
