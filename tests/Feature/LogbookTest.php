@@ -185,6 +185,38 @@ class LogbookTest extends TestCase
             ->assertSee('Karu Anggrek')->assertSee('Perawat Anggrek')->assertSee('Ditandatangani elektronik');
     }
 
+    public function test_import_export_master_tindakan_dan_tampilan_karu()
+    {
+        $admin = $this->buatUser('Admin Import', 'admin');
+        LogbookTindakan::create(['kode' => 'IMP1', 'nama' => 'Lama', 'kategori' => 'manual']);
+
+        $res = $this->actingAs($admin)->postJson(route('admin.logbook.tindakan.import'), ['rows' => [
+            ['kode' => 'IMP1', 'nama' => 'Nama Baru', 'kategori' => 'manual', 'aktif' => 'Ya'],
+            ['kode' => 'IMP2', 'nama' => 'Tindakan Dua', 'kategori' => '', 'aktif' => 'Tidak'],
+            ['kode' => 'IMP3', 'nama' => 'Salah Kategori', 'kategori' => 'igd', 'aktif' => 'Ya'],
+            ['kode' => '', 'nama' => 'Tanpa kode'],
+        ]])->assertOk()->json();
+
+        $this->assertSame([1, 1, 2], [$res['baru'], $res['diperbarui'], $res['dilewati']]);
+        $this->assertSame('Nama Baru', LogbookTindakan::where('kode', 'IMP1')->value('nama'));
+        $this->assertFalse((bool) LogbookTindakan::where('kode', 'IMP2')->value('aktif'));
+        $this->assertNull(LogbookTindakan::where('kode', 'IMP3')->first());
+
+        $export = $this->actingAs($admin)->getJson(route('admin.logbook.tindakan.export'))->assertOk()->json();
+        $this->assertNotEmpty(collect($export)->firstWhere('Kode', 'IMP2'));
+
+        // Perawat tidak boleh import
+        $perawat = $this->buatUser('Perawat Biasa');
+        $this->actingAs($perawat)->postJson(route('admin.logbook.tindakan.import'), ['rows' => [['kode' => 'X', 'nama' => 'Y']]])->assertStatus(403);
+
+        // Tampilan akun karu: menunggu Kasi, bukan karu
+        $karu = $this->buatUser('Karu Tampilan', 'perawat', 'kepala_ruangan', 'Ruang ICVCU');
+        LogbookPeriode::where(['tahun' => now()->year, 'bulan' => now()->month])->delete();
+        $this->actingAs($karu)->post(route('perawat.logbook.store'), $this->payload([LogbookTindakan::where('kode', 'IMP1')->value('id'), LogbookTindakan::where('kode', 'IMP2')->value('id')]));
+        $this->actingAs($karu)->get(route('perawat.logbook.index'))->assertOk()
+            ->assertSee('Menunggu Kasi')->assertSee('menunggu validasi Kepala Seksi Keperawatan')->assertDontSee('Menunggu Karu');
+    }
+
     public function test_periode_otomatis_tutup_h_plus_5()
     {
         $p = new LogbookPeriode(['tahun' => 2026, 'bulan' => 9]);

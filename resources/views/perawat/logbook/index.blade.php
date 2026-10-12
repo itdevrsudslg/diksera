@@ -63,7 +63,7 @@
             <div>
                 <div class="fw-bold"><i class="bi bi-pen text-primary me-1"></i> Rekap {{ $periode->nama }}</div>
                 <div class="small text-muted">
-                    @if ($ringkas['menunggu']) {{ $ringkas['menunggu'] }} entri menunggu validasi kepala ruangan. @endif
+                    @if ($ringkas['menunggu']) {{ $ringkas['menunggu'] }} entri menunggu validasi {{ $isKaru ? 'Kepala Seksi Keperawatan' : 'kepala ruangan' }}. @endif
                     @if ($ringkas['ditolak']) <span class="text-danger fw-semibold">{{ $ringkas['ditolak'] }} entri ditolak, perlu diperbaiki.</span> @endif
                     @if (!$ringkas['menunggu'] && !$ringkas['ditolak'] && $ringkas['entri']) Semua entri sudah divalidasi. @endif
                 </div>
@@ -73,7 +73,8 @@
                     data-confirm="Tandatangani rekap {{ $periode->nama }} dan ajukan ke kepala ruangan?">
                     @csrf
                     <input type="hidden" name="bulan" value="{{ $bulanIni }}">
-                    <button class="btn btn-sm btn-success fw-semibold" {{ $ringkas['ditolak'] ? 'disabled' : '' }}>
+                    <button class="btn btn-sm btn-success fw-semibold" {{ $ringkas['ditolak'] || ($isKaru && $ringkas['menunggu']) ? 'disabled' : '' }}
+                        title="{{ $isKaru && $ringkas['menunggu'] ? 'Tunggu semua entri divalidasi Kepala Seksi' : '' }}">
                         <i class="bi bi-pen-fill"></i> Tandatangani & Ajukan
                     </button>
                 </form>
@@ -87,7 +88,7 @@
             </div>
             <div class="box {{ optional($rekap)->karu_signed_at ? 'done' : '' }}">
                 <div class="role">Kepala Ruangan</div>
-                <div class="nm">{{ optional(optional($rekap)->karu)->name ?? '—' }}</div>
+                <div class="nm">{{ $isKaru ? Auth::user()->name : (optional(optional($rekap)->karu)->name ?? '—') }}</div>
                 <div class="text-muted">{{ optional(optional($rekap)->karu_signed_at)->translatedFormat('d M Y H:i') ?? 'Belum' }}</div>
             </div>
             <div class="box {{ optional($rekap)->kasi_signed_at ? 'done' : '' }}">
@@ -114,7 +115,7 @@
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <span class="lb-pill {{ $e->status }}">
-                                {{ ['valid' => 'Tervalidasi', 'menunggu' => 'Menunggu Karu', 'ditolak' => 'Ditolak'][$e->status] ?? $e->status }}
+                                {{ ['valid' => 'Tervalidasi', 'menunggu' => $isKaru ? 'Menunggu Kasi' : 'Menunggu Karu', 'ditolak' => 'Ditolak'][$e->status] ?? $e->status }}
                             </span>
                             @if ($e->bisaDiubah())
                                 <a href="{{ route('perawat.logbook.edit', $e->id) }}" class="btn btn-sm btn-light border py-0 px-2" title="Ubah"><i class="bi bi-pencil"></i></a>

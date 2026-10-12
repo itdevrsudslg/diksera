@@ -102,6 +102,80 @@ class AdminLogbookController extends Controller
         return back()->with('swal', ['icon' => 'success', 'title' => 'Diperbarui', 'text' => $t->nama . ($t->aktif ? ' diaktifkan.' : ' dinonaktifkan.')]);
     }
 
+    /** Semua master tindakan (JSON) untuk diunduh sebagai Excel di browser. */
+    public function exportTindakan()
+    {
+        $rows = LogbookTindakan::orderBy('kategori')->orderBy('nama')->get()->map(fn($t) => [
+            'Kode' => $t->kode,
+            'Nama Tindakan' => $t->nama,
+            'Kategori' => $t->kategori,
+            'Aktif' => $t->aktif ? 'Ya' : 'Tidak',
+            'Sumber' => $t->sumber,
+        ]);
+
+        return response()->json($rows);
+    }
+
+    /**
+     * Import master tindakan dari Excel (baris dibaca di browser lalu dikirim sebagai JSON).
+     * Kode + kategori yang sudah ada diperbarui, sisanya ditambahkan. Tidak ada data yang dihapus.
+     */
+    public function importTindakan(Request $request)
+    {
+        $data = $request->validate([
+            'rows'            => 'required|array|min:1|max:20000',
+            'rows.*.kode'     => 'nullable',
+            'rows.*.nama'     => 'nullable',
+            'rows.*.kategori' => 'nullable',
+            'rows.*.aktif'    => 'nullable',
+        ]);
+
+        $hasil = ['baru' => 0, 'diperbarui' => 0, 'dilewati' => 0, 'error' => []];
+        $ada = LogbookTindakan::all()->keyBy(fn($t) => $t->kode . '|' . $t->kategori);
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($data, &$hasil, $ada) {
+            foreach ($data['rows'] as $i => $r) {
+                $kode = trim((string) ($r['kode'] ?? ''));
+                $nama = trim((string) ($r['nama'] ?? ''));
+                $kategori = strtolower(trim((string) ($r['kategori'] ?? ''))) ?: 'manual';
+                $aktifRaw = strtolower(trim((string) ($r['aktif'] ?? '')));
+
+                if ($kode === '' || $nama === '') {
+                    $hasil['dilewati']++;
+                    continue;
+                }
+                if (!in_array($kategori, ['ralan', 'ranap', 'manual'], true)) {
+                    $hasil['error'][] = 'Baris ' . ($i + 2) . ": kategori '$kategori' tidak dikenal (pakai ralan / ranap / manual).";
+                    $hasil['dilewati']++;
+                    continue;
+                }
+                if (mb_strlen($kode) > 30 || mb_strlen($nama) > 255) {
+                    $hasil['error'][] = 'Baris ' . ($i + 2) . ': kode maks 30 karakter, nama maks 255 karakter.';
+                    $hasil['dilewati']++;
+                    continue;
+                }
+                $aktif = !in_array($aktifRaw, ['0', 'tidak', 'nonaktif', 'no', 'false', 'n'], true);
+
+                $t = $ada[$kode . '|' . $kategori] ?? null;
+                if ($t) {
+                    $t->fill(['nama' => $nama, 'aktif' => $aktif]);
+                    if ($t->isDirty()) {
+                        $t->save();
+                        $hasil['diperbarui']++;
+                    }
+                } else {
+                    $ada[$kode . '|' . $kategori] = LogbookTindakan::create([
+                        'kode' => $kode, 'nama' => $nama, 'kategori' => $kategori, 'sumber' => 'manual', 'aktif' => $aktif,
+                    ]);
+                    $hasil['baru']++;
+                }
+            }
+        });
+
+        $hasil['error'] = array_slice($hasil['error'], 0, 20);
+        return response()->json($hasil);
+    }
+
     public function sinkronKhanza()
     {
         if (!LogbookService::khanzaAktif()) {

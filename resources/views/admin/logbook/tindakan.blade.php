@@ -42,6 +42,24 @@
         </div>
     </div>
 
+    <div class="lb-card mb-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <div class="fw-bold"><i class="bi bi-file-earmark-excel text-success me-1"></i> Import / Export Excel</div>
+                <div class="small text-muted">Kolom: <b>Kode</b>, <b>Nama Tindakan</b>, <b>Kategori</b> (ralan / ranap / manual), <b>Aktif</b> (Ya / Tidak).
+                    Kode + kategori yang sudah ada akan diperbarui; tidak ada data yang dihapus.</div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <button type="button" class="btn btn-sm btn-light border" id="btnTemplate"><i class="bi bi-file-earmark-arrow-down"></i> Template</button>
+                <button type="button" class="btn btn-sm btn-outline-success" id="btnExportTdk"><i class="bi bi-download"></i> Export Excel</button>
+                <label class="btn btn-sm btn-success mb-0">
+                    <i class="bi bi-upload"></i> Import Excel
+                    <input type="file" id="fileImport" accept=".xlsx,.xls,.csv" hidden>
+                </label>
+            </div>
+        </div>
+    </div>
+
     <div class="lb-card">
         <form method="GET" class="d-flex flex-wrap gap-2 mb-3">
             <input type="text" name="q" value="{{ request('q') }}" class="form-control form-control-sm" style="max-width:260px" placeholder="Cari kode / nama…">
@@ -89,4 +107,90 @@
 
 @push('scripts')
     @include('logbook._scripts')
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script>
+        (function () {
+            const urlExport = @json(route('admin.logbook.tindakan.export'));
+            const urlImport = @json(route('admin.logbook.tindakan.import'));
+            const csrf = @json(csrf_token());
+            const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+            function simpanExcel(rows, nama) {
+                const ws = XLSX.utils.json_to_sheet(rows);
+                ws['!cols'] = [{ wch: 14 }, { wch: 60 }, { wch: 10 }, { wch: 8 }, { wch: 10 }];
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Master Tindakan');
+                XLSX.writeFile(wb, nama);
+            }
+
+            document.getElementById('btnTemplate').addEventListener('click', () => simpanExcel([
+                { 'Kode': 'T001', 'Nama Tindakan': 'Perawatan luka sedang', 'Kategori': 'manual', 'Aktif': 'Ya' },
+                { 'Kode': 'T002', 'Nama Tindakan': 'Pemasangan infus', 'Kategori': 'manual', 'Aktif': 'Ya' },
+            ], 'Template_Master_Tindakan.xlsx'));
+
+            document.getElementById('btnExportTdk').addEventListener('click', async function () {
+                const btn = this, label = btn.innerHTML;
+                btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Menyusun…';
+                try {
+                    const rows = await (await fetch(urlExport)).json();
+                    simpanExcel(rows, `Master_Tindakan_${new Date().toISOString().slice(0, 10)}.xlsx`);
+                } catch (e) {
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: e.message });
+                } finally { btn.disabled = false; btn.innerHTML = label; }
+            });
+
+            // Cocokkan judul kolom secara longgar (huruf besar/kecil & spasi diabaikan)
+            const ambil = (row, ...nama) => {
+                const keys = Object.keys(row);
+                for (const n of nama) {
+                    const k = keys.find(k => k.toLowerCase().replace(/[^a-z]/g, '') === n);
+                    if (k !== undefined) return row[k];
+                }
+                return '';
+            };
+
+            document.getElementById('fileImport').addEventListener('change', async function () {
+                const file = this.files[0];
+                this.value = '';
+                if (!file) return;
+                try {
+                    const wb = XLSX.read(await file.arrayBuffer());
+                    const data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+                    const rows = data.map(r => ({
+                        kode: String(ambil(r, 'kode', 'kodetindakan', 'kdjenisprw')).trim(),
+                        nama: String(ambil(r, 'namatindakan', 'nama', 'tindakan', 'nmperawatan')).trim(),
+                        kategori: String(ambil(r, 'kategori')).trim(),
+                        aktif: String(ambil(r, 'aktif', 'status')).trim(),
+                    })).filter(r => r.kode || r.nama);
+
+                    if (!rows.length) return Swal.fire({ icon: 'warning', text: 'Tidak ada baris yang terbaca. Pastikan ada kolom Kode dan Nama Tindakan.' });
+
+                    const ok = await Swal.fire({
+                        icon: 'question', title: `Import ${rows.length} tindakan?`,
+                        html: `Contoh: <b>${esc(rows[0].kode)}</b> – ${esc(rows[0].nama)}`,
+                        showCancelButton: true, confirmButtonText: 'Import', cancelButtonText: 'Batal',
+                    });
+                    if (!ok.isConfirmed) return;
+
+                    Swal.fire({ title: 'Mengimpor…', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    const res = await fetch(urlImport, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
+                        body: JSON.stringify({ rows }),
+                    });
+                    const h = await res.json();
+                    if (!res.ok) throw new Error(h.message || 'Import gagal');
+
+                    await Swal.fire({
+                        icon: h.error.length ? 'warning' : 'success', title: 'Import selesai',
+                        html: `Baru: <b>${h.baru}</b> · Diperbarui: <b>${h.diperbarui}</b> · Dilewati: <b>${h.dilewati}</b>` +
+                            (h.error.length ? '<div class="text-start small mt-2 text-danger">' + h.error.map(esc).join('<br>') + '</div>' : ''),
+                    });
+                    location.reload();
+                } catch (e) {
+                    Swal.fire({ icon: 'error', title: 'Gagal membaca file', text: e.message });
+                }
+            });
+        })();
+    </script>
 @endpush

@@ -56,6 +56,8 @@ class LogbookController extends Controller
             'tahun'    => $tahun,
             'bulan'    => $bulan,
             'unit'     => LogbookService::unitKerja($user->id),
+            // Kepala ruangan: entrinya divalidasi Kasi & ia sendiri mengisi kolom TTD kepala ruangan
+            'isKaru'   => LogbookService::isKaru($user),
         ]);
     }
 

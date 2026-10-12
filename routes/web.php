@@ -128,6 +128,8 @@ Route::post('bank-item-rkk/import-json', [BankItemRkkController::class, 'importJ
             Route::post('/tindakan', [AdminLogbookController::class, 'simpanTindakan'])->name('tindakan.simpan');
             Route::patch('/tindakan/{id}/toggle', [AdminLogbookController::class, 'toggleTindakan'])->name('tindakan.toggle');
             Route::post('/tindakan/sinkron-khanza', [AdminLogbookController::class, 'sinkronKhanza'])->name('tindakan.sinkron');
+            Route::get('/tindakan/export', [AdminLogbookController::class, 'exportTindakan'])->name('tindakan.export');
+            Route::post('/tindakan/import', [AdminLogbookController::class, 'importTindakan'])->name('tindakan.import');
             Route::get('/rekap', [AdminLogbookController::class, 'rekap'])->name('rekap');
             Route::get('/rekap/export', [AdminLogbookController::class, 'exportRekap'])->name('rekap.export');
             Route::get('/rekap/cetak-semua', [AdminLogbookController::class, 'cetakSemua'])->name('rekap.cetak');
