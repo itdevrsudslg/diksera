@@ -76,12 +76,20 @@
         </table>
 
         {{-- TTD --}}
-        <div class="ttd-print">
-            @foreach ([
-                [nl2br(e(\App\Services\Penandatangan::label('logbook.ttd1'))), $target, $okP, $tglP, $nP],
-                [nl2br(e(\App\Services\Penandatangan::label('logbook.ttd2'))), $ttdKaru, $okK, $tglK, $nK],
-                [nl2br(e(\App\Services\Penandatangan::label('logbook.ttd3'))), $ttdKasi, $okS, $tglS, $nS],
-            ] as [$role, $org, $ok, $tgl, $n])
+        @php
+            $orang = fn($u) => $u ? (object) ['nama' => $u->name, 'nip' => optional($u->profile)->nip] : null;
+            // Kasi: pejabat dari Pengaturan > Penanda Tangan yang berlaku di akhir periode
+            $pejabatKasi = \App\Services\Penandatangan::untuk('kasi_keperawatan', $selesai);
+            $kasiTtd = (object) ['nama' => $pejabatKasi->nama, 'nip' => $pejabatKasi->nip];
+            $label = fn($k) => nl2br(e(\App\Services\Penandatangan::label($k)));
+
+            // Logbook milik kepala ruangan cukup 2 TTD: kepala ruangan (penyusun) & kasi
+            $kolomTtd = \App\Services\LogbookService::isKaru($target)
+                ? [[$label('logbook.ttd2'), $orang($target), $okK, $tglK, $nK], [$label('logbook.ttd3'), $kasiTtd, $okS, $tglS, $nS]]
+                : [[$label('logbook.ttd1'), $orang($target), $okP, $tglP, $nP], [$label('logbook.ttd2'), $orang($ttdKaru), $okK, $tglK, $nK], [$label('logbook.ttd3'), $kasiTtd, $okS, $tglS, $nS]];
+        @endphp
+        <div class="ttd-print" style="grid-template-columns: repeat({{ count($kolomTtd) }}, 1fr);">
+            @foreach ($kolomTtd as [$role, $org, $ok, $tgl, $n])
                 <div>
                     <div>{!! $role !!}</div>
                     <div class="sig">
@@ -93,8 +101,8 @@
                             <span class="text-muted small">Belum ditandatangani</span>
                         @endif
                     </div>
-                    <div class="nm">{{ optional($org)->name ?? '..............................' }}</div>
-                    <div class="small">NIP. {{ optional(optional($org)->profile)->nip ?? '..............................' }}</div>
+                    <div class="nm">{{ optional($org)->nama ?: '..............................' }}</div>
+                    <div class="small">NIP. {{ optional($org)->nip ?: '..............................' }}</div>
                 </div>
             @endforeach
         </div>

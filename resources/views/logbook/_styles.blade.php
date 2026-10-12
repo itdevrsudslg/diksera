@@ -22,6 +22,7 @@
     .lb-tag b { color: var(--blue-main); }
     .lb-empty { text-align: center; padding: 40px 16px; color: var(--text-muted); }
     .lb-ttd { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .lb-ttd.dua { grid-template-columns: repeat(2, 1fr); }
     .lb-ttd .box { border: 1px dashed var(--border-soft); border-radius: 12px; padding: 12px; text-align: center; font-size: 12px; }
     .lb-ttd .box.done { border-style: solid; border-color: #86efac; background: #f0fdf4; }
     .lb-ttd .box .role { color: var(--text-muted); font-size: 11px; text-transform: uppercase; }
@@ -29,7 +30,7 @@
     .lb-table { font-size: 13px; }
     .lb-table th { font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: var(--text-muted); background: #f8fafc; white-space: nowrap; }
     @media (max-width: 576px) {
-        .lb-ttd { grid-template-columns: 1fr; }
+        .lb-ttd, .lb-ttd.dua { grid-template-columns: 1fr; }
         .lb-card { padding: 14px; }
     }
 </style>

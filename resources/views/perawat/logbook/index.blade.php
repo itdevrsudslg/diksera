@@ -80,12 +80,15 @@
                 </form>
             @endif
         </div>
-        <div class="lb-ttd">
-            <div class="box {{ optional($rekap)->perawat_signed_at ? 'done' : '' }}">
-                <div class="role">Perawat</div>
-                <div class="nm">{{ Auth::user()->name }}</div>
-                <div class="text-muted">{{ optional(optional($rekap)->perawat_signed_at)->translatedFormat('d M Y H:i') ?? 'Belum' }}</div>
-            </div>
+        {{-- Logbook kepala ruangan cukup 2 TTD (kepala ruangan & kasi) --}}
+        <div class="lb-ttd {{ $isKaru ? 'dua' : '' }}">
+            @unless ($isKaru)
+                <div class="box {{ optional($rekap)->perawat_signed_at ? 'done' : '' }}">
+                    <div class="role">Perawat</div>
+                    <div class="nm">{{ Auth::user()->name }}</div>
+                    <div class="text-muted">{{ optional(optional($rekap)->perawat_signed_at)->translatedFormat('d M Y H:i') ?? 'Belum' }}</div>
+                </div>
+            @endunless
             <div class="box {{ optional($rekap)->karu_signed_at ? 'done' : '' }}">
                 <div class="role">Kepala Ruangan</div>
                 <div class="nm">{{ $isKaru ? Auth::user()->name : (optional(optional($rekap)->karu)->name ?? '—') }}</div>
@@ -93,7 +96,7 @@
             </div>
             <div class="box {{ optional($rekap)->kasi_signed_at ? 'done' : '' }}">
                 <div class="role">Mengetahui, Kasi Keperawatan</div>
-                <div class="nm">{{ optional(optional($rekap)->kasi)->name ?? '—' }}</div>
+                <div class="nm">{{ \App\Services\Penandatangan::untuk('kasi_keperawatan', $periode->awal->copy()->endOfMonth())->nama }}</div>
                 <div class="text-muted">{{ optional(optional($rekap)->kasi_signed_at)->translatedFormat('d M Y H:i') ?? 'Belum' }}</div>
             </div>
         </div>

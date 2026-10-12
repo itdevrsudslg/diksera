@@ -165,6 +165,15 @@ class LogbookTest extends TestCase
         $this->actingAs($kasi)->post(route('perawat.logbook.validasi.ttd', $rekap->id))->assertRedirect();
         $this->assertNotNull($rekap->fresh()->kasi_signed_at);
 
+        // Rekap karu: hanya 2 TTD (kepala ruangan & kasi), nama kasi dari pengaturan (bawaan SUJIMAN)
+        \DB::table('penandatangans')->where('slot', 'kasi_keperawatan')->delete();
+        \App\Services\Penandatangan::lupakanCache();
+        $this->actingAs($admin)->get(route('perawat.logbook.rekap', ['userId' => $karu->id, 'cetak' => 1]))->assertOk()
+            ->assertSee('SUJIMAN')->assertDontSee('Perawat Pelaksana');
+        $this->actingAs($admin)->post(route('admin.penandatangan.simpan'), ['slot' => 'kasi_keperawatan', 'nama' => 'KASI PENGGANTI, S.Kep', 'berlaku_mulai' => now()->startOfYear()->toDateString()]);
+        \App\Services\Penandatangan::lupakanCache();
+        $this->actingAs($admin)->get(route('perawat.logbook.rekap', ['userId' => $karu->id, 'cetak' => 1]))->assertSee('KASI PENGGANTI, S.Kep');
+
         // Setelah rekap ditandatangani karu, bulan itu terkunci untuk entri baru
         $this->actingAs($karu)->post(route('perawat.logbook.store'), $this->payload([$t1->id, $t2->id]))->assertSessionHasErrors('tanggal');
 

@@ -30,6 +30,13 @@ class Penandatangan
             'nip'      => '19841025 200901 1 003',
             'pangkat'  => null,
         ],
+        'kasi_keperawatan' => [
+            'jabatan'  => 'Kepala Seksi Keperawatan',
+            'label_qr' => 'Kepala Seksi Keperawatan',
+            'nama'     => 'SUJIMAN',
+            'nip'      => null,
+            'pangkat'  => null,
+        ],
         'ketua_subkomite' => [
             'jabatan'  => 'Ketua Sub Komite Kredensial',
             'label_qr' => 'Ketua Sub Komite Kredensial',
