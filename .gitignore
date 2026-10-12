@@ -26,3 +26,5 @@ yarn-error.log
 *.tar.gz
 *.sql
 *.sqlite
+# Pengaturan lokal Claude Code
+/.claude/
