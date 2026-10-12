@@ -21,7 +21,7 @@ class LogbookTest extends TestCase
 {
     use DatabaseTransactions;
 
-    private function buatUser(string $nama, string $role = 'perawat', string $jabatan = 'pelaksana', ?string $unit = 'Ruang Melati'): User
+    protected function buatUser(string $nama, string $role = 'perawat', string $jabatan = 'pelaksana', ?string $unit = 'Ruang Melati'): User
     {
         $u = User::forceCreate([
             'name' => $nama,
@@ -113,9 +113,9 @@ class LogbookTest extends TestCase
         // Rekap bulanan / triwulan / semester + cetak
         foreach (['bulan' => now()->month, 'triwulan' => intdiv(now()->month - 1, 3) + 1, 'semester' => now()->month <= 6 ? 1 : 2] as $jenis => $ke) {
             $this->actingAs($perawat)->get(route('perawat.logbook.rekap', ['jenis' => $jenis, 'tahun' => now()->year, 'ke' => $ke]))
-                ->assertOk()->assertSee('Rawat luka')->assertSee('Karu Melati');
+                ->assertOk()->assertSee('Rawat luka')->assertSee('KARU MELATI')->assertSee('000123');
         }
-        $this->actingAs($kasi)->get(route('perawat.logbook.rekap', ['userId' => $perawat->id, 'cetak' => 1]))->assertOk()->assertSee('Ditandatangani elektronik');
+        $this->actingAs($kasi)->get(route('perawat.logbook.rekap', ['userId' => $perawat->id, 'cetak' => 1]))->assertOk()->assertSee('alt="QR TTD"', false)->assertSee($kasi->profile->nip); // NIP Kasi diambil dari akunnya
 
         // Perawat lain tidak boleh melihat rekap orang lain
         $lain = $this->buatUser('Perawat Lain', 'perawat', 'pelaksana', 'Ruang Mawar');
@@ -172,7 +172,7 @@ class LogbookTest extends TestCase
             ->assertSee('SUJIMAN')->assertDontSee('Perawat Pelaksana');
         $this->actingAs($admin)->post(route('admin.penandatangan.simpan'), ['slot' => 'kasi_keperawatan', 'nama' => 'KASI PENGGANTI, S.Kep', 'berlaku_mulai' => now()->startOfYear()->toDateString()]);
         \App\Services\Penandatangan::lupakanCache();
-        $this->actingAs($admin)->get(route('perawat.logbook.rekap', ['userId' => $karu->id, 'cetak' => 1]))->assertSee('KASI PENGGANTI, S.Kep');
+        $this->actingAs($admin)->get(route('perawat.logbook.rekap', ['userId' => $karu->id, 'cetak' => 1]))->assertSee('KASI PENGGANTI, S.KEP');
 
         // Setelah rekap ditandatangani karu, bulan itu terkunci untuk entri baru
         $this->actingAs($karu)->post(route('perawat.logbook.store'), $this->payload([$t1->id, $t2->id]))->assertSessionHasErrors('tanggal');
@@ -191,7 +191,7 @@ class LogbookTest extends TestCase
         $this->assertNotEmpty($json['tindakan']);
         $this->assertCount(6, $json['detail']); // 2 entri x 3 baris tindakan
         $this->actingAs($admin)->get(route('admin.logbook.rekap.cetak', ['q' => 'Anggrek']))->assertOk()
-            ->assertSee('Karu Anggrek')->assertSee('Perawat Anggrek')->assertSee('Ditandatangani elektronik');
+            ->assertSee('KARU ANGGREK')->assertSee('PERAWAT ANGGREK')->assertSee('alt="QR TTD"', false);
     }
 
     public function test_import_export_master_tindakan_dan_tampilan_karu()
