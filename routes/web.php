@@ -65,12 +65,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/messages/send', [MessageController::class, 'store'])->name('messages.send');
 Route::get('/messages/history/{userId}', [MessageController::class, 'getChat'])->name('messages.history');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('dashboard/admin', [DashboardController::class, 'adminIndex'])->name('dashboard.admin');
+    Route::get('dashboard/admin', [DashboardController::class, 'adminIndex'])->middleware('role:admin')->name('dashboard.admin');
     Route::get('/dashboard/pewawancara', [PewawancaraController::class, 'index'])->name('dashboard.pewawancara');
  // ====================================================
     // GROUP ADMIN
     // ====================================================
-    Route::prefix('admin')->name('admin.')->group(function () {
+    Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
         // Route khusus untuk paksa cetak semua SPK berdasarkan Jenjang Klinis (Dari Dashboard)
 Route::get('/dashboard/cetak-spk-massal/{jenjang}', [App\Http\Controllers\PerawatLisensiController::class, 'printSpkMassalDashboard'])->name('dashboard.cetak_spk_massal');
        // === ROUTE CETAK PDF (SERKOM, RKK, SPK, SPKK) UNTUK ADMIN ===
