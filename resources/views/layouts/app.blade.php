@@ -731,6 +731,10 @@
                 <i class="bi bi-inbox-fill"></i> <span class="link-text">OPPE</span>
             </a>
 
+            <a href="{{ route('admin.penandatangan.index') }}" class="nav-linkx {{ request()->routeIs('admin.penandatangan.*') ? 'active' : '' }}">
+                <i class="bi bi-pen"></i> <span class="link-text">Penanda Tangan</span>
+            </a>
+
             <div class="nav-section-title">Logbook</div>
             <a href="{{ route('admin.logbook.rekap') }}" class="nav-linkx {{ request()->routeIs('admin.logbook.rekap') ? 'active' : '' }}">
                 <i class="bi bi-journal-medical"></i> <span class="link-text">Rekap Logbook</span>

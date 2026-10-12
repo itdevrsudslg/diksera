@@ -227,19 +227,19 @@
             <!-- Kolom Tanda Tangan -->
             <div class="signature-container">
                 <div class="signature-box">
-                    <div class="mb-2">Teman Sejawat</div>
+                    <div class="mb-2">{{ \App\Services\Penandatangan::label('oppe.ttd1') }}</div>
                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data={{ urlencode('Telah dievaluasi oleh Sejawat: ' . ($oppe->peer->profile->nama_lengkap ?? $oppe->peer->name)) }}" alt="QR Sejawat" class="qr-code">
                     <p class="nama-terang">{{ $oppe->peer->profile->nama_lengkap ?? $oppe->peer->name }}</p>
                     <small>NIP/NIRP. {{ $oppe->peer->profile->nip ?? $oppe->peer->profile->nirp ?? '-' }}</small>
                 </div>
                 <div class="signature-box">
-                    <div class="mb-2">Perawat Yang Dinilai</div>
+                    <div class="mb-2">{{ \App\Services\Penandatangan::label('oppe.ttd2') }}</div>
                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data={{ urlencode('Telah diisi oleh: ' . ($oppe->user->profile->nama_lengkap ?? $oppe->user->name)) }}" alt="QR Perawat" class="qr-code">
                     <p class="nama-terang">{{ $oppe->user->profile->nama_lengkap ?? $oppe->user->name }}</p>
                     <small>NIP/NIRP. {{ $oppe->user->profile->nip ?? $oppe->user->profile->nirp ?? '-' }}</small>
                 </div>
                 <div class="signature-box">
-                    <div class="mb-2">Atasan Langsung</div>
+                    <div class="mb-2">{{ \App\Services\Penandatangan::label('oppe.ttd3') }}</div>
                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data={{ urlencode('Telah disetujui dan dievaluasi oleh Atasan: ' . ($oppe->evaluator->profile->nama_lengkap ?? $oppe->evaluator->name)) }}" alt="QR Atasan" class="qr-code">
                     <p class="nama-terang">{{ $oppe->evaluator->profile->nama_lengkap ?? $oppe->evaluator->name }}</p>
                     <small>NIP/NIRP. {{ $oppe->evaluator->profile->nip ?? $oppe->evaluator->profile->nirp ?? '-' }}</small>

@@ -1,3 +1,9 @@
+@php
+    // Pejabat penanda tangan sesuai tanggal terbit dokumen (Pengaturan > Penanda Tangan)
+    $ttdDirektur = $ttdDirektur ?? \App\Services\Penandatangan::untuk('direktur', null);
+    $ttdKomite = $ttdKomite ?? \App\Services\Penandatangan::untuk('ketua_komite', null);
+    $ttdSubkomite = $ttdSubkomite ?? \App\Services\Penandatangan::untuk('ketua_subkomite', null);
+@endphp
 <!DOCTYPE html>
 <html>
 <head>
@@ -185,16 +191,16 @@
                     Disetujui : {{ $tglMulai }}<br>
                     Ketua Komite Keperawatan<br>
                     <img src="{{ $qrBambang }}" class="qr-img"><br>
-                    <u>BAMBANG WAHYU SETYONO, S.Kep.,Ns</u><br>
-                    NIP. 19841025 200901 1 003
+                    <u>{{ $ttdKomite->nama }}</u><br>
+                    NIP. {{ $ttdKomite->nip }}
                 </td>
                 <td width="50%">
                     Ditetapkan di Kediri<br>
                     <br>
                     Ketua Sub Komite Kredensial<br>
                     <img src="{{ $qrHaris }}" class="qr-img"><br>
-                    <u>HARIS LISTYAWAN, S.Kep.,Ns</u><br>
-                    NIP. 19820214 200901 1 003
+                    <u>{{ $ttdSubkomite->nama }}</u><br>
+                    NIP. {{ $ttdSubkomite->nip }}
                 </td>
             </tr>
             <tr>
@@ -204,8 +210,8 @@
                     UOBK RSUD SIMPANG LIMA GUMUL<br>
                     KEDIRI<br>
                     <img src="{{ $qrDirektur }}" class="qr-img"><br>
-                    <u>dr. TONY WIDYANTO, Sp.OG (K)</u><br>
-                    NIP. 19750714 200212 1 006
+                    <u>{{ $ttdDirektur->nama }}</u><br>
+                    NIP. {{ $ttdDirektur->nip }}
                 </td>
             </tr>
         </table>

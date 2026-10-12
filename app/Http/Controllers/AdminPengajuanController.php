@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\BankItemRkk;
 use App\Models\WawancaraPenilaian;
 use Illuminate\Support\Facades\Auth;
+use App\Services\Penandatangan;
 
 use App\Models\JadwalWawancara;
 use App\Models\PenanggungJawabUjian;
@@ -196,9 +197,9 @@ class AdminPengajuanController extends Controller
         $bidang = str_contains($namaJenjang, 'PK') ? 'KEPERAWATAN' : (str_contains($namaJenjang, 'BK') ? 'KEBIDANAN' : 'UMUM');
 
         $verifyUrlRkk = route('sertifikat.verify', ['id' => $lisensi->id]) . '?doc=rkk';
-        $qrBambang = "https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=" . urlencode("Ketua Komite Keperawatan: BAMBANG WAHYU SETYONO. Validasi: " . $verifyUrlRkk);
-        $qrHaris = "https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=" . urlencode("Ketua Sub Komite Kredensial: HARIS LISTYAWAN. Validasi: " . $verifyUrlRkk);
-        $qrDirekturRkk = "https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=" . urlencode("Direktur UOBK RSUD SLG: dr. TONY WIDYANTO. Validasi: " . $verifyUrlRkk);
+        $qrBambang = Penandatangan::qr('ketua_komite', $verifyUrlRkk, ($lisensi->tgl_terbit ?? null));
+        $qrHaris = Penandatangan::qr('ketua_subkomite', $verifyUrlRkk, ($lisensi->tgl_terbit ?? null));
+        $qrDirekturRkk = Penandatangan::qr('direktur', $verifyUrlRkk, ($lisensi->tgl_terbit ?? null));
         
         $dataPDF = [
             'tglMulai' => $tglMulaiIndo,
@@ -220,6 +221,9 @@ class AdminPengajuanController extends Controller
             'qrBambang' => $qrBambang,
             'qrHaris' => $qrHaris,
             'qrDirektur' => $qrDirekturRkk,
+            'ttdKomite' => Penandatangan::untuk('ketua_komite', ($lisensi->tgl_terbit ?? null)),
+            'ttdSubkomite' => Penandatangan::untuk('ketua_subkomite', ($lisensi->tgl_terbit ?? null)),
+            'ttdDirektur' => Penandatangan::untuk('direktur', ($lisensi->tgl_terbit ?? null)),
         ];
 
         // Karena di PerawatLisensiController memanggil facade sebagai Pdf::

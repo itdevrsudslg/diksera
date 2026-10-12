@@ -78,9 +78,9 @@
         {{-- TTD --}}
         <div class="ttd-print">
             @foreach ([
-                ['Perawat Pelaksana', $target, $okP, $tglP, $nP],
-                ['Kepala Ruangan', $ttdKaru, $okK, $tglK, $nK],
-                ['Mengetahui,<br>Kepala Seksi Keperawatan', $ttdKasi, $okS, $tglS, $nS],
+                [nl2br(e(\App\Services\Penandatangan::label('logbook.ttd1'))), $target, $okP, $tglP, $nP],
+                [nl2br(e(\App\Services\Penandatangan::label('logbook.ttd2'))), $ttdKaru, $okK, $tglK, $nK],
+                [nl2br(e(\App\Services\Penandatangan::label('logbook.ttd3'))), $ttdKasi, $okS, $tglS, $nS],
             ] as [$role, $org, $ok, $tgl, $n])
                 <div>
                     <div>{!! $role !!}</div>

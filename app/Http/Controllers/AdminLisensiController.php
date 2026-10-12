@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\PengajuanSertifikat; // WAJIB DITAMBAHKAN
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use App\Services\Penandatangan;
 
 class AdminLisensiController extends Controller
 {
@@ -134,10 +135,10 @@ class AdminLisensiController extends Controller
         $verifyUrlRkk = route('sertifikat.verify', ['id' => $lisensi->id]) . '?doc=rkk';
         $verifyUrlSpk = route('sertifikat.verify', ['id' => $lisensi->id]) . '?doc=spk';
 
-        $qrBambang = "https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=" . urlencode("Ketua Komite Keperawatan: BAMBANG WAHYU SETYONO. Validasi: " . $verifyUrlRkk);
-        $qrHaris = "https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=" . urlencode("Ketua Sub Komite Kredensial: HARIS LISTYAWAN. Validasi: " . $verifyUrlRkk);
-        $qrDirekturRkk = "https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=" . urlencode("Direktur UOBK RSUD SLG: dr. TONY WIDYANTO. Validasi: " . $verifyUrlRkk);
-        $qrDirekturSpk = "https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=" . urlencode("Direktur UOBK RSUD SLG: dr. TONY WIDYANTO. Validasi: " . $verifyUrlSpk);
+        $qrBambang = Penandatangan::qr('ketua_komite', $verifyUrlRkk, ($lisensi->tgl_terbit ?? null));
+        $qrHaris = Penandatangan::qr('ketua_subkomite', $verifyUrlRkk, ($lisensi->tgl_terbit ?? null));
+        $qrDirekturRkk = Penandatangan::qr('direktur', $verifyUrlRkk, ($lisensi->tgl_terbit ?? null));
+        $qrDirekturSpk = Penandatangan::qr('direktur', $verifyUrlSpk, ($lisensi->tgl_terbit ?? null));
 
         // DATA UNTUK RKK (Halaman 3)
         $dataPDF = [
@@ -186,9 +187,9 @@ class AdminLisensiController extends Controller
             'tgl_terbit'            => $tglTerbitIndo,
             'qr_url'                => $qrDirekturSpk,
             'tgl_expired'           => $tglSelesaiIndo,
-            'direktur_nama'         => 'dr. TONY WIDYANTO, Sp.OG (K)',
-            'direktur_nip'          => '19750714 200212 1 006',
-            'direktur_pangkat'      => 'Pembina Tingkat I / IV b'
+            'direktur_nama'         => Penandatangan::untuk('direktur', ($lisensi->tgl_terbit ?? null))->nama,
+            'direktur_nip'          => Penandatangan::untuk('direktur', ($lisensi->tgl_terbit ?? null))->nip,
+            'direktur_pangkat'      => Penandatangan::untuk('direktur', ($lisensi->tgl_terbit ?? null))->pangkat
         ];
 
         // RENDER KETIGA DOKUMEN MENJADI 1 PDF BUNDLE

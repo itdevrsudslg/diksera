@@ -1,3 +1,9 @@
+@php
+    // Pejabat penanda tangan sesuai tanggal terbit dokumen (Pengaturan > Penanda Tangan)
+    $ttdDirektur = $ttdDirektur ?? \App\Services\Penandatangan::untuk('direktur', $lisensi->tgl_terbit ?? null);
+    $ttdKomite = $ttdKomite ?? \App\Services\Penandatangan::untuk('ketua_komite', $lisensi->tgl_terbit ?? null);
+    $ttdSubkomite = $ttdSubkomite ?? \App\Services\Penandatangan::untuk('ketua_subkomite', $lisensi->tgl_terbit ?? null);
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -262,8 +268,8 @@
         </p>
     </div>
 
-    <div class="sig-name">dr. TONY WIDYANTO, Sp.OG (K)</div>
-    <div class="sig-nip">NIP. 19750714 200212 1 006</div>
+    <div class="sig-name">{{ $ttdDirektur->nama }}</div>
+    <div class="sig-nip">NIP. {{ $ttdDirektur->nip }}</div>
 </div>
         </div>
     </div>

@@ -412,9 +412,9 @@ $data = [
             'tgl_terbit'            => $tglTerbitFormatted,
             'tgl_expired'           => $tglExpiredFormatted,
             'qr_url'                => "https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=" . urlencode(route('sertifikat.verify', $pengajuan->id)),
-            'direktur_nama'         => 'dr. TONY WIDYANTO, Sp.OG (K)',
-            'direktur_nip'          => '19750714 200212 1 006',
-            'direktur_pangkat'      => 'Pembina Tingkat I / IV b',
+            'direktur_nama'         => Penandatangan::untuk('direktur', $tglTerbitObj)->nama,
+            'direktur_nip'          => Penandatangan::untuk('direktur', $tglTerbitObj)->nip,
+            'direktur_pangkat'      => Penandatangan::untuk('direktur', $tglTerbitObj)->pangkat,
             
             // Data flag untuk penentu tampilan di Blade
             'is_individu'           => $isIndividu,
@@ -566,9 +566,9 @@ $data = [
             'tgl_terbit'       => $tglTerbitFormatted,
             'tgl_expired'      => $tglExpiredFormatted,
             'qr_url'           => "https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=" . urlencode(url('/')),
-            'direktur_nama'    => 'dr. TONY WIDYANTO, Sp.OG (K)',
-            'direktur_nip'     => '19750714 200212 1 006',
-            'direktur_pangkat' => 'Pembina Tingkat I / IV b',
+            'direktur_nama'    => Penandatangan::untuk('direktur', $tglTerbitObj)->nama,
+            'direktur_nip'     => Penandatangan::untuk('direktur', $tglTerbitObj)->nip,
+            'direktur_pangkat' => Penandatangan::untuk('direktur', $tglTerbitObj)->pangkat,
             'is_individu'      => false, 
         ];
 

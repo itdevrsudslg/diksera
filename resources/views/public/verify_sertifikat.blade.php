@@ -1,3 +1,9 @@
+@php
+    // Pejabat penanda tangan sesuai tanggal terbit dokumen (Pengaturan > Penanda Tangan)
+    $ttdDirektur = $ttdDirektur ?? \App\Services\Penandatangan::untuk('direktur', $lisensi->tgl_terbit ?? null);
+    $ttdKomite = $ttdKomite ?? \App\Services\Penandatangan::untuk('ketua_komite', $lisensi->tgl_terbit ?? null);
+    $ttdSubkomite = $ttdSubkomite ?? \App\Services\Penandatangan::untuk('ketua_subkomite', $lisensi->tgl_terbit ?? null);
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -241,8 +247,8 @@
                         </div>
                         <div>
                             <p class="info-label text-muted mb-1">Direktur UOBK RSUD Simpang Lima Gumul</p>
-                            <p class="fw-bold mb-0 text-dark small">dr. TONY WIDYANTO, Sp.OG (K)</p>
-                            <p class="font-monospace mb-0 text-muted" style="font-size: 10px;">NIP. 19750714 200212 1 006</p>
+                            <p class="fw-bold mb-0 text-dark small">{{ $ttdDirektur->nama }}</p>
+                            <p class="font-monospace mb-0 text-muted" style="font-size: 10px;">NIP. {{ $ttdDirektur->nip }}</p>
                         </div>
                     </div>
                     
@@ -253,8 +259,8 @@
                         </div>
                         <div>
                             <p class="info-label text-muted mb-1">Ketua Komite Keperawatan</p>
-                            <p class="fw-bold mb-0 text-dark small">BAMBANG WAHYU SETYONO, S.Kep.,Ns</p>
-                            <p class="font-monospace mb-0 text-muted" style="font-size: 10px;">NIP. 19841025 200901 1 003</p>
+                            <p class="fw-bold mb-0 text-dark small">{{ $ttdKomite->nama }}</p>
+                            <p class="font-monospace mb-0 text-muted" style="font-size: 10px;">NIP. {{ $ttdKomite->nip }}</p>
                         </div>
                     </div>
 
@@ -265,8 +271,8 @@
                         </div>
                         <div>
                             <p class="info-label text-muted mb-1">Ketua Sub Komite Kredensial</p>
-                            <p class="fw-bold mb-0 text-dark small">HARIS LISTYAWAN, S.Kep.,Ns</p>
-                            <p class="font-monospace mb-0 text-muted" style="font-size: 10px;">NIP. 19820214 200901 1 003</p>
+                            <p class="fw-bold mb-0 text-dark small">{{ $ttdSubkomite->nama }}</p>
+                            <p class="font-monospace mb-0 text-muted" style="font-size: 10px;">NIP. {{ $ttdSubkomite->nip }}</p>
                         </div>
                     </div>
 
@@ -279,8 +285,8 @@
                     </div>
                     <div>
                         <p class="info-label text-muted mb-1">Direktur UOBK RSUD Simpang Lima Gumul</p>
-                        <p class="fw-bold mb-0 text-dark small">dr. TONY WIDYANTO, Sp.OG (K)</p>
-                        <p class="font-monospace mb-0 text-muted" style="font-size: 10px;">NIP. 19750714 200212 1 006</p>
+                        <p class="fw-bold mb-0 text-dark small">{{ $ttdDirektur->nama }}</p>
+                        <p class="font-monospace mb-0 text-muted" style="font-size: 10px;">NIP. {{ $ttdDirektur->nip }}</p>
                     </div>
                 </div>
             @endif

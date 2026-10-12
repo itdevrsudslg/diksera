@@ -12,6 +12,7 @@ use App\Models\PerawatLisensi;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use App\Services\Penandatangan;
 
 class PengajuanSertifikatController extends Controller
 {
@@ -431,12 +432,12 @@ $rkkItems = \App\Models\BankItemRkk::where('kfk', 'like', "%{$namaKfkBersih}%")
             $verifyUrlSpk = route('sertifikat.verify', ['id' => $lisensi->id]) . '?doc=spk';
 
             // QR UNTUK RKK (Pakai URL RKK)
-            $qrBambang = "https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=" . urlencode("Ketua Komite Keperawatan: BAMBANG WAHYU SETYONO. Validasi: " . $verifyUrlRkk);
-            $qrHaris = "https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=" . urlencode("Ketua Sub Komite Kredensial: HARIS LISTYAWAN. Validasi: " . $verifyUrlRkk);
-            $qrDirekturRkk = "https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=" . urlencode("Direktur UOBK RSUD SLG: dr. TONY WIDYANTO. Validasi: " . $verifyUrlRkk);
+            $qrBambang = Penandatangan::qr('ketua_komite', $verifyUrlRkk, ($lisensi->tgl_terbit ?? null));
+            $qrHaris = Penandatangan::qr('ketua_subkomite', $verifyUrlRkk, ($lisensi->tgl_terbit ?? null));
+            $qrDirekturRkk = Penandatangan::qr('direktur', $verifyUrlRkk, ($lisensi->tgl_terbit ?? null));
             
             // QR UNTUK SPK & SPKK (Pakai URL SPK)
-            $qrDirekturSpk = "https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=" . urlencode("Direktur UOBK RSUD SLG: dr. TONY WIDYANTO. Validasi: " . $verifyUrlSpk);
+            $qrDirekturSpk = Penandatangan::qr('direktur', $verifyUrlSpk, ($lisensi->tgl_terbit ?? null));
 
             // === [DATA UNTUK RKK] ===
             
@@ -460,6 +461,9 @@ $rkkItems = \App\Models\BankItemRkk::where('kfk', 'like', "%{$namaKfkBersih}%")
                 'qrBambang' => $qrBambang,
                 'qrHaris' => $qrHaris,
                 'qrDirektur' => $qrDirekturRkk,
+                'ttdKomite' => Penandatangan::untuk('ketua_komite', ($lisensi->tgl_terbit ?? null)),
+                'ttdSubkomite' => Penandatangan::untuk('ketua_subkomite', ($lisensi->tgl_terbit ?? null)),
+                'ttdDirektur' => Penandatangan::untuk('direktur', ($lisensi->tgl_terbit ?? null)),
             ];
 
             // DATA SPK & SPKK
@@ -497,9 +501,9 @@ $rkkItems = \App\Models\BankItemRkk::where('kfk', 'like', "%{$namaKfkBersih}%")
                 'qr_url'                => $qrDirekturSpk,
                 'tgl_expired'           => $tglSelesaiIndo,
             
-                'direktur_nama'         => 'dr. TONY WIDYANTO, Sp.OG (K)',
-                'direktur_nip'          => '19750714 200212 1 006',
-                'direktur_pangkat'      => 'Pembina Tingkat I / IV b'
+                'direktur_nama'         => Penandatangan::untuk('direktur', ($lisensi->tgl_terbit ?? null))->nama,
+                'direktur_nip'          => Penandatangan::untuk('direktur', ($lisensi->tgl_terbit ?? null))->nip,
+                'direktur_pangkat'      => Penandatangan::untuk('direktur', ($lisensi->tgl_terbit ?? null))->pangkat
             ];
 
             // RENDER URUTAN: SPK -> SPKK -> RKK

@@ -25,6 +25,7 @@ use App\Http\Controllers\PerawatArsipDokumenController;
 use App\Http\Controllers\LogbookController;
 use App\Http\Controllers\LogbookValidasiController;
 use App\Http\Controllers\AdminLogbookController;
+use App\Http\Controllers\AdminPenandatanganController;
 use Illuminate\Support\Facades\Http;
 /*
 |--------------------------------------------------------------------------
@@ -112,6 +113,12 @@ Route::post('bank-item-rkk/import-json', [BankItemRkkController::class, 'importJ
         Route::delete('/perawat/{id}', [AdminPerawatController::class, 'destroy'])->name('perawat.destroy');
         Route::get('/perawat/{id}/sertifikat', [AdminPerawatController::class, 'sertifikat'])->name('perawat.sertifikat');
         Route::get('/perawat/{id}/timeline', [AdminPerawatController::class, 'timeline'])->name('perawat.timeline');
+
+        // PENANDA TANGAN DOKUMEN
+        Route::get('/penandatangan', [AdminPenandatanganController::class, 'index'])->name('penandatangan.index');
+        Route::post('/penandatangan', [AdminPenandatanganController::class, 'simpan'])->name('penandatangan.simpan');
+        Route::delete('/penandatangan/{id}', [AdminPenandatanganController::class, 'hapus'])->name('penandatangan.hapus');
+        Route::post('/penandatangan/label', [AdminPenandatanganController::class, 'simpanLabel'])->name('penandatangan.label');
 
         // LOGBOOK HARIAN (ADMIN)
         Route::prefix('logbook')->name('logbook.')->group(function () {
