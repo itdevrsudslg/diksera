@@ -676,6 +676,9 @@
                 <i class="bi bi-telegram"></i>
                 <span class="link-text">Notifikasi Telegram</span>
             </a>
+            <a href="{{ route('panduan') }}" class="nav-linkx {{ request()->routeIs('panduan') ? 'active' : '' }}">
+                <i class="bi bi-book"></i> <span class="link-text">Buku Panduan</span>
+            </a>
         @endif
 
 
@@ -700,6 +703,9 @@
              <a href="{{ route('pewawancara.settings') }}" class="nav-linkx {{ request()->routeIs('pewawancara.settings') ? 'active' : '' }}">
                  <i class="bi bi-gear-fill"></i> <span class="link-text">Pengaturan</span>
              </a>
+            <a href="{{ route('panduan') }}" class="nav-linkx {{ request()->routeIs('panduan') ? 'active' : '' }}">
+                <i class="bi bi-book"></i> <span class="link-text">Buku Panduan</span>
+            </a>
         @endif
 
         {{-- ========================================= --}}
@@ -763,6 +769,9 @@
             <div class="nav-section-title">Lainnya</div>
             <a href="{{ route('admin.profile.index') }}" class="nav-linkx {{ request()->routeIs('admin.profile.*') ? 'active' : '' }}">
                 <i class="bi bi-gear-fill"></i> <span class="link-text">Pengaturan</span>
+            </a>
+            <a href="{{ route('panduan') }}" class="nav-linkx {{ request()->routeIs('panduan') ? 'active' : '' }}">
+                <i class="bi bi-book"></i> <span class="link-text">Buku Panduan</span>
             </a>
         @endif
     </div>

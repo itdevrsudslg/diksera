@@ -69,6 +69,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/messages/send', [MessageController::class, 'store'])->name('messages.send');
 Route::get('/messages/history/{userId}', [MessageController::class, 'getChat'])->name('messages.history');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/panduan', [\App\Http\Controllers\PanduanController::class, 'index'])->name('panduan');
     Route::get('dashboard/admin', [DashboardController::class, 'adminIndex'])->middleware('role:admin')->name('dashboard.admin');
     Route::get('/dashboard/pewawancara', [PewawancaraController::class, 'index'])->name('dashboard.pewawancara');
  // ====================================================
