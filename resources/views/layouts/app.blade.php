@@ -638,6 +638,21 @@
             {{-- ============================================================== --}}
 
 
+            {{-- LOGBOOK HARIAN --}}
+            <div class="nav-section-title">Logbook</div>
+            <a href="{{ route('perawat.logbook.index') }}"
+                class="nav-linkx {{ request()->routeIs('perawat.logbook.index', 'perawat.logbook.create', 'perawat.logbook.edit', 'perawat.logbook.rekap') ? 'active' : '' }}">
+                <i class="bi bi-journal-medical"></i>
+                <span class="link-text">Logbook Harian</span>
+            </a>
+            @if (in_array(Auth::user()->profile->jabatan_struktural ?? 'pelaksana', ['kepala_ruangan', 'kepala_seksi']))
+                <a href="{{ route('perawat.logbook.validasi') }}"
+                    class="nav-linkx {{ request()->routeIs('perawat.logbook.validasi') ? 'active' : '' }}">
+                    <i class="bi bi-patch-check"></i>
+                    <span class="link-text">{{ (Auth::user()->profile->jabatan_struktural ?? '') === 'kepala_seksi' ? 'Rekap Logbook' : 'Validasi Logbook' }}</span>
+                </a>
+            @endif
+
             {{-- UJIAN & EVALUASI --}}
             <a href="{{ route('perawat.ujian.index') }}"
                 class="nav-linkx {{ request()->routeIs('perawat.ujian.*') ? 'active' : '' }} nav-with-badge">
@@ -714,6 +729,17 @@
             </a>
              <a href="{{ route('perawat.oppe.list_evaluasi') }}" class="nav-linkx {{ request()->routeIs('perawat.oppe.list_evaluasi') ? 'active' : '' }}">
                 <i class="bi bi-inbox-fill"></i> <span class="link-text">OPPE</span>
+            </a>
+
+            <div class="nav-section-title">Logbook</div>
+            <a href="{{ route('admin.logbook.rekap') }}" class="nav-linkx {{ request()->routeIs('admin.logbook.rekap') ? 'active' : '' }}">
+                <i class="bi bi-journal-medical"></i> <span class="link-text">Rekap Logbook</span>
+            </a>
+            <a href="{{ route('admin.logbook.periode') }}" class="nav-linkx {{ request()->routeIs('admin.logbook.periode') ? 'active' : '' }}">
+                <i class="bi bi-calendar-check"></i> <span class="link-text">Periode Logbook</span>
+            </a>
+            <a href="{{ route('admin.logbook.tindakan') }}" class="nav-linkx {{ request()->routeIs('admin.logbook.tindakan') ? 'active' : '' }}">
+                <i class="bi bi-list-check"></i> <span class="link-text">Master Tindakan</span>
             </a>
 
             <div class="nav-section-title">Manajemen Ujian</div>

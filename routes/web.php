@@ -22,6 +22,9 @@ use App\Http\Controllers\PerawatLisensiController;
 use App\Http\Controllers\PewawancaraController;
 use App\Http\Controllers\BankItemRkkController;
 use App\Http\Controllers\PerawatArsipDokumenController;
+use App\Http\Controllers\LogbookController;
+use App\Http\Controllers\LogbookValidasiController;
+use App\Http\Controllers\AdminLogbookController;
 use Illuminate\Support\Facades\Http;
 /*
 |--------------------------------------------------------------------------
@@ -109,6 +112,17 @@ Route::post('bank-item-rkk/import-json', [BankItemRkkController::class, 'importJ
         Route::delete('/perawat/{id}', [AdminPerawatController::class, 'destroy'])->name('perawat.destroy');
         Route::get('/perawat/{id}/sertifikat', [AdminPerawatController::class, 'sertifikat'])->name('perawat.sertifikat');
         Route::get('/perawat/{id}/timeline', [AdminPerawatController::class, 'timeline'])->name('perawat.timeline');
+
+        // LOGBOOK HARIAN (ADMIN)
+        Route::prefix('logbook')->name('logbook.')->group(function () {
+            Route::get('/periode', [AdminLogbookController::class, 'periode'])->name('periode');
+            Route::post('/periode', [AdminLogbookController::class, 'ubahPeriode'])->name('periode.ubah');
+            Route::get('/tindakan', [AdminLogbookController::class, 'tindakan'])->name('tindakan');
+            Route::post('/tindakan', [AdminLogbookController::class, 'simpanTindakan'])->name('tindakan.simpan');
+            Route::patch('/tindakan/{id}/toggle', [AdminLogbookController::class, 'toggleTindakan'])->name('tindakan.toggle');
+            Route::post('/tindakan/sinkron-khanza', [AdminLogbookController::class, 'sinkronKhanza'])->name('tindakan.sinkron');
+            Route::get('/rekap', [AdminLogbookController::class, 'rekap'])->name('rekap');
+        });
         // Route Edit Dokumen Sertifikat dari Halaman Admin
 Route::put('/perawat/sertifikat/str/{id}', [AdminPerawatController::class, 'updateStr'])->name('perawat.sertifikat.update_str');
 Route::put('/perawat/sertifikat/sip/{id}', [AdminPerawatController::class, 'updateSip'])->name('perawat.sertifikat.update_sip');
@@ -216,6 +230,26 @@ Route::get('/perawat-export', [AdminPerawatController::class, 'exportData'])->na
     // GROUP PERAWAT
     // ====================================================
     Route::prefix('perawat')->name('perawat.')->group(function () {
+        // LOGBOOK HARIAN
+        Route::prefix('logbook')->name('logbook.')->group(function () {
+            Route::get('/', [LogbookController::class, 'index'])->name('index');
+            Route::get('/tambah', [LogbookController::class, 'create'])->name('create');
+            Route::post('/', [LogbookController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [LogbookController::class, 'edit'])->whereNumber('id')->name('edit');
+            Route::put('/{id}', [LogbookController::class, 'update'])->whereNumber('id')->name('update');
+            Route::delete('/{id}', [LogbookController::class, 'destroy'])->whereNumber('id')->name('destroy');
+            Route::get('/cari-pasien', [LogbookController::class, 'cariPasien'])->name('cari_pasien');
+            Route::get('/cari-tindakan', [LogbookController::class, 'cariTindakan'])->name('cari_tindakan');
+            Route::get('/rekap/{userId?}', [LogbookController::class, 'rekap'])->whereNumber('userId')->name('rekap');
+            Route::post('/tanda-tangan', [LogbookController::class, 'tandaTangan'])->name('ttd');
+
+            // Kepala Ruangan & Kepala Seksi
+            Route::get('/validasi', [LogbookValidasiController::class, 'index'])->name('validasi');
+            Route::post('/validasi/entri', [LogbookValidasiController::class, 'validasiEntri'])->name('validasi.entri');
+            Route::post('/validasi/rekap/{id}/ttd', [LogbookValidasiController::class, 'tandaTangan'])->name('validasi.ttd');
+            Route::post('/validasi/rekap/{id}/kembalikan', [LogbookValidasiController::class, 'kembalikan'])->name('validasi.kembalikan');
+        });
+
         // ARSIP DOKUMEN
 Route::get('/arsip-dokumen', [PerawatArsipDokumenController::class, 'index'])->name('arsip.index');
 Route::get('/arsip-dokumen/create', [PerawatArsipDokumenController::class, 'create'])->name('arsip.create');

@@ -63,6 +63,22 @@ return [
             ]) : [],
         ],
 
+        // Database SIMRS Khanza (read-only) untuk logbook: master tindakan & data pasien.
+        'khanza' => [
+            'driver' => 'mysql',
+            'host' => env('KHANZA_DB_HOST', '127.0.0.1'),
+            'port' => env('KHANZA_DB_PORT', '3306'),
+            'database' => env('KHANZA_DB_DATABASE', 'sik'),
+            'username' => env('KHANZA_DB_USERNAME', ''),
+            'password' => env('KHANZA_DB_PASSWORD', ''),
+            'charset' => 'latin1',
+            'collation' => 'latin1_swedish_ci',
+            'prefix' => '',
+            'strict' => false,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? [PDO::ATTR_TIMEOUT => 3] : [],
+        ],
+
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),
