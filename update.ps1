@@ -126,8 +126,10 @@ function Do-Deploy([bool]$runMigrate) {
     $remote = "cd $AppDir && OLD=`$(git -c safe.directory=$AppDir rev-parse HEAD) && " +
               "sudo -u www git -c safe.directory=$AppDir pull -q --ff-only origin main && " +
               "bash $AppDir/deploy.sh --from `$OLD $flag"
-    ssh -t -o ConnectTimeout=8 -i $Key $Server $remote | Out-Host
-    $code = $LASTEXITCODE
+    # Start-Process: ssh langsung memakai konsol, jadi prompt password sudo terlihat dan output tidak tertelan.
+    $sshArgs = @("-t", "-o", "ConnectTimeout=8", "-i", "`"$Key`"", $Server, "`"$remote`"")
+    $proc = Start-Process -FilePath "ssh" -ArgumentList $sshArgs -NoNewWindow -Wait -PassThru
+    $code = $proc.ExitCode
     Line
     if ($code -ne 0) { Err "Deploy di server GAGAL. Baca pesan di atas."; return $false }
     Ok "Server sudah di-update."
