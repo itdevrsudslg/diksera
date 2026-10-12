@@ -731,8 +731,7 @@ $rkkItems = BankItemRkk::where('kfk', 'like', "%{$namaKfkBersih}%")
             // 1. Generate SATU nomor urut kolektif untuk batch/rombongan ini.
             // Ambil total lisensi tahun ini ditambah 1
             $count = \App\Models\PerawatLisensi::whereYear('created_at', $tahunSurat)->count() + 1;
-            $nomorUrutMurni = str_pad($count, 3, '0', STR_PAD_LEFT);
-            $nomorBaruKolektif = "{$nomorUrutMurni}/418.101/SERKOM/{$tahunSurat}";
+            $nomorBaruKolektif = $this->nomorBelumDipakai($count, fn($n) => str_pad($n, 3, '0', STR_PAD_LEFT) . "/418.101/SERKOM/{$tahunSurat}");
 
             // 2. Looping semua perawat yang terpilih
             foreach ($pengajuanIds as $id) {
@@ -1077,8 +1076,7 @@ $query = PengajuanSertifikat::with([
             $bulanRomawi = $this->getRomawi(date('n'));
             $tahun       = date('Y');
             $count       = PerawatLisensi::count() + 1;
-           // Ganti menjadi ini:
-            $nomorBaru = "800.2.4.2.1 / " . sprintf("%03d", $count) . " / 418.101 / SERKOM / " . $tahun;
+            $nomorBaru = $this->nomorBelumDipakai($count, fn($n) => "800.2.4.2.1 / " . sprintf("%03d", $n) . " / 418.101 / SERKOM / " . $tahun);
 
             $newLisensi = PerawatLisensi::create([
                 'user_id'              => $pengajuan->user_id,
@@ -1103,6 +1101,19 @@ $query = PengajuanSertifikat::with([
             $pengajuan->update(['lisensi_lama_id' => $newLisensi->id]);
         }
     }
+    /**
+     * Nomor urut berbasis jumlah data bisa bentrok bila ada lisensi yang pernah dihapus.
+     * Mulai dari $mulai lalu naik sampai nomor hasil $format belum dipakai lisensi lain.
+     */
+    private function nomorBelumDipakai(int $mulai, callable $format): string
+    {
+        $n = $mulai;
+        while (PerawatLisensi::where('nomor', $format($n))->exists()) {
+            $n++;
+        }
+        return $format($n);
+    }
+
     private function getRomawi($bulan)
     {
         $map = [1 => 'I', 2 => 'II', 3 => 'III', 4 => 'IV', 5 => 'V', 6 => 'VI', 7 => 'VII', 8 => 'VIII', 9 => 'IX', 10 => 'X', 11 => 'XI', 12 => 'XII'];

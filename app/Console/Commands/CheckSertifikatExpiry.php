@@ -81,12 +81,13 @@ class CheckSertifikatExpiry extends Command
             // Pastikan user ada
             if (!$item->user) return;
 
-            $daysLeft = Carbon::now()->diffInDays(Carbon::parse($expiryDate), false);
-            // Cast ke int agar pencocokan array akurat
-            $daysLeftInt = (int) $daysLeft;
+            // Hitung dari awal hari agar H-30 benar-benar 30 hari (bukan 29 karena jam eksekusi 08:00)
+            $daysLeftInt = (int) Carbon::today()->diffInDays(Carbon::parse($expiryDate)->startOfDay(), false);
 
-            // Cek apakah hari ini jadwal kirim notifikasi ATAU sudah kadaluarsa (minus)
-            if (in_array($daysLeftInt, $this->reminderDays) || $daysLeftInt < 0) {
+            // Jadwal kirim: hari-hari pengingat, lalu setelah kedaluwarsa sekali per 7 hari
+            // (sebelumnya terkirim SETIAP HARI tanpa batas untuk semua dokumen kedaluwarsa)
+            $kedaluwarsaMingguan = $daysLeftInt < 0 && (abs($daysLeftInt) % 7 === 1);
+            if (in_array($daysLeftInt, $this->reminderDays) || $kedaluwarsaMingguan) {
 
                 // 1. Kirim ke Admin/Group Global
                 $this->telegramService->notifySertifikatExpiring($item->user, $item, $jenis, $daysLeftInt);
