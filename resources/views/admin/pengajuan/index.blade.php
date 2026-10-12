@@ -518,7 +518,10 @@
                                         {{-- 2. AKSI APPROVE NILAI UJIAN --}}
                                         @elseif ($item->status == 'method_selected' && $item->user->examResult && $item->metode != 'interview_only')
                                             <a href="{{ route('admin.pengajuan.show', $item->id) }}" class="btn-icon btn-view" title="Detail"><i class="bi bi-eye"></i></a>
-                                            <a href="{{ route('admin.pengajuan.approve_score', $item->id) }}" class="btn-icon btn-act-check" onclick="return confirm('Verifikasi Nilai?')" title="Acc Nilai"><i class="bi bi-check-all"></i></a>
+                                            <form action="{{ route('admin.pengajuan.approve_score', $item->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Verifikasi Nilai?')">
+                                                @csrf
+                                                <button type="submit" class="btn-icon btn-act-check" title="Acc Nilai"><i class="bi bi-check-all"></i></button>
+                                            </form>
 
                                         {{-- 3. AKSI JADWAL WAWANCARA --}}
                                         @elseif ($item->status == 'interview_scheduled' && $item->jadwalWawancara)

@@ -128,6 +128,13 @@ public function index()
         return view('perawat.ujian_aktif.show', compact('form'));
     }
 
+    /** Sudah 3x atau lebih tidak lulus dan belum pernah lulus pada form ini. */
+    private function sudahGagalTigaKali(int $userId, int $formId): bool
+    {
+        $hasil = ExamResult::where('user_id', $userId)->where('form_id', $formId)->get(['total_nilai']);
+        return $hasil->count() >= 3 && $hasil->where('total_nilai', '>=', 75)->isEmpty();
+    }
+
     public function kerjakan(Form $form)
     {
         $user = Auth::user();
@@ -161,6 +168,12 @@ public function index()
             // Sudah mengerjakan dan TIDAK remidi (lulus)
             return redirect()->route('perawat.ujian.index')
                 ->with('error', 'Anda sudah menyelesaikan ujian ini.');
+        }
+
+        // 3b. Batas 3x percobaan (sebelumnya hanya ditegakkan lewat popup di browser)
+        if ($this->sudahGagalTigaKali($user->id, $form->id)) {
+            return redirect()->route('perawat.ujian.index')
+                ->with('error', 'Anda sudah 3x tidak lulus pada ujian ini. Hubungi admin untuk reset hasil ujian.');
         }
 
         // 4. Cek Waktu
@@ -210,6 +223,20 @@ public function index()
     if ($now->greaterThan($form->waktu_selesai->addMinutes(5))) {
         return redirect()->route('perawat.ujian.index')
             ->with('error', 'Waktu ujian sudah habis, jawaban ditolak secara otomatis.');
+    }
+
+    // 1b. Validasi peserta & jadwal (sama seperti saat membuka ujian, agar tidak tembus lewat POST langsung)
+    if ($form->target_peserta == 'khusus' && !$form->participants->contains($user->id)) {
+        return redirect()->route('perawat.ujian.index')->with('error', 'Akses ditolak: Anda tidak terdaftar.');
+    }
+    if ($form->target_peserta == 'kfk' && !$this->checkKfkAccess($user, $form)) {
+        return redirect()->route('perawat.ujian.index')->with('error', 'Akses ditolak: KFK tidak sesuai.');
+    }
+    if ($now->lessThan($form->waktu_mulai)) {
+        return redirect()->route('perawat.ujian.index')->with('error', 'Ujian belum dimulai.');
+    }
+    if ($this->sudahGagalTigaKali($user->id, $form->id)) {
+        return redirect()->route('perawat.ujian.index')->with('error', 'Anda sudah 3x tidak lulus pada ujian ini. Hubungi admin untuk reset hasil ujian.');
     }
 
     // 2. Cek apakah user sudah pernah lulus sebelumnya (mencegah double submit/bypass URL)

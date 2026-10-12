@@ -46,17 +46,17 @@ Route::get('/landing', [LandingController::class, 'index'])->name('landing');
 Route::get('/verify/sertifikat/{id}', [PengajuanSertifikatController::class, 'verifyPublic'])->name('sertifikat.verify');
 // Authentication
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.process');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login.process');
 Route::get('/register/perawat', [AuthController::class, 'showPerawatRegisterForm'])->name('register.perawat');
-Route::post('/register/perawat', [AuthController::class, 'registerPerawat'])->name('register.perawat.process');
+Route::post('/register/perawat', [AuthController::class, 'registerPerawat'])->middleware('throttle:10,1')->name('register.perawat.process');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 // Forget Password
 Route::get('forget-password', [AuthController::class, 'showForgetPasswordForm'])->name('forget.password.get');
-Route::post('forget-password', [AuthController::class, 'sendResetLinkEmail'])->name('forget.password.post');
+Route::post('forget-password', [AuthController::class, 'sendResetLinkEmail'])->middleware('throttle:5,1')->name('forget.password.post');
 
 // Reset Password
 Route::get('reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
-Route::post('reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+Route::post('reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:10,1')->name('password.update');
 /*
 |--------------------------------------------------------------------------
 | PROTECTED ROUTES (Harus Login)
@@ -175,8 +175,8 @@ Route::get('/perawat-export', [AdminPerawatController::class, 'exportData'])->na
 
         // Single Actions
         Route::get('/pengajuan/{id}', [AdminPengajuanController::class, 'show'])->name('pengajuan.show');
-        Route::get('/pengajuan/{id}/complete', [AdminPengajuanController::class, 'completeProcess'])->name('pengajuan.complete');
-        Route::get('/pengajuan/{id}/approve-score', [AdminPengajuanController::class, 'approveExamScore'])->name('pengajuan.approve_score');
+        Route::post('/pengajuan/{id}/complete', [AdminPengajuanController::class, 'completeProcess'])->name('pengajuan.complete');
+        Route::post('/pengajuan/{id}/approve-score', [AdminPengajuanController::class, 'approveExamScore'])->name('pengajuan.approve_score');
         Route::post('/pengajuan/{id}/approve', [AdminPengajuanController::class, 'approve'])->name('pengajuan.approve');
         Route::post('/pengajuan/{id}/reject', [AdminPengajuanController::class, 'reject'])->name('pengajuan.reject');
         Route::delete('/pengajuan/{id}', [AdminPengajuanController::class, 'destroy'])->name('pengajuan.destroy');

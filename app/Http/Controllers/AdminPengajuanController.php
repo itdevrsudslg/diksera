@@ -622,6 +622,11 @@ $rkkItems = BankItemRkk::where('kfk', 'like', "%{$namaKfkBersih}%")
 
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'file_dokumen_baru'      => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'file_sertifikat_lama'   => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'file_surat_rekomendasi' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        ]);
         $pengajuan = PengajuanSertifikat::with(['jadwalWawancara.penilaian', 'lisensiLama'])->findOrFail($id);
 
         DB::beginTransaction();

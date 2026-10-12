@@ -22,7 +22,7 @@ class CheckApiKey
         $validKey = env('API_KEY_DIKSERA'); 
 
         // Jika tidak ada token atau token salah, tolak aksesnya
-        if (!$apiKey || $apiKey !== $validKey) {
+        if (!is_string($apiKey) || !is_string($validKey) || $validKey === '' || !hash_equals($validKey, $apiKey)) {
             return response()->json([
                 'status'  => 'error',
                 'message' => 'Unauthorized. API Key tidak valid atau tidak ditemukan.'

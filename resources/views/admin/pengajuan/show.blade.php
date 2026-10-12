@@ -305,21 +305,21 @@
                     <div class="d-grid gap-2">
                         {{-- 1. Validasi Nilai Ujian (Jika status method_selected & sudah ujian) --}}
                         @if ($pengajuan->status == 'method_selected' && $pengajuan->user->examResult)
-                            <form action="{{ route('admin.pengajuan.approve', $pengajuan->id) }}" method="POST">
+                            <form action="{{ route('admin.pengajuan.approve_score', $pengajuan->id) }}" method="POST" onsubmit="return confirm('Verifikasi Nilai?')">
                                 @csrf
-                               <a href="{{ route('admin.pengajuan.approve_score', $pengajuan->id) }}" class="btn btn-primary w-100 fw-bold py-2 rounded-pil" onclick="return confirm('Verifikasi Nilai?')" title="Acc Nilai">VALIDASI</a>
-
+                                <button type="submit" class="btn btn-primary w-100 fw-bold py-2 rounded-pill" title="Acc Nilai">VALIDASI</button>
                             </form>
                         @endif
 
                         {{-- 2. Selesaikan Proses (Jika status interview_scheduled & jadwal disetujui/completed) --}}
                         @php $jadwal = $pengajuan->jadwalWawancara; @endphp
                         @if ($pengajuan->status == 'interview_scheduled' && $jadwal && $jadwal->status == 'approved' && $jadwal->penilaian)
-                            <a href="{{ route('admin.pengajuan.complete', $pengajuan->id) }}"
-                                class="btn btn-success w-100 fw-bold py-2 rounded-pill"
-                                onclick="return confirm('Terbitkan lisensi untuk pengajuan ini?')">
-                                <i class="bi bi-patch-check me-1"></i> TERBITKAN LISENSI
-                            </a>
+                            <form action="{{ route('admin.pengajuan.complete', $pengajuan->id) }}" method="POST" onsubmit="return confirm('Terbitkan lisensi untuk pengajuan ini?')">
+                                @csrf
+                                <button type="submit" class="btn btn-success w-100 fw-bold py-2 rounded-pill">
+                                    <i class="bi bi-patch-check me-1"></i> TERBITKAN LISENSI
+                                </button>
+                            </form>
                         @endif
                     </div>
 

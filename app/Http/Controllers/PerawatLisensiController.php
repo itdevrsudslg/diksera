@@ -288,6 +288,11 @@ $data = [
     private function prepareDataSurat($pengajuan_id, $isIndividu = false)
     {
         $pengajuan = \App\Models\PengajuanSertifikat::with(['user.profile', 'lisensiLama'])->findOrFail($pengajuan_id);
+
+        // Perawat hanya boleh mencetak SPK/SPKK pengajuannya sendiri
+        if (Auth::user()->role !== 'admin' && $pengajuan->user_id != Auth::id()) {
+            abort(403, 'Anda tidak berhak mencetak dokumen ini.');
+        }
         $lisensiUtama = $pengajuan->lisensiLama;
         $nomorKolektif = $lisensiUtama->nomor;
 

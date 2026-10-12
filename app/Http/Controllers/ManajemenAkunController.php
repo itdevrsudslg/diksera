@@ -65,6 +65,10 @@ class ManajemenAkunController extends Controller
             'status_akun' => 'required|in:active,rejected,pending'
         ]);
 
+        if ((int) $id === (int) auth()->id()) {
+            return redirect()->back()->with('swal', ['icon' => 'warning', 'title' => 'Tidak Diizinkan', 'text' => 'Anda tidak bisa mengubah atau menghapus akun Anda sendiri dari sini.']);
+        }
+
         $user = User::findOrFail($id);
         $user->status_akun = $request->status_akun;
         $user->save();
@@ -90,6 +94,10 @@ class ManajemenAkunController extends Controller
      */
     public function destroy($id)
     {
+        if ((int) $id === (int) auth()->id()) {
+            return redirect()->back()->with('swal', ['icon' => 'warning', 'title' => 'Tidak Diizinkan', 'text' => 'Anda tidak bisa mengubah atau menghapus akun Anda sendiri dari sini.']);
+        }
+
         $user = User::findOrFail($id);
         $user->delete();
         return redirect()->back()->with('swal', [

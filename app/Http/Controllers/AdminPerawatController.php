@@ -87,6 +87,7 @@ class AdminPerawatController extends Controller
     // ==========================================
     public function updateStr(Request $request, $id)
     {
+        $request->validate(['dokumen' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120']);
         $str = \App\Models\PerawatStr::findOrFail($id);
         $str->nomor = $request->nomor;
         $str->tgl_terbit = $request->tgl_terbit;
@@ -104,6 +105,7 @@ class AdminPerawatController extends Controller
 
     public function updateSip(Request $request, $id)
     {
+        $request->validate(['dokumen' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120']);
         $sip = \App\Models\PerawatSip::findOrFail($id);
         $sip->nomor = $request->nomor;
         $sip->tgl_terbit = $request->tgl_terbit;
@@ -121,6 +123,7 @@ class AdminPerawatController extends Controller
 
     public function updateLisensi(Request $request, $id)
     {
+        $request->validate(['dokumen' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120']);
         $lisensi = \App\Models\PerawatLisensi::findOrFail($id);
         $lisensi->nomor = $request->nomor;
         $lisensi->nama = $request->nama;
@@ -140,6 +143,7 @@ class AdminPerawatController extends Controller
 
     public function updateTambahan(Request $request, $id)
     {
+        $request->validate(['dokumen' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120']);
         $tambahan = \App\Models\PerawatDataTambahan::findOrFail($id);
         $tambahan->nomor = $request->nomor;
         $tambahan->nama = $request->nama;

@@ -226,6 +226,10 @@ class OppeController extends Controller
     {
         $oppe = PengajuanOppe::with(['user.profile', 'user.pekerjaans', 'peer.profile', 'evaluator.profile', 'lisensi'])->findOrFail($id);
         
+        if (!$this->bolehLihatOppe($oppe, Auth::user())) {
+            abort(403, 'Anda tidak berhak mencetak OPPE ini.');
+        }
+
         if ($oppe->status !== 'completed') {
             return back()->with('swal', ['icon' => 'warning', 'title' => 'Belum Selesai', 'text' => 'Dokumen OPPE belum selesai dinilai oleh Atasan.']);
         }
@@ -314,8 +318,8 @@ class OppeController extends Controller
             $roleEvaluasi = 'peer'; $canEdit = true;
         } elseif ($oppe->status === 'pending_karu' && $oppe->evaluator_id === $currentUser->id) {
             $roleEvaluasi = 'karu'; $canEdit = true;
-        } elseif ($oppe->status === 'completed') {
-            $roleEvaluasi = 'viewer'; 
+        } elseif ($oppe->status === 'completed' && $this->bolehLihatOppe($oppe, $currentUser)) {
+            $roleEvaluasi = 'viewer';
         } else {
             return redirect()->route('dashboard')->with('swal', ['icon' => 'error', 'title' => 'Akses Ditolak', 'text' => 'Bukan wewenang atau giliran Anda.']);
         }
@@ -376,10 +380,32 @@ class OppeController extends Controller
     /**
      * Simpan Hasil Skoring atau Update Tambahan Instrumen
      */
+    /** Peran user saat ini pada OPPE: self | peer | karu | null (bukan gilirannya). */
+    private function giliranPenilai(PengajuanOppe $oppe, $user): ?string
+    {
+        if ($oppe->status === 'pending_self' && $oppe->user_id == $user->id) return 'self';
+        if ($oppe->status === 'pending_peer' && $oppe->peer_id == $user->id) return 'peer';
+        if ($oppe->status === 'pending_karu' && $oppe->evaluator_id == $user->id) return 'karu';
+        return null;
+    }
+
+    /** Yang boleh melihat/mencetak OPPE selesai: admin, pihak terkait, kepala ruangan & kepala seksi. */
+    private function bolehLihatOppe(PengajuanOppe $oppe, $user): bool
+    {
+        return $user->role === 'admin'
+            || in_array($user->id, [$oppe->user_id, $oppe->peer_id, $oppe->evaluator_id])
+            || in_array(optional($user->profile)->jabatan_struktural, ['kepala_ruangan', 'kepala_seksi'], true);
+    }
+
     public function storeEvaluation(Request $request, $id)
     {
         $oppe = PengajuanOppe::findOrFail($id);
-        
+
+        // Hanya penilai yang sedang mendapat giliran yang boleh menyimpan
+        if (!$this->giliranPenilai($oppe, Auth::user())) {
+            return redirect()->route('dashboard')->with('swal', ['icon' => 'error', 'title' => 'Akses Ditolak', 'text' => 'Bukan wewenang atau giliran Anda.']);
+        }
+
         // Memaksa format array yang bersih
         $instrumen = $oppe->instrumen_penilaian;
         if (is_string($instrumen)) {

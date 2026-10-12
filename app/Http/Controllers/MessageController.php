@@ -10,7 +10,7 @@ class MessageController extends Controller
     // Mengirim Pesan
     public function store(Request $request)
     {
-        $request->validate(['message' => 'required', 'receiver_id' => 'required']);
+        $request->validate(['message' => 'required|string|max:5000', 'receiver_id' => 'required|integer|exists:users,id']);
 
         Message::create([
             'sender_id' => Auth::id(),
