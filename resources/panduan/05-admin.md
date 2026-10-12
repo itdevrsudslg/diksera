@@ -14,6 +14,20 @@ Statistik pengguna, pengajuan per status, dokumen kedaluwarsa, dan tombol cetak 
 
 > Menghapus akun bersifat **permanen** dan ikut menghapus data terkait (pengajuan, logbook, dll.).
 
+### Mengatur peran Kepala Ruangan & Kasi
+
+Peran **KARU** dan **KASI** tidak dipilih admin di Manajemen Akun, melainkan dari data profil:
+
+| Peran | Syarat |
+|---|---|
+| **Kepala Ruangan** | *Jabatan Struktural* = **Kepala Ruangan**, dan riwayat **pekerjaan terbaru** berisi unit yang dipimpin |
+| **Kasi Keperawatan** | *Jabatan Struktural* = **Kepala Seksi** |
+| **Perawat/Bidan** | *Jabatan Struktural* = Pelaksana; badge mengikuti isian **Profesi** |
+
+Jabatan struktural diisi oleh yang bersangkutan di **Profil → Identitas**. Setelah diisi, menu validasi dan badge berubah otomatis saat halaman dimuat ulang.
+
+> Satu unit sebaiknya hanya punya **satu** kepala ruangan aktif. Bila ada dua, keduanya bisa memvalidasi logbook unit tersebut.
+
 ## 3. Bidan dan Perawat
 
 - Daftar seluruh perawat/bidan, filter, dan **Export Excel** (pilih kolom).
@@ -94,10 +108,14 @@ Setiap bulan berstatus **Otomatis** (tutup H+5), **Buka** manual, atau **Tutup**
 | **Bank Soal** | Kelola soal pilihan ganda, import/export |
 | **Bank Item RKK** | Butir Rincian Kewenangan Klinis per jenjang, import/export |
 
-## 7. Pengaturan
+## 7. Buku Panduan
+
+Panduan otomatis menyesuaikan peran pembaca (Perawat/Bidan, Kepala Ruangan, Kasi, Pewawancara, Admin). Admin bisa memilih **Lihat sebagai** di atas daftar isi untuk melihat panduan persis seperti yang dilihat peran lain, misalnya sebelum menjelaskan alur kepada karu.
+
+## 8. Pengaturan
 
 Profil admin dan koneksi Telegram admin (notifikasi grup).
 
-## 8. Update Aplikasi (untuk tim IT)
+## 9. Update Aplikasi (untuk tim IT)
 
 Pembaruan aplikasi dilakukan dari komputer pengembang dengan `update.bat` (menu: update, deploy ulang, lihat error server, riwayat). Bila ada perubahan database, backup dulu lalu jalankan `.\update "pesan" -Migrate`.

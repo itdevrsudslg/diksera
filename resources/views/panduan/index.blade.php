@@ -30,6 +30,7 @@
         .pd-bagian blockquote p { margin: 0; font-size: 13.5px; }
         .pd-bagian code { background: #f1f5f9; padding: 1px 6px; border-radius: 4px; color: #be185d; }
         .pd-bagian mark { background: #fde68a; padding: 0 2px; }
+        .pd-peran { background: var(--blue-soft); border-radius: 12px; padding: 8px 10px; margin-bottom: 10px; }
         .pd-cari { position: relative; margin-bottom: 10px; }
         .pd-cari input { padding-left: 32px; }
         .pd-cari i { position: absolute; left: 11px; top: 8px; color: var(--text-muted); }
@@ -51,6 +52,20 @@
 @section('content')
     <div class="pd-wrap">
         <nav class="pd-nav no-print">
+            <div class="pd-peran">
+                <div class="small text-muted">Panduan untuk</div>
+                @if ($isAdmin)
+                    <form method="GET" class="m-0">
+                        <select name="sebagai" class="form-select form-select-sm fw-semibold" onchange="this.form.submit()" title="Lihat panduan sebagai peran lain">
+                            @foreach ($daftarPeran as $k => $v)
+                                <option value="{{ $k }}" {{ $peran === $k ? 'selected' : '' }}>{{ $v }}{{ $k === 'admin' ? ' (semua bagian)' : '' }}</option>
+                            @endforeach
+                        </select>
+                    </form>
+                @else
+                    <div class="fw-bold" style="color: var(--blue-main);"><i class="bi bi-person-circle"></i> {{ $namaPeran }}</div>
+                @endif
+            </div>
             <div class="pd-cari">
                 <i class="bi bi-search"></i>
                 <input type="search" id="pdCari" class="form-control form-control-sm" placeholder="Cari di panduan…">

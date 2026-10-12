@@ -2,51 +2,85 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 /**
  * Buku Panduan: isi ditulis dalam Markdown di resources/panduan/*.md
  * dan diperbarui setiap ada perubahan aplikasi (lihat 07-perubahan.md).
+ * Bagian yang tampil disesuaikan dengan peran pengguna (perawat, karu, kasi, pewawancara, admin).
  */
 class PanduanController extends Controller
 {
-    /** file => [judul, ikon, role yang boleh melihat (null = semua)] */
-    const BAGIAN = [
-        '01-pengenalan'  => ['Pengenalan & Akun', 'bi-info-circle', null],
-        '02-perawat'     => ['Perawat & Bidan', 'bi-person-heart', ['perawat', 'admin']],
-        '03-karu-kasi'   => ['Kepala Ruangan & Kasi', 'bi-person-badge', ['perawat', 'admin']],
-        '04-pewawancara' => ['Pewawancara', 'bi-person-video2', ['pewawancara', 'admin']],
-        '05-admin'       => ['Admin', 'bi-shield-lock', ['admin']],
-        '06-faq'         => ['Pertanyaan Umum', 'bi-question-circle', null],
-        '07-perubahan'   => ['Riwayat Perubahan', 'bi-clock-history', null],
+    /** Peran yang bisa dipilih admin lewat "Lihat sebagai". */
+    const PERAN = [
+        'perawat'     => 'Perawat / Bidan',
+        'karu'        => 'Kepala Ruangan',
+        'kasi'        => 'Kasi Keperawatan',
+        'pewawancara' => 'Pewawancara',
+        'admin'       => 'Admin',
     ];
 
-    public function index()
-    {
-        $role = Auth::user()->role;
-        $bagian = [];
+    /** Urutan bagian per peran: [file, judul, ikon]. Bagian khusus peran diletakkan setelah Pengenalan. */
+    const SUSUNAN = [
+        'perawat'     => ['01-pengenalan', '02-perawat', '06-faq', '07-perubahan'],
+        'karu'        => ['01-pengenalan', '03-karu', '02-perawat', '06-faq', '07-perubahan'],
+        'kasi'        => ['01-pengenalan', '03-kasi', '02-perawat', '06-faq', '07-perubahan'],
+        'pewawancara' => ['01-pengenalan', '04-pewawancara', '06-faq', '07-perubahan'],
+        'admin'       => ['01-pengenalan', '05-admin', '02-perawat', '03-karu', '03-kasi', '04-pewawancara', '06-faq', '07-perubahan'],
+    ];
 
-        foreach (self::BAGIAN as $file => [$judul, $ikon, $roles]) {
-            if ($roles !== null && !in_array($role, $roles, true)) continue;
+    const INFO = [
+        '01-pengenalan'  => ['Pengenalan & Akun', 'bi-info-circle'],
+        '02-perawat'     => ['Perawat & Bidan', 'bi-person-heart'],
+        '03-karu'        => ['Kepala Ruangan', 'bi-person-badge'],
+        '03-kasi'        => ['Kasi Keperawatan', 'bi-person-check'],
+        '04-pewawancara' => ['Pewawancara', 'bi-person-video2'],
+        '05-admin'       => ['Admin', 'bi-shield-lock'],
+        '06-faq'         => ['Pertanyaan Umum', 'bi-question-circle'],
+        '07-perubahan'   => ['Riwayat Perubahan', 'bi-clock-history'],
+    ];
+
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        $peranSaya = $this->peran($user);
+
+        // Admin bisa melihat panduan dari sudut pandang peran lain
+        $peran = $peranSaya === 'admin' && array_key_exists($request->get('sebagai'), self::PERAN)
+            ? $request->get('sebagai')
+            : $peranSaya;
+
+        $bagian = [];
+        foreach (self::SUSUNAN[$peran] as $file) {
             $path = resource_path("panduan/$file.md");
             if (!is_file($path)) continue;
 
             [$html, $toc] = $this->render(file_get_contents($path), $file);
-            $bagian[] = [
-                'id'     => $file,
-                'judul'  => $judul,
-                'ikon'   => $ikon,
-                'html'   => $html,
-                'toc'    => $toc,
-                'diubah' => filemtime($path),
-            ];
+            [$judul, $ikon] = self::INFO[$file];
+            $bagian[] = compact('judul', 'ikon', 'html', 'toc') + ['id' => $file, 'diubah' => filemtime($path)];
         }
 
         return view('panduan.index', [
             'bagian'    => $bagian,
             'terakhir'  => collect($bagian)->max('diubah'),
+            'peran'     => $peran,
+            'namaPeran' => self::PERAN[$peran],
+            'isAdmin'   => $peranSaya === 'admin',
+            'daftarPeran' => self::PERAN,
         ]);
+    }
+
+    private function peran($user): string
+    {
+        if ($user->role === 'admin') return 'admin';
+        if ($user->role === 'pewawancara') return 'pewawancara';
+
+        $jabatan = optional($user->profile)->jabatan_struktural;
+        if ($jabatan === 'kepala_ruangan') return 'karu';
+        if ($jabatan === 'kepala_seksi') return 'kasi';
+        return 'perawat';
     }
 
     /** Markdown -> HTML, beri id pada judul (h2/h3) untuk daftar isi. */
