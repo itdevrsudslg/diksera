@@ -95,7 +95,7 @@ function Do-Push {
         Info "Kemungkinan login GitHub salah akun (error 403)."
         if (YesNo "Hapus login GitHub tersimpan lalu coba lagi (akan muncul jendela login)?") {
             cmdkey /delete:git:https://github.com | Out-Null
-            git push origin main
+            git push origin main 2>&1 | Out-Host
             if ($LASTEXITCODE -ne 0) { Err "Masih gagal. Pastikan akun punya akses ke itdevrsudslg/diksera."; return $false }
         } else { return $false }
     }
@@ -121,7 +121,12 @@ function Do-Deploy([bool]$runMigrate) {
     }
     Write-Host "  Deploy ke server... (jika diminta, ketik password sudo user rsudslg)" -ForegroundColor Gray
     Line
-    ssh -t -o ConnectTimeout=8 -i $Key $Server "bash $AppDir/deploy.sh $flag"
+    # Pull dulu sebagai www (pemilik folder) supaya deploy.sh yang dijalankan selalu versi terbaru,
+    # lalu deploy.sh membandingkan perubahan dari commit lama (--from).
+    $remote = "cd $AppDir && OLD=`$(git -c safe.directory=$AppDir rev-parse HEAD) && " +
+              "sudo -u www git -c safe.directory=$AppDir pull -q --ff-only origin main && " +
+              "bash $AppDir/deploy.sh --from `$OLD $flag"
+    ssh -t -o ConnectTimeout=8 -i $Key $Server $remote | Out-Host
     $code = $LASTEXITCODE
     Line
     if ($code -ne 0) { Err "Deploy di server GAGAL. Baca pesan di atas."; return $false }

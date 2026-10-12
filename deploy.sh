@@ -4,6 +4,7 @@
 # Pemakaian (Terminal aaPanel):
 #   bash /www/wwwroot/103.139.47.173/diksera/deploy.sh            -> update kode (tanpa migrate)
 #   bash /www/wwwroot/103.139.47.173/diksera/deploy.sh --migrate  -> update kode + jalankan migration
+#   --from <commit>  : basis pembanding (dipakai update.ps1 yang sudah pull duluan)
 #
 # Catatan:
 # - Skrip berjalan sebagai user www (pemilik folder) agar kepemilikan file tidak berubah.
@@ -28,7 +29,16 @@ if [ -n "$(git status --porcelain --untracked-files=no -- . ':!database/migratio
   exit 1
 fi
 
-OLD=$(git rev-parse HEAD)
+MIGRATE=0; FROM=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --migrate) MIGRATE=1 ;;
+    --from) FROM="$2"; shift ;;
+  esac
+  shift
+done
+
+OLD=${FROM:-$(git rev-parse HEAD)}
 echo ">> git pull"
 git pull --ff-only origin main
 NEW=$(git rev-parse HEAD)
@@ -46,7 +56,7 @@ if git diff --name-only "$OLD" "$NEW" | grep -qx 'composer.lock'; then
 fi
 
 NEW_MIGRATIONS=$(git diff --name-only --diff-filter=A "$OLD" "$NEW" -- database/migrations || true)
-if [ "${1:-}" = "--migrate" ]; then
+if [ "$MIGRATE" = 1 ]; then
   echo ">> migrate (pastikan database sudah di-backup)"
   php artisan migrate --force
 elif [ -n "$NEW_MIGRATIONS" ]; then
