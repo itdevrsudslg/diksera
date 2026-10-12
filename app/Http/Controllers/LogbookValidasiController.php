@@ -35,22 +35,19 @@ class LogbookValidasiController extends Controller
         // Rekap bulanan yang perlu / sudah ditandatangani
         $rekaps = LogbookRekap::with('user.profile', 'karu', 'kasi')
             ->where(['tahun' => $bulan->year, 'bulan' => $bulan->month])
-            ->when($isKaru, fn($q) => $q->where('unit_kerja', $unit))
+            ->when($isKaru, fn($q) => $q->where('unit_kerja', $unit)->where('user_id', '!=', $user->id))
             ->when($isKasi, fn($q) => $q->whereNotNull('karu_signed_at')->when($request->filled('unit'), fn($w) => $w->where('unit_kerja', $request->get('unit'))))
             ->get()
             ->sortBy(fn($r) => [$r->unit_kerja, optional($r->user)->name]);
 
-        $entries = collect();
-        if ($isKaru) {
-            $status = $request->get('status', 'menunggu');
-            $entries = LogbookEntry::with('user', 'kegiatans.tindakans')
-                ->where('unit_kerja', $unit)
-                ->where('user_id', '!=', $user->id)
-                ->whereYear('tanggal', $bulan->year)->whereMonth('tanggal', $bulan->month)
-                ->when($status !== 'semua', fn($q) => $q->where('status', $status))
-                ->orderBy('tanggal')->orderBy('user_id')
-                ->get();
-        }
+        // Karu memvalidasi entri perawat di unitnya; Kasi memvalidasi entri para kepala ruangan
+        $status = $request->get('status', 'menunggu');
+        $entries = $this->entriBolehDivalidasi($user)
+            ->with('user', 'kegiatans.tindakans')
+            ->whereYear('tanggal', $bulan->year)->whereMonth('tanggal', $bulan->month)
+            ->when($status !== 'semua', fn($q) => $q->where('status', $status))
+            ->orderBy('tanggal')->orderBy('user_id')
+            ->get();
 
         $units = $isKasi
             ? LogbookRekap::whereNotNull('karu_signed_at')->whereNotNull('unit_kerja')->distinct()->orderBy('unit_kerja')->pluck('unit_kerja')
@@ -59,11 +56,25 @@ class LogbookValidasiController extends Controller
         return view('perawat.logbook.validasi', compact('isKaru', 'isKasi', 'bulan', 'unit', 'rekaps', 'entries', 'units'));
     }
 
-    /** Karu: validasi / tolak banyak entri sekaligus */
+    /** Query entri yang boleh divalidasi user ini */
+    private function entriBolehDivalidasi($user)
+    {
+        if (LogbookService::isKaru($user)) {
+            $unit = LogbookService::unitKerja($user->id);
+            return LogbookEntry::where('unit_kerja', $unit ?? '__tanpa_unit__')->where('user_id', '!=', $user->id);
+        }
+        if (LogbookService::isKasi($user)) {
+            $karuIds = \App\Models\PerawatProfile::where('jabatan_struktural', 'kepala_ruangan')->pluck('user_id');
+            return LogbookEntry::whereIn('user_id', $karuIds);
+        }
+        return LogbookEntry::whereRaw('1 = 0');
+    }
+
+    /** Karu (entri unitnya) / Kasi (entri kepala ruangan): validasi / tolak banyak entri sekaligus */
     public function validasiEntri(Request $request)
     {
         $user = Auth::user();
-        abort_unless(LogbookService::isKaru($user), 403);
+        abort_unless(LogbookService::isKaru($user) || LogbookService::isKasi($user), 403);
 
         $data = $request->validate([
             'ids'     => 'required|array|min:1',
@@ -72,12 +83,9 @@ class LogbookValidasiController extends Controller
             'catatan' => 'nullable|string|max:1000|required_if:aksi,ditolak',
         ], ['catatan.required_if' => 'Tuliskan alasan penolakan.']);
 
-        $unit = LogbookService::unitKerja($user->id);
-
         // Entri pada bulan yang rekapnya sudah ditandatangani karu tidak bisa diubah lagi
-        $n = LogbookEntry::whereIn('id', $data['ids'])
-            ->where('unit_kerja', $unit)
-            ->where('user_id', '!=', $user->id)
+        $n = $this->entriBolehDivalidasi($user)
+            ->whereIn('id', $data['ids'])
             ->get()
             ->reject(fn($e) => LogbookRekap::where(['user_id' => $e->user_id, 'tahun' => $e->tanggal->year, 'bulan' => $e->tanggal->month])
                 ->whereNotNull('karu_signed_at')->exists())

@@ -85,11 +85,13 @@ class LogbookService
 
         foreach ($sumber as $kategori => $tabel) {
             $rows = DB::connection('khanza')->table($tabel)->get(['kd_jenis_prw', 'nm_perawatan', 'status']);
+            $ada = LogbookTindakan::where('kategori', $kategori)->get()->keyBy('kode');
             $kodeAktif = [];
 
             foreach ($rows as $r) {
                 $aktif = (string) $r->status === '1';
-                $t = LogbookTindakan::firstOrNew(['kode' => trim($r->kd_jenis_prw), 'kategori' => $kategori]);
+                $kode = trim($r->kd_jenis_prw);
+                $t = $ada[$kode] ?? new LogbookTindakan(['kode' => $kode, 'kategori' => $kategori]);
                 $baru = !$t->exists;
                 $t->fill(['nama' => trim($r->nm_perawatan), 'sumber' => 'khanza', 'aktif' => $aktif]);
                 if ($baru || $t->isDirty()) {
@@ -151,6 +153,47 @@ class LogbookService
             'total_tindakan' => $tindakan->sum('jumlah'),
             'hari_aktif' => $entries->pluck('tanggal')->map->toDateString()->unique()->count(),
         ];
+    }
+
+    /** Ambil [jenis, tahun, ke] dari query string (?jenis=bulan|triwulan|semester&tahun=&ke=). */
+    public static function periodeDariRequest(\Illuminate\Http\Request $request): array
+    {
+        $jenis = in_array($request->get('jenis'), ['bulan', 'triwulan', 'semester']) ? $request->get('jenis') : 'bulan';
+        $tahun = (int) $request->get('tahun', now()->year);
+        if ($tahun < 2000 || $tahun > 2100) $tahun = now()->year;
+        $default = ['bulan' => now()->month, 'triwulan' => intdiv(now()->month - 1, 3) + 1, 'semester' => now()->month <= 6 ? 1 : 2][$jenis];
+        $ke = (int) $request->get('ke', $default);
+        return [$jenis, $tahun, $ke];
+    }
+
+    /** Semua data untuk satu lembar rekap (dipakai halaman rekap, cetak satuan & cetak semua). */
+    public static function lembarRekap(User $target, string $jenis, int $tahun, int $ke): array
+    {
+        [$mulai, $selesai, $namaPeriode] = self::rentang($jenis, $tahun, $ke);
+        $data = self::rekap($target->id, $mulai, $selesai, true);
+
+        $rekaps = \App\Models\LogbookRekap::with('karu.profile', 'kasi.profile')
+            ->where('user_id', $target->id)
+            ->whereRaw('(tahun * 100 + bulan) between ? and ?', [
+                $mulai->year * 100 + $mulai->month, $selesai->year * 100 + $selesai->month,
+            ])
+            ->orderBy('tahun')->orderBy('bulan')->get();
+
+        $unit = self::unitKerja($target->id);
+
+        return array_merge($data, [
+            'target'      => $target->loadMissing('profile'),
+            'unit'        => $unit,
+            'jenis'       => $jenis,
+            'tahun'       => $tahun,
+            'ke'          => $ke,
+            'mulai'       => $mulai,
+            'selesai'     => $selesai,
+            'namaPeriode' => $namaPeriode,
+            'rekaps'      => $rekaps,
+            'ttdKaru'     => optional($rekaps->whereNotNull('karu_signed_at')->last())->karu ?? self::karuUnit($unit),
+            'ttdKasi'     => optional($rekaps->whereNotNull('kasi_signed_at')->last())->kasi,
+        ]);
     }
 
     /** Rentang tanggal dari jenis periode: bulan | triwulan | semester. */

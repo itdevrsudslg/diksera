@@ -16,7 +16,7 @@
     <div class="lb-toolbar">
         <form method="GET" class="d-flex flex-wrap gap-2 m-0">
             <input type="month" name="bulan" value="{{ $bulan->format('Y-m') }}" class="form-control form-control-sm" style="width:auto" onchange="this.form.submit()">
-            @if ($isKaru)
+            @if ($isKaru || $isKasi)
                 <select name="status" class="form-select form-select-sm" onchange="this.form.submit()" style="width:auto">
                     @foreach (['menunggu' => 'Menunggu validasi', 'ditolak' => 'Ditolak', 'valid' => 'Sudah valid', 'semua' => 'Semua'] as $v => $l)
                         <option value="{{ $v }}" {{ $statusAktif === $v ? 'selected' : '' }}>{{ $l }}</option>
@@ -90,8 +90,8 @@
         </div>
     </div>
 
-    {{-- VALIDASI ENTRI (KARU) --}}
-    @if ($isKaru)
+    {{-- VALIDASI ENTRI (KARU: perawat di unitnya, KASI: kepala ruangan) --}}
+    @if ($isKaru || $isKasi)
         <form method="POST" action="{{ route('perawat.logbook.validasi.entri') }}" id="formValidasi">
             @csrf
             <input type="hidden" name="aksi" id="aksiValidasi">
@@ -99,7 +99,7 @@
 
             <div class="lb-card">
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-                    <div class="fw-bold"><i class="bi bi-check2-square text-primary me-1"></i> Entri Logbook Unit ({{ $entries->count() }})</div>
+                    <div class="fw-bold"><i class="bi bi-check2-square text-primary me-1"></i> {{ $isKaru ? 'Entri Logbook Unit' : 'Entri Logbook Kepala Ruangan' }} ({{ $entries->count() }})</div>
                     @if ($entries->count())
                         <div class="d-flex gap-2 align-items-center">
                             <label class="small m-0"><input type="checkbox" class="form-check-input me-1" id="cekSemua"> Pilih semua</label>

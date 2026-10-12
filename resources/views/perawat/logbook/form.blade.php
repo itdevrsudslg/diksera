@@ -145,7 +145,7 @@
     </template>
     <template id="tplTindakan">
         <div class="tdk-row" data-tdk>
-            <select data-tindakan required></select>
+            <select data-tindakan></select>
             <input type="number" class="form-control text-center" data-jumlah min="1" max="999" value="1" required>
             <button type="button" class="btn btn-light border btn-icon-sm text-danger" data-hapus-tdk title="Hapus tindakan"><i class="bi bi-x-lg"></i></button>
         </div>

@@ -72,7 +72,10 @@ class LogbookController extends Controller
             ]);
         }
 
-        $tanggal = $request->get('tanggal', now()->toDateString());
+        $tanggal = $request->get('tanggal');
+        if (!$tanggal || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $tanggal) || $tanggal > now()->toDateString()) {
+            $tanggal = now()->toDateString();
+        }
         if (!LogbookPeriode::untukTanggal($tanggal)->terbuka) {
             return redirect()->route('perawat.logbook.index')->with('swal', [
                 'icon' => 'info', 'title' => 'Periode Ditutup',
@@ -204,37 +207,12 @@ class LogbookController extends Controller
         $target = $userId ? User::findOrFail($userId) : $viewer;
         $this->bolehLihatRekap($viewer, $target);
 
-        $jenis = in_array($request->get('jenis'), ['bulan', 'triwulan', 'semester']) ? $request->get('jenis') : 'bulan';
-        $tahun = (int) $request->get('tahun', now()->year);
-        $ke    = (int) $request->get('ke', $jenis === 'bulan' ? now()->month : 1);
-        [$mulai, $selesai, $namaPeriode] = LogbookService::rentang($jenis, $tahun, $ke);
+        [$jenis, $tahun, $ke] = LogbookService::periodeDariRequest($request);
 
-        $data = LogbookService::rekap($target->id, $mulai, $selesai, true);
-
-        // Tanda tangan: rekap bulanan pada rentang ini
-        $rekaps = LogbookRekap::with('karu.profile', 'kasi.profile')
-            ->where('user_id', $target->id)
-            ->where(fn($q) => $q->whereRaw('(tahun * 100 + bulan) between ? and ?', [
-                $mulai->year * 100 + $mulai->month, $selesai->year * 100 + $selesai->month,
-            ]))
-            ->orderBy('tahun')->orderBy('bulan')->get();
-
-        $unit = LogbookService::unitKerja($target->id);
-
-        return view('logbook.rekap', array_merge($data, [
-            'target'      => $target->load('profile'),
-            'unit'        => $unit,
-            'jenis'       => $jenis,
-            'tahun'       => $tahun,
-            'ke'          => $ke,
-            'mulai'       => $mulai,
-            'selesai'     => $selesai,
-            'namaPeriode' => $namaPeriode,
-            'rekaps'      => $rekaps,
-            'ttdKaru'     => optional($rekaps->whereNotNull('karu_signed_at')->last())->karu ?? LogbookService::karuUnit($unit),
-            'ttdKasi'     => optional($rekaps->whereNotNull('kasi_signed_at')->last())->kasi,
-            'cetak'       => $request->boolean('cetak'),
-        ]));
+        return view('logbook.rekap', array_merge(
+            LogbookService::lembarRekap($target, $jenis, $tahun, $ke),
+            ['cetak' => $request->boolean('cetak')]
+        ));
     }
 
     public function tandaTangan(Request $request)
@@ -256,6 +234,17 @@ class LogbookController extends Controller
         if ($rekap->karu_signed_at) {
             return back()->with('swal', ['icon' => 'info', 'title' => 'Sudah Divalidasi', 'text' => 'Rekap bulan ini sudah ditandatangani kepala ruangan.']);
         }
+
+        // Kepala ruangan: entrinya divalidasi Kasi, lalu ia menandatangani sebagai penyusun sekaligus kepala ruangan
+        if (LogbookService::isKaru($user)) {
+            if ((clone $entries)->where('status', '!=', 'valid')->exists()) {
+                return back()->with('swal', ['icon' => 'info', 'title' => 'Menunggu Validasi Kasi', 'text' => 'Logbook kepala ruangan divalidasi Kepala Seksi. Tanda tangan setelah semua entri valid.']);
+            }
+            $rekap->fill(['unit_kerja' => LogbookService::unitKerja($user->id), 'perawat_signed_at' => now(),
+                'karu_id' => $user->id, 'karu_signed_at' => now()])->save();
+            return back()->with('swal', ['icon' => 'success', 'title' => 'Rekap Diajukan', 'text' => 'Rekap diteruskan ke Kepala Seksi.']);
+        }
+
         $rekap->fill(['unit_kerja' => LogbookService::unitKerja($user->id), 'perawat_signed_at' => now()])->save();
 
         return back()->with('swal', ['icon' => 'success', 'title' => 'Rekap Diajukan', 'text' => 'Rekap ditandatangani dan diteruskan ke kepala ruangan.']);
@@ -302,6 +291,22 @@ class LogbookController extends Controller
             ]);
         }
 
+        // Bulan yang rekapnya sudah ditandatangani kepala ruangan tidak boleh ditambah/diubah lagi
+        $tgl = Carbon::parse($data['tanggal']);
+        $terkunci = LogbookRekap::where(['user_id' => Auth::id(), 'tahun' => $tgl->year, 'bulan' => $tgl->month])
+            ->whereNotNull('karu_signed_at')->exists();
+        if ($terkunci) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'tanggal' => 'Rekap bulan tersebut sudah ditandatangani kepala ruangan, logbook tidak bisa ditambah lagi.',
+            ]);
+        }
+
+        if (!LogbookService::unitKerja(Auth::id())) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'tanggal' => 'Unit kerja belum diisi di riwayat pekerjaan.',
+            ]);
+        }
+
         return $data;
     }
 
@@ -327,8 +332,8 @@ class LogbookController extends Controller
     private function bolehLihatRekap(User $viewer, User $target): void
     {
         if ($viewer->id === $target->id || $viewer->role === 'admin' || LogbookService::isKasi($viewer)) return;
-        if (LogbookService::isKaru($viewer)
-            && LogbookService::unitKerja($viewer->id) === LogbookService::unitKerja($target->id)) return;
+        $unitViewer = LogbookService::unitKerja($viewer->id);
+        if (LogbookService::isKaru($viewer) && $unitViewer && $unitViewer === LogbookService::unitKerja($target->id)) return;
         abort(403, 'Anda tidak berhak melihat rekap ini.');
     }
 }

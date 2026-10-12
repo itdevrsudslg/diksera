@@ -134,6 +134,57 @@ class LogbookTest extends TestCase
         $this->assertTrue(LogbookPeriode::untuk(now()->year, now()->month)->terbuka);
     }
 
+    public function test_karu_divalidasi_kasi_dan_rekap_admin()
+    {
+        $karu = $this->buatUser('Karu Anggrek', 'perawat', 'kepala_ruangan', 'Ruang Anggrek');
+        $kasi = $this->buatUser('Kasi Dua', 'perawat', 'kepala_seksi', 'Bidang Keperawatan');
+        $perawat = $this->buatUser('Perawat Anggrek', 'perawat', 'pelaksana', 'Ruang Anggrek');
+        $admin = $this->buatUser('Admin Dua', 'admin');
+        LogbookPeriode::where(['tahun' => now()->year, 'bulan' => now()->month])->delete();
+        $t1 = LogbookTindakan::create(['kode' => 'X01', 'nama' => 'Edukasi pasien', 'kategori' => 'manual']);
+        $t2 = LogbookTindakan::create(['kode' => 'X02', 'nama' => 'Mobilisasi', 'kategori' => 'manual']);
+
+        // Karu mengisi logbook sendiri -> divalidasi Kasi (bukan oleh dirinya)
+        $this->actingAs($karu)->post(route('perawat.logbook.store'), $this->payload([$t1->id, $t2->id]))->assertRedirect();
+        $entry = LogbookEntry::where('user_id', $karu->id)->first();
+        $this->actingAs($karu)->post(route('perawat.logbook.validasi.entri'), ['ids' => [$entry->id], 'aksi' => 'valid']);
+        $this->assertSame('menunggu', $entry->fresh()->status, 'Karu tidak boleh memvalidasi entrinya sendiri');
+
+        // Karu belum bisa TTD sebelum divalidasi Kasi
+        $this->actingAs($karu)->post(route('perawat.logbook.ttd'), ['bulan' => now()->format('Y-m')]);
+        $this->assertNull(optional(LogbookRekap::where('user_id', $karu->id)->first())->karu_signed_at);
+
+        $this->actingAs($kasi)->get(route('perawat.logbook.validasi'))->assertOk()->assertSee('Karu Anggrek');
+        $this->actingAs($kasi)->post(route('perawat.logbook.validasi.entri'), ['ids' => [$entry->id], 'aksi' => 'valid'])->assertRedirect();
+        $this->assertSame('valid', $entry->fresh()->status);
+
+        // Karu TTD -> slot perawat & karu terisi, Kasi lalu mengetahui
+        $this->actingAs($karu)->post(route('perawat.logbook.ttd'), ['bulan' => now()->format('Y-m')]);
+        $rekap = LogbookRekap::where('user_id', $karu->id)->first();
+        $this->assertNotNull($rekap->karu_signed_at);
+        $this->actingAs($kasi)->post(route('perawat.logbook.validasi.ttd', $rekap->id))->assertRedirect();
+        $this->assertNotNull($rekap->fresh()->kasi_signed_at);
+
+        // Setelah rekap ditandatangani karu, bulan itu terkunci untuk entri baru
+        $this->actingAs($karu)->post(route('perawat.logbook.store'), $this->payload([$t1->id, $t2->id]))->assertSessionHasErrors('tanggal');
+
+        // Perawat pelaksana mengisi (menunggu)
+        $this->actingAs($perawat)->post(route('perawat.logbook.store'), $this->payload([$t1->id, $t2->id]))->assertRedirect();
+
+        // Admin: cari, export Excel (JSON), cetak semua
+        $this->actingAs($admin)->get(route('admin.logbook.rekap', ['q' => 'Anggrek']))->assertOk()->assertSee('Karu Anggrek')->assertSee('Perawat Anggrek');
+        $this->actingAs($admin)->get(route('admin.logbook.rekap', ['q' => 'TidakAdaNamaIni']))->assertOk()->assertDontSee('Karu Anggrek');
+        foreach (['bulan', 'triwulan', 'semester'] as $jenis) {
+            $this->actingAs($admin)->get(route('admin.logbook.rekap', ['jenis' => $jenis]))->assertOk();
+        }
+        $json = $this->actingAs($admin)->getJson(route('admin.logbook.rekap.export', ['q' => 'Anggrek']))->assertOk()->json();
+        $this->assertCount(2, $json['ringkasan']);
+        $this->assertNotEmpty($json['tindakan']);
+        $this->assertCount(6, $json['detail']); // 2 entri x 3 baris tindakan
+        $this->actingAs($admin)->get(route('admin.logbook.rekap.cetak', ['q' => 'Anggrek']))->assertOk()
+            ->assertSee('Karu Anggrek')->assertSee('Perawat Anggrek')->assertSee('Ditandatangani elektronik');
+    }
+
     public function test_periode_otomatis_tutup_h_plus_5()
     {
         $p = new LogbookPeriode(['tahun' => 2026, 'bulan' => 9]);

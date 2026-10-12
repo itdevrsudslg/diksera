@@ -122,6 +122,8 @@ Route::post('bank-item-rkk/import-json', [BankItemRkkController::class, 'importJ
             Route::patch('/tindakan/{id}/toggle', [AdminLogbookController::class, 'toggleTindakan'])->name('tindakan.toggle');
             Route::post('/tindakan/sinkron-khanza', [AdminLogbookController::class, 'sinkronKhanza'])->name('tindakan.sinkron');
             Route::get('/rekap', [AdminLogbookController::class, 'rekap'])->name('rekap');
+            Route::get('/rekap/export', [AdminLogbookController::class, 'exportRekap'])->name('rekap.export');
+            Route::get('/rekap/cetak-semua', [AdminLogbookController::class, 'cetakSemua'])->name('rekap.cetak');
         });
         // Route Edit Dokumen Sertifikat dari Halaman Admin
 Route::put('/perawat/sertifikat/str/{id}', [AdminPerawatController::class, 'updateStr'])->name('perawat.sertifikat.update_str');
