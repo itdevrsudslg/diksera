@@ -793,13 +793,22 @@
     
     // Definisikan pemetaan nama role di sini
     $roleMap = [
-        'pewawancara' => 'ASESOR',
-        'admin'       => 'ADMIN',
-        'perawat'        => 'USER'
+        'pewawancara' => ['ASESOR', '#ede9fe', '#5b21b6'],
+        'admin'       => ['ADMIN', '#fee2e2', '#991b1b'],
     ];
 
-    // Cek apakah role user ada di map, jika tidak ada gunakan nama role aslinya
-    $displayName = $roleMap[$user->role] ?? strtoupper($user->role);
+    // Akun perawat/bidan: tampilkan jabatan struktural (Karu/Kasi/Komite) atau profesinya
+    if ($user && $user->role === 'perawat') {
+        $jabatanStruktural = optional($user->profile)->jabatan_struktural;
+        $profesi = strtoupper(optional($user->profile)->profesi ?: 'Perawat');
+        $roleMap['perawat'] = [
+            'kepala_ruangan' => ['KARU', '#dbeafe', '#1e40af'],
+            'kepala_seksi'   => ['KASI', '#dcfce7', '#166534'],
+            'komite'         => ['KOMITE', '#fef3c7', '#92400e'],
+        ][$jabatanStruktural] ?? [$profesi, $profesi === 'BIDAN' ? '#fce7f3' : '#e0f2fe', $profesi === 'BIDAN' ? '#9d174d' : '#075985'];
+    }
+
+    [$displayName, $badgeBg, $badgeFg] = $roleMap[optional($user)->role] ?? [strtoupper(optional($user)->role), '#f1f5f9', '#475569'];
 @endphp
 
 @if ($user)
@@ -807,7 +816,7 @@
         <div class="user-pill d-none d-md-flex">
             <span class="user-dot"></span>
             <span class="fw-medium">{{ $user->name }}</span>
-            <small class="text-muted ms-1">({{ $displayName }})</small>
+            <span class="ms-2" style="font-size:10.5px;font-weight:700;letter-spacing:.4px;padding:3px 9px;border-radius:20px;background:{{ $badgeBg }};color:{{ $badgeFg }};">{{ $displayName }}</span>
         </div>
 
         <form method="GET" action="{{ route('logout') }}">

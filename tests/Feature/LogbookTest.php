@@ -214,7 +214,9 @@ class LogbookTest extends TestCase
         LogbookPeriode::where(['tahun' => now()->year, 'bulan' => now()->month])->delete();
         $this->actingAs($karu)->post(route('perawat.logbook.store'), $this->payload([LogbookTindakan::where('kode', 'IMP1')->value('id'), LogbookTindakan::where('kode', 'IMP2')->value('id')]));
         $this->actingAs($karu)->get(route('perawat.logbook.index'))->assertOk()
-            ->assertSee('Menunggu Kasi')->assertSee('menunggu validasi Kepala Seksi Keperawatan')->assertDontSee('Menunggu Karu');
+            ->assertSee('Menunggu Kasi')->assertSee('menunggu validasi Kepala Seksi Keperawatan')->assertDontSee('Menunggu Karu')
+            ->assertSee('>KARU</span>', false);
+        $this->actingAs($perawat)->get(route('perawat.logbook.index'))->assertSee('>PERAWAT</span>', false);
     }
 
     public function test_periode_otomatis_tutup_h_plus_5()
