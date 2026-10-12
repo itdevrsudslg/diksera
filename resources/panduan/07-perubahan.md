@@ -16,6 +16,7 @@ Catatan setiap pembaruan DIKSERA, terbaru di atas.
 - **Logbook Harian**: pasien → kegiatan → tindakan, nama pasien dari SIMRS Khanza, validasi kepala ruangan, TTD berjenjang perawat → karu → kasi, periode tutup otomatis H+5, rekap bulanan/triwulan/semester.
 
 ### Perbaikan
+- Daftar isi Buku Panduan tetap menempel di atas saat halaman di-scroll.
 - Logbook kepala ruangan kini divalidasi Kasi (sebelumnya tidak ada validator).
 - Akun perawat tidak bisa lagi membuka halaman admin.
 - OPPE: nilai hanya bisa diisi penilai yang sedang mendapat giliran; OPPE selesai hanya bisa dilihat pihak terkait.

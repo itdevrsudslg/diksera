@@ -9,8 +9,10 @@
 
 @push('styles')
     <style>
+        /* overflow:hidden pada .app-main mematikan position:sticky -> dibuka khusus halaman ini */
+        .app-main { overflow: visible; }
         .pd-wrap { display: grid; grid-template-columns: 270px 1fr; gap: 20px; align-items: start; }
-        .pd-nav { position: sticky; top: 90px; background: #fff; border: 1px solid var(--border-soft); border-radius: 16px; padding: 14px; max-height: calc(100vh - 110px); overflow-y: auto; }
+        .pd-nav { position: sticky; top: 16px; z-index: 5; background: #fff; border: 1px solid var(--border-soft); border-radius: 16px; padding: 14px; max-height: calc(100vh - 32px); overflow-y: auto; }
         .pd-nav .grp { font-weight: 700; font-size: 13px; display: flex; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 10px; color: var(--text-main); text-decoration: none; }
         .pd-nav .grp:hover, .pd-nav .grp.aktif { background: var(--blue-soft); color: var(--blue-main); }
         .pd-nav .sub { display: block; font-size: 12.5px; color: var(--text-muted); text-decoration: none; padding: 3px 10px 3px 32px; }
@@ -19,8 +21,8 @@
         .pd-isi { min-width: 0; }
         .pd-bagian { background: #fff; border: 1px solid var(--border-soft); border-radius: 16px; padding: 24px 28px; margin-bottom: 20px; }
         .pd-bagian h1 { font-size: 22px; font-weight: 700; color: var(--blue-main); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--blue-soft); }
-        .pd-bagian h2 { font-size: 17px; font-weight: 700; margin-top: 26px; margin-bottom: 10px; scroll-margin-top: 90px; }
-        .pd-bagian h3 { font-size: 15px; font-weight: 700; margin-top: 18px; scroll-margin-top: 90px; }
+        .pd-bagian h2 { font-size: 17px; font-weight: 700; margin-top: 26px; margin-bottom: 10px; scroll-margin-top: 16px; }
+        .pd-bagian h3 { font-size: 15px; font-weight: 700; margin-top: 18px; scroll-margin-top: 16px; }
         .pd-bagian p, .pd-bagian li { font-size: 14px; line-height: 1.65; color: #1f2937; }
         .pd-bagian table { font-size: 13px; margin: 8px 0 14px; }
         .pd-bagian table th { background: #f8fafc; white-space: nowrap; }
