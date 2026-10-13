@@ -345,6 +345,13 @@
                                     <input class="form-check-input" type="checkbox" name="is_ppi" value="1" id="isPpi" {{ (isset($detailPenilaian['is_ppi']) && $detailPenilaian['is_ppi'] == '1') ? 'checked' : '' }}>
                                     <label class="form-check-label fw-bold ms-2" for="isPpi">Tandai PPI</label>
                                 </div>
+                                @php $rkkKhususAktif = \App\Services\RkkKhusus::aktif($detailPenilaian ?? []); @endphp
+                                @foreach (\App\Services\RkkKhusus::KELOMPOK as $kodeKhusus => $kk)
+                                    <div class="form-check form-switch p-2 bg-light border rounded">
+                                        <input class="form-check-input" type="checkbox" name="is_{{ $kodeKhusus }}" value="1" id="is_{{ $kodeKhusus }}" {{ in_array($kodeKhusus, $rkkKhususAktif) ? 'checked' : '' }}>
+                                        <label class="form-check-label fw-bold ms-2" for="is_{{ $kodeKhusus }}">Tandai {{ \Illuminate\Support\Str::after($kk['label'], 'sebagai ') }}</label>
+                                    </div>
+                                @endforeach
                                 <small class="text-muted d-flex align-items-center">*(Simpan perubahan jika mengubah switch ini untuk me-load ulang item table)*</small>
                             </div>
 

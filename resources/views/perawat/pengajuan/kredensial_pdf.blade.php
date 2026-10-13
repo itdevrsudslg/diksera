@@ -175,8 +175,30 @@
         </tr>
     @endforeach
 @endif
+
+            {{-- Kelompok RKK tugas spesifik (Hemodialisa, dst.) dari App\Services\RkkKhusus --}}
+            @foreach ($rkkKhusus ?? [] as $kelompok)
+                <tr>
+                    <td colspan="7" class="bg-grey">&nbsp;&nbsp;{{ $kelompok['judul'] }}</td>
+                </tr>
+                @foreach ($kelompok['items'] as $item)
+                    @php
+                        $ansJenis = $rkkDraft[$item['no_item']]['jenis'] ?? '';
+                        $ansKw = $rkkDraft[$item['no_item']]['kewenangan'] ?? '';
+                    @endphp
+                    <tr>
+                        <td style="text-align: center;">{{ $noUrutPdf++ }}</td>
+                        <td>{{ $item['deskripsi_kompetensi'] }}</td>
+                        <td style="text-align: center;" class="checkmark">{!! $ansJenis == 'mandiri' ? '&#10003;' : '' !!}</td>
+                        <td style="text-align: center;" class="checkmark">{!! $ansJenis == 'delegasi' ? '&#10003;' : '' !!}</td>
+                        <td style="text-align: center;" class="checkmark">{!! $ansJenis == 'mandat' ? '&#10003;' : '' !!}</td>
+                        <td style="text-align: center;" class="checkmark">{!! $ansKw == 'sendiri' ? '&#10003;' : '' !!}</td>
+                        <td style="text-align: center;" class="checkmark">{!! $ansKw == 'supervisi' ? '&#10003;' : '' !!}</td>
+                    </tr>
+                @endforeach
+            @endforeach
         </tbody>
-        
+
     </table> <!-- HANYA SATU INI SAJA -->
 
     <!-- FOOTER / TTD -->

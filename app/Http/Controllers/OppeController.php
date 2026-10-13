@@ -459,6 +459,9 @@ class OppeController extends Controller
                 });
             }
 
+            // Kelompok tugas spesifik (Hemodialisa, dst.)
+            $instrumen = \App\Services\RkkKhusus::terapkanKeInstrumen(array_values($instrumen), $request);
+
             // Eksekusi Paksa Simpan ke Database
             $hasilAkhirInstrumen = array_values($instrumen);
             

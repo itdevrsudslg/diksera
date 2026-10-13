@@ -458,6 +458,7 @@ $rkkItems = \App\Models\BankItemRkk::where('kfk', 'like', "%{$namaKfkBersih}%")
                 'isPpi'    => $isPpi,     // <--- [BARU] Kirim flag PPI ke PDF
                 'rkkPpi'   => $rkkPpi,
                 'rkkMpp'   => $rkkMpp,
+                'rkkKhusus' => \App\Services\RkkKhusus::untukPdf($detailPenilaian ?? []),
                 'qrBambang' => $qrBambang,
                 'qrHaris' => $qrHaris,
                 'qrDirektur' => $qrDirekturRkk,

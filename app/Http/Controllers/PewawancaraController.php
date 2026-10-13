@@ -598,6 +598,9 @@ if (isset($detailPenilaian['is_ppi']) && $detailPenilaian['is_ppi'] == '1') {
     });
     $rkkItems = $rkkItems->concat($ppiCollection);
 }
+
+// Kelompok RKK tugas spesifik (Hemodialisa, dst.)
+$rkkItems = $rkkItems->concat(\App\Services\RkkKhusus::itemsAktif($detailPenilaian ?? []));
             
     // Kelompokkan berdasarkan kategori tugas
     $rkkGrouped = $rkkItems->groupBy('kategori_tugas');
@@ -662,7 +665,7 @@ public function storePenilaian(Request $request, $id)
                         'rkk' => $request->rkk ?? [],
                         'is_mpp' => $request->is_mpp ?? '0',
                         'is_ppi' => $request->is_ppi ?? '0'
-                    ]);
+                    ] + \App\Services\RkkKhusus::penandaDariRequest($request));
                 } else {
                     $dataDraft['nilai_pertanyaan'] = $request->nilai_pertanyaan ?? [];
                     $dataDraft['uji_skill'] = $request->uji_skill ?? [];
@@ -713,7 +716,7 @@ public function storePenilaian(Request $request, $id)
                         'rkk' => $request->rkk ?? [],
                         'is_mpp' => $request->is_mpp ?? '0', // <--- Tambahkan baris ini
     'is_ppi' => $request->is_ppi ?? '0'
-                    ]);
+                    ] + \App\Services\RkkKhusus::penandaDariRequest($request));
                     $dataFinal['keputusan'] = ($request->keputusan == 'valid') ? 'lulus' : 'tidak_lulus';
 
                 } else {

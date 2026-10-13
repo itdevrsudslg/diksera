@@ -150,6 +150,7 @@ class AdminLisensiController extends Controller
             'kualifikasi' => strtoupper($jenjangQuery . ' ' . $namaKfk),
             'namaJenjang' => $jenjangQuery, 'rkkGrouped' => $rkkGrouped, 'rkkDraft' => $rkkDraft,
             'isMpp' => $isMpp, 'isPpi' => $isPpi, 'rkkPpi' => $rkkPpi, 'rkkMpp' => $rkkMpp,
+            'rkkKhusus' => \App\Services\RkkKhusus::untukPdf($detailPenilaian ?? []),
             'qrBambang' => $qrBambang, 'qrHaris' => $qrHaris, 'qrDirektur' => $qrDirekturRkk,
         ];
 

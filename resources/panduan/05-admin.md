@@ -53,6 +53,7 @@ Alur status pengajuan:
 
 - Tombol **Riwayat Peserta** di detail pengajuan membuka timeline lengkap peserta.
 - Edit pengajuan untuk memperbaiki data, berkas, jadwal, atau penilaian.
+- **RKK tugas spesifik**: di Edit Pengajuan bagian RKK, centang **Tandai MPP**, **Tandai PPI**, atau **Tandai Hemodialisa (HD)**, simpan, lalu isi kewenangan butir yang muncul. Bagian tersebut tercetak sebagai kelompok tersendiri di PDF RKK. Butir Hemodialisa: asuhan keperawatan pre/intra/post HD, monitoring durante HD, punksi AV fistula, mengalirkan darah ke sistem ekstrakorporeal, memulai HD, program sesuai preskripsi (QB, QD, UF, antikoagulan), penanganan komplikasi durante HD, dan menyiapkan peralatan double lumen HD.
 - Terbitkan **SPK kolektif** untuk beberapa peserta sekaligus per jenjang.
 
 ### Uji Kompetensi & Kredensialing (Data Lisensi)

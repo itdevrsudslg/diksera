@@ -2,6 +2,12 @@
 
 Catatan setiap pembaruan DIKSERA, terbaru di atas.
 
+## 13 Oktober 2026
+
+### Baru
+- **RKK tugas spesifik Hemodialisa (HD)** dengan 8 butir kompetensi, bisa ditandai seperti MPP & PPI di penilaian pewawancara, Edit Pengajuan (admin), dan OPPE; tercetak sebagai bagian tersendiri di PDF RKK.
+- RKK Hemodialisa ditambahkan untuk 8 perawat: Desy Natalia, Dismalyansa, Siska Heni Rahayu, Lendra Kusdiantoro (PK 2), Hurria Alfisana, Kiki Riska Nuraini (PK 1), Basuki Rahmad, Slamet Hidayat (PK 3). Kewenangan: PK 2 & 3 *Mandiri – Berwenang sendiri*, PK 1 *Mandiri – Dengan supervisi*.
+
 ## 12 Oktober 2026
 
 ### Baru

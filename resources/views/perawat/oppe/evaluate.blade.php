@@ -7,6 +7,7 @@
     $instrumenFlat = collect($oppe->instrumen_penilaian);
     $hasMpp = $instrumenFlat->contains(function ($item) { return str_starts_with($item['item_id'], 'MPP'); });
     $hasPpi = $instrumenFlat->contains(function ($item) { return str_starts_with($item['item_id'], 'PPI'); });
+    $rkkKhususAktif = \App\Services\RkkKhusus::aktifDiInstrumen($instrumenFlat);
 
     // Hitung statis total skor Diri Sendiri dan Sejawat untuk ditampilkan ke Karu
     $sumSelf = $instrumenFlat->sum(function($item) { return (int) ($item['skor_self'] ?? 0); });
@@ -112,6 +113,21 @@
                                 <small class="text-muted d-block mt-1">Hidupkan untuk memunculkan item kompetensi PPI.</small>
                             </div>
                         </div>
+
+                        @foreach (\App\Services\RkkKhusus::KELOMPOK as $kodeKhusus => $kk)
+                            <div class="p-3 bg-white border rounded shadow-sm flex-fill custom-switch-card d-flex align-items-center">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="is_{{ $kodeKhusus }}" value="1" class="auto-reload-switch" {{ in_array($kodeKhusus, $rkkKhususAktif) ? 'checked' : '' }}>
+                                    <span class="slider round"></span>
+                                </label>
+                                <div class="ms-3">
+                                    <label class="fw-bold mb-0" style="cursor: pointer;">
+                                        <i class="bi {{ $kk['ikon'] }} {{ $kk['warna'] }}"></i> {{ $kk['judul'] }}
+                                    </label>
+                                    <small class="text-muted d-block mt-1">Hidupkan untuk memunculkan item kompetensi {{ $kk['judul'] }}.</small>
+                                </div>
+                            </div>
+                        @endforeach
 
                     </div>
                 </div>

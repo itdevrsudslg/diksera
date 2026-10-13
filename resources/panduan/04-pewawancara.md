@@ -16,7 +16,8 @@ Daftar jadwal wawancara yang dipilih peserta untuk Anda.
 ## Menilai Wawancara / Uji Skill
 
 1. Dari antrian atau dashboard, buka **Penilaian** peserta.
-2. Isi penilaian tiap butir (termasuk butir uji skill, PPI, atau MPP bila ada), catatan, dan unggah berkas hasil bila diperlukan.
+2. Isi penilaian tiap butir, catatan, dan unggah berkas hasil bila diperlukan.
+   - Bila peserta memiliki **tugas spesifik**, nyalakan switch yang sesuai: **MPP**, **PPI / IPCN**, atau **Hemodialisa (HD)**. Halaman dimuat ulang dan butir kompetensinya muncul di tabel RKK untuk dinilai (jenis kewenangan & cara pelaksanaan).
 3. Tentukan keputusan **Lulus** atau **Tidak Lulus**, lalu simpan.
 4. Bila keliru, gunakan **Batal Selesai** untuk membuka kembali penilaian.
 

@@ -549,6 +549,19 @@ if (isset($detailPenilaian['poin_penilaian']) || isset($detailPenilaian['rkk']) 
         </label>
         <small class="text-muted d-block mt-1">Tambahkan item kompetensi Pengendalian Infeksi.</small>
     </div>
+
+    {{-- Kelompok RKK tugas spesifik (App\Services\RkkKhusus) --}}
+    @php $rkkKhususAktif = \App\Services\RkkKhusus::aktif($detailPenilaian ?? []); @endphp
+    @foreach (\App\Services\RkkKhusus::KELOMPOK as $kodeKhusus => $kk)
+        <div class="form-check form-switch p-3 bg-white border rounded shadow-sm flex-fill custom-switch-card">
+            <input class="form-check-input auto-reload-switch" type="checkbox" name="is_{{ $kodeKhusus }}" value="1" id="is_{{ $kodeKhusus }}"
+                {{ in_array($kodeKhusus, $rkkKhususAktif) ? 'checked' : '' }}>
+            <label class="form-check-label fw-bold ms-2" for="is_{{ $kodeKhusus }}">
+                <i class="bi {{ $kk['ikon'] }} {{ $kk['warna'] }}"></i> {{ $kk['label'] }}
+            </label>
+            <small class="text-muted d-block mt-1">{{ $kk['keterangan'] }}</small>
+        </div>
+    @endforeach
 </div>
 
 <style>

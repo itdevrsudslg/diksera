@@ -218,6 +218,7 @@ class AdminPengajuanController extends Controller
             'isPpi'    => $isPpi,
             'rkkPpi'   => $rkkPpi,
             'rkkMpp'   => $rkkMpp,
+            'rkkKhusus' => \App\Services\RkkKhusus::untukPdf($detailPenilaian ?? []),
             'qrBambang' => $qrBambang,
             'qrHaris' => $qrHaris,
             'qrDirektur' => $qrDirekturRkk,
@@ -610,6 +611,9 @@ $rkkItems = BankItemRkk::where('kfk', 'like', "%{$namaKfkBersih}%")
                 });
                 $rkkItems = $rkkItems->concat($ppiCollection);
             }
+
+            // Kelompok RKK tugas spesifik (Hemodialisa, dst.)
+            $rkkItems = $rkkItems->concat(\App\Services\RkkKhusus::itemsAktif($detailPenilaian ?? []));
                     
             $rkkGrouped = $rkkItems->groupBy('kategori_tugas');
         }
@@ -693,7 +697,7 @@ $rkkItems = BankItemRkk::where('kfk', 'like', "%{$namaKfkBersih}%")
                             'rkk' => $request->rkk ?? [],
                             'is_mpp' => $request->is_mpp ?? '0',
                             'is_ppi' => $request->is_ppi ?? '0'
-                        ]);
+                        ] + \App\Services\RkkKhusus::penandaDariRequest($request));
                     } else {
                         if ($request->has('nilai_pertanyaan')) {
                             $penilaian->nilai_pertanyaan = $request->nilai_pertanyaan;
