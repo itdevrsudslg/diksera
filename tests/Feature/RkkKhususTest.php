@@ -16,7 +16,7 @@ class RkkKhususTest extends TestCase
     use DatabaseTransactions;
 
     /** Buat user + pengajuan + jadwal + penilaian dengan id penilaian tertentu. */
-    private function penilaian(int $id, string $nama, array $detail): int
+    private function penilaian(int $id, string $nama, array $detail, int $lapis = 1): int
     {
         $u = User::forceCreate(['name' => $nama, 'email' => uniqid() . '@test.local', 'password' => bcrypt('x' . uniqid()), 'role' => 'perawat', 'status_akun' => 'active']);
         $pjUser = User::forceCreate(['name' => 'PJ ' . $nama, 'email' => uniqid() . '@test.local', 'password' => bcrypt('x' . uniqid()), 'role' => 'pewawancara']);
@@ -24,13 +24,15 @@ class RkkKhususTest extends TestCase
         $p = DB::table('pengajuan_sertifikats')->insertGetId(['user_id' => $u->id, 'status' => 'completed', 'metode' => 'interview_only', 'created_at' => now(), 'updated_at' => now()]);
         $j = DB::table('jadwal_wawancaras')->insertGetId(['pengajuan_sertifikat_id' => $p, 'penanggung_jawab_id' => $pj, 'waktu_wawancara' => now(), 'lokasi' => 'R', 'status' => 'approved', 'created_at' => now(), 'updated_at' => now()]);
         DB::table('wawancara_penilaians')->where('id', $id)->delete();
-        DB::table('wawancara_penilaians')->insert(['id' => $id, 'jadwal_wawancara_id' => $j, 'keputusan' => 'lulus', 'detail_penilaian' => json_encode($detail), 'created_at' => now(), 'updated_at' => now()]);
+        DB::table('wawancara_penilaians')->insert(['id' => $id, 'jadwal_wawancara_id' => $j, 'keputusan' => 'lulus', 'detail_penilaian' => $lapis === 2 ? json_encode(json_encode($detail)) : json_encode($detail), 'created_at' => now(), 'updated_at' => now()]);
         return $p;
     }
 
     private function detail(int $id): array
     {
-        return json_decode(DB::table('wawancara_penilaians')->where('id', $id)->value('detail_penilaian'), true);
+        $v = DB::table('wawancara_penilaians')->where('id', $id)->value('detail_penilaian');
+        for ($i = 0; is_string($v) && $i < 5; $i++) $v = json_decode($v, true);
+        return $v;
     }
 
     public function test_service_mendeteksi_kelompok_aktif()
@@ -54,7 +56,7 @@ class RkkKhususTest extends TestCase
     public function test_migration_data_8_perawat_hanya_menambah_dan_sesuai_jenjang()
     {
         $lama = ['poin_penilaian' => ['a' => 1], 'rkk' => ['12' => ['jenis' => 'delegasi', 'kewenangan' => 'supervisi']], 'is_mpp' => '0', 'is_ppi' => '0'];
-        $this->penilaian(226, 'DESY NATALIA', $lama);          // PK 2
+        $this->penilaian(226, 'DESY NATALIA', $lama, 2);       // PK 2, format server: JSON 2 lapis
         $this->penilaian(418, 'KIKI RISKA NURAINI, S.Kep.,Ns', $lama); // PK 1
         $this->penilaian(101, 'ORANG LAIN', $lama);            // nama tidak cocok -> dilewati
 
@@ -69,6 +71,14 @@ class RkkKhususTest extends TestCase
         $this->assertCount(9, $desy['rkk'], '1 jawaban lama + 8 butir HD');
         $this->assertSame(['jenis' => 'delegasi', 'kewenangan' => 'supervisi'], $desy['rkk']['12'], 'jawaban lama tidak berubah');
         $this->assertSame(['a' => 1], $desy['poin_penilaian']);
+
+        // Format penyimpanan tetap 2 lapis & tetap terbaca seperti di aplikasi (model cast + json_decode)
+        $raw = DB::table('wawancara_penilaians')->where('id', 226)->value('detail_penilaian');
+        $this->assertIsString(json_decode($raw, true), 'tetap 2 lapis');
+        $model = \App\Models\WawancaraPenilaian::find(226)->detail_penilaian;
+        $dibaca = is_string($model) ? json_decode($model, true) : $model;
+        $this->assertSame('1', $dibaca['is_hd']);
+        $this->assertSame(['hd'], RkkKhusus::aktif($raw), 'service membaca format 2 lapis');
 
         $this->assertSame('supervisi', $this->detail(418)['rkk']['HD-08']['kewenangan'], 'PK 1 dengan supervisi');
         $this->assertArrayNotHasKey('is_hd', $this->detail(101), 'nama tidak cocok tidak diubah');

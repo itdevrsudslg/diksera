@@ -54,7 +54,9 @@ class RkkKhusus
     /** Kode kelompok yang aktif pada detail_penilaian (lewat penanda atau karena sudah ada jawabannya). */
     public static function aktif($detail): array
     {
-        $detail = is_string($detail) ? (json_decode($detail, true) ?: []) : (array) $detail;
+        // detail_penilaian bisa ter-encode lebih dari satu lapis
+        for ($i = 0; is_string($detail) && $i < 5; $i++) $detail = json_decode($detail, true);
+        $detail = is_array($detail) ? $detail : [];
         $rkk = (array) ($detail['rkk'] ?? []);
         $aktif = [];
         foreach (self::KELOMPOK as $kode => $k) {

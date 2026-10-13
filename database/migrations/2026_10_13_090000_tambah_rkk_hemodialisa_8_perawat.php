@@ -33,7 +33,7 @@ class TambahRkkHemodialisa8Perawat extends Migration
             $row = $this->baris($penilaianId, $nama);
             if (!$row) continue;
 
-            $detail = json_decode($row->detail_penilaian ?: '[]', true) ?: [];
+            [$detail, $lapis] = $this->buka($row->detail_penilaian);
             $detail['rkk'] = (array) ($detail['rkk'] ?? []);
             foreach (self::BUTIR as $kode) {
                 if (!isset($detail['rkk'][$kode])) {
@@ -43,7 +43,7 @@ class TambahRkkHemodialisa8Perawat extends Migration
             $detail['is_hd'] = '1';
 
             DB::table('wawancara_penilaians')->where('id', $penilaianId)
-                ->update(['detail_penilaian' => json_encode($detail), 'updated_at' => now()]);
+                ->update(['detail_penilaian' => $this->tutup($detail, $lapis), 'updated_at' => now()]);
         }
     }
 
@@ -53,13 +53,35 @@ class TambahRkkHemodialisa8Perawat extends Migration
             $row = $this->baris($penilaianId, $nama);
             if (!$row) continue;
 
-            $detail = json_decode($row->detail_penilaian ?: '[]', true) ?: [];
+            [$detail, $lapis] = $this->buka($row->detail_penilaian);
             foreach (self::BUTIR as $kode) unset($detail['rkk'][$kode]);
             unset($detail['is_hd']);
 
             DB::table('wawancara_penilaians')->where('id', $penilaianId)
-                ->update(['detail_penilaian' => json_encode($detail), 'updated_at' => now()]);
+                ->update(['detail_penilaian' => $this->tutup($detail, $lapis), 'updated_at' => now()]);
         }
+    }
+
+    /**
+     * detail_penilaian di server umumnya ter-encode DUA lapis (controller json_encode + cast 'array' model).
+     * Buka sampai menjadi array dan ingat jumlah lapisnya agar disimpan kembali dengan format yang sama.
+     */
+    private function buka($raw): array
+    {
+        $v = $raw ?: '[]';
+        $lapis = 0;
+        while (is_string($v) && $lapis < 5) {
+            $v = json_decode($v, true);
+            $lapis++;
+        }
+        return [is_array($v) ? $v : [], max(1, $lapis)];
+    }
+
+    private function tutup(array $detail, int $lapis): string
+    {
+        $v = $detail;
+        for ($i = 0; $i < $lapis; $i++) $v = json_encode($v);
+        return $v;
     }
 
     /** Ambil penilaian hanya bila milik perawat dengan nama yang diharapkan. */
