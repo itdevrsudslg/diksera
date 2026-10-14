@@ -677,13 +677,10 @@ public function exportCustom(Request $request)
         $tglPelatihan = function ($pl) {
             $tgl = $pl->tanggal_selesai ?: $pl->tanggal_mulai;
             return $tgl ? \Carbon\Carbon::parse($tgl)->format('d-m-Y') : ($pl->tahun ?: '');
-        }; 
+        };
 
         $data = User::where('role', 'perawat')
-            ->with([
-                'profile', 'pendidikan', 'perawatPekerjaans', 
-                'strs', 'sips', 'pelatihan'
-            ])
+            ->with(['profile', 'pendidikan', 'perawatPekerjaans', 'strs', 'sips', 'pelatihan'])
             ->get();
 
         // Filter: hanya perawat yang memiliki salah satu / semua pelatihan terpilih
@@ -694,98 +691,77 @@ public function exportCustom(Request $request)
             })->values();
         }
 
-        $fileName = "Data_Kustom_Perawat_RSUD_SLG_" . date('Ymd_His') . ".xls";
+        // Definisi kolom: kunci => [judul, fungsi nilai]. Dipakai untuk file Excel dan preview.
+        $definisi = [
+            'nama'               => ['NAMA LENGKAP', fn($u, $x) => $u->name],
+            'nik'                => ['NIK', fn($u, $x) => optional($x->p)->nik ?? '-'],
+            'nohp'               => ['NO. WHATSAPP', fn($u, $x) => optional($x->p)->no_hp ?? '-'],
+            'alamat'             => ['ALAMAT', fn($u, $x) => optional($x->p)->alamat ?? '-'],
+            'ruangan'            => ['RUANGAN (UNIT KERJA)', fn($u, $x) => $x->kerja ? $x->kerja->unit_kerja : '-'],
+            'status_kepegawaian' => ['STATUS KEPEGAWAIAN', fn($u, $x) => $x->kerja ? ($x->kerja->status_kepegawaian ?? '-') : '-'],
+            'pk'                 => ['JENJANG PK', fn($u, $x) => $x->pk ? implode(', ', $x->pk) : 'PRA PK'],
+            'kfk'                => ['KFK', fn($u, $x) => $x->kfk ? implode(', ', $x->kfk) : '-'],
+            'str'                => ['NO. STR (EXPIRED)', fn($u, $x) => ($s = $u->strs->first()) ? $s->nomor . ' (' . $s->tgl_expired . ')' : '-'],
+            'sip'                => ['NO. SIP (EXPIRED)', fn($u, $x) => ($s = $u->sips->first()) ? $s->nomor . ' (' . $s->tgl_expired . ')' : '-'],
+            'pendidikan'         => ['PENDIDIKAN TERAKHIR', fn($u, $x) => ($d = $u->pendidikan->sortByDesc('tahun_lulus')->first()) ? $d->jenjang . ' - ' . $d->nama_institusi : '-'],
+            'pelatihan_semua'    => ['DAFTAR PELATIHAN', fn($u, $x) => $u->pelatihan->sortByDesc(fn($pl) => $pl->tanggal_mulai ?? $pl->tahun)
+                ->map(fn($pl) => trim($pl->nama_pelatihan) . (($t = $tglPelatihan($pl)) ? ' (' . $t . ')' : ''))->implode("\n") ?: '-'],
+            'pelatihan_jumlah'   => ['JUMLAH PELATIHAN', fn($u, $x) => (string) $u->pelatihan->count()],
+            'pelatihan_skp'      => ['TOTAL SKP PELATIHAN', fn($u, $x) => (string) (int) $u->pelatihan->sum('skp')],
+        ];
 
-        // Isi file Excel (tabel HTML) dikumpulkan lalu dikirim sebagai response unduhan
-        ob_start();
-        echo '<table border="1">';
-        
-        // --- 1. RENDER HEADER TABEL DINAMIS ---
-        echo '<tr>';
-        echo '<th style="background-color: #D3D3D3;">NO</th>';
-        if (in_array('nama', $kolom)) echo '<th style="background-color: #D3D3D3;">NAMA LENGKAP</th>';
-        if (in_array('nik', $kolom)) echo '<th style="background-color: #D3D3D3;">NIK</th>';
-        if (in_array('nohp', $kolom)) echo '<th style="background-color: #D3D3D3;">NO. WHATSAPP</th>';
-        if (in_array('alamat', $kolom)) echo '<th style="background-color: #D3D3D3;">ALAMAT</th>';
-        if (in_array('ruangan', $kolom)) echo '<th style="background-color: #D3D3D3;">RUANGAN (UNIT KERJA)</th>';
-        if (in_array('status_kepegawaian', $kolom)) echo '<th style="background-color: #D3D3D3;">STATUS KEPEGAWAIAN</th>'; // <-- TAMBAHAN
-        if (in_array('pk', $kolom)) echo '<th style="background-color: #D3D3D3;">JENJANG PK</th>';
-        if (in_array('kfk', $kolom)) echo '<th style="background-color: #D3D3D3;">KFK</th>';
-        if (in_array('str', $kolom)) echo '<th style="background-color: #D3D3D3;">NO. STR (EXPIRED)</th>';
-        if (in_array('sip', $kolom)) echo '<th style="background-color: #D3D3D3;">NO. SIP (EXPIRED)</th>';
-        if (in_array('pendidikan', $kolom)) echo '<th style="background-color: #D3D3D3;">PENDIDIKAN TERAKHIR</th>';
-        if (in_array('pelatihan_semua', $kolom)) echo '<th style="background-color: #D3D3D3;">DAFTAR PELATIHAN</th>';
-        if (in_array('pelatihan_jumlah', $kolom)) echo '<th style="background-color: #D3D3D3;">JUMLAH PELATIHAN</th>';
-        if (in_array('pelatihan_skp', $kolom)) echo '<th style="background-color: #D3D3D3;">TOTAL SKP PELATIHAN</th>';
-        foreach ($pelatihanDipilih as $kunci) echo '<th style="background-color: #FFE699;">PELATIHAN: ' . e(mb_strtoupper($kunci)) . '</th>';
-        echo '</tr>';
+        $kolomAktif = [];
+        foreach ($definisi as $key => [$judul, $fn]) {
+            if (in_array($key, $kolom)) $kolomAktif[] = ['key' => $key, 'judul' => $judul, 'fn' => $fn, 'warna' => '#D3D3D3'];
+        }
+        foreach ($pelatihanDipilih as $kunci) {
+            $kolomAktif[] = ['key' => 'pelatihan:' . $kunci, 'judul' => 'PELATIHAN: ' . mb_strtoupper($kunci), 'warna' => '#FFE699',
+                'fn' => function ($u) use ($kunci, $cocok, $tglPelatihan) {
+                    $hasil = $cocok($u->pelatihan, $kunci);
+                    $tanggal = $hasil->map($tglPelatihan)->filter()->implode(', ');
+                    return $hasil->isEmpty() ? '-' : 'Ya' . ($tanggal ? ' (' . $tanggal . ')' : '');
+                }];
+        }
 
-        // --- 2. RENDER ISI DATA ---
-        foreach ($data as $i => $u) {
+        $baris = $data->map(function ($u) use ($kolomAktif) {
             $p = $u->profile;
-            
-            // Ekstrak Ruangan & Status Kepegawaian
-            $pekerjaanAktif = $u->perawatPekerjaans->sortByDesc('tahun_mulai')->first();
-            $ruangan = $pekerjaanAktif ? $pekerjaanAktif->unit_kerja : '-';
-            $statusPegawai = $pekerjaanAktif ? ($pekerjaanAktif->status_kepegawaian ?? '-') : '-'; // <-- TAMBAHAN
-
-            // Ekstrak PK & KFK
             $tp = optional($p)->type_perawat;
             $types = is_string($tp) ? json_decode($tp, true) : ($tp ?? []);
-            $kfkList = [];
-            $pkList = [];
-            if(is_array($types)) {
-                foreach($types as $t) {
-                    if(str_contains(strtoupper($t), 'KFK')) $kfkList[] = $t;
-                    else if(str_contains(strtoupper($t), 'PK') || str_contains(strtoupper($t), 'BK')) $pkList[] = $t;
-                }
+            $pk = []; $kfk = [];
+            foreach (is_array($types) ? $types : [] as $t) {
+                if (str_contains(strtoupper($t), 'KFK')) $kfk[] = $t;
+                elseif (str_contains(strtoupper($t), 'PK') || str_contains(strtoupper($t), 'BK')) $pk[] = $t;
             }
-            $strPk = !empty($pkList) ? implode(', ', $pkList) : 'PRA PK';
-            $strKfk = !empty($kfkList) ? implode(', ', $kfkList) : '-';
+            $x = (object) ['p' => $p, 'kerja' => $u->perawatPekerjaans->sortByDesc('tahun_mulai')->first(), 'pk' => $pk, 'kfk' => $kfk];
+            return array_map(fn($k) => (string) ($k['fn'])($u, $x), $kolomAktif);
+        })->values();
 
-            // Ekstrak Pendidikan
-            $pendidikanAktif = $u->pendidikan->sortByDesc('tahun_lulus')->first();
-            $pendidikanText = $pendidikanAktif ? $pendidikanAktif->jenjang . ' - ' . $pendidikanAktif->nama_institusi : '-';
-
-            // Ekstrak Dokumen STR/SIP
-            $strObj = $u->strs->first();
-            $strText = $strObj ? $strObj->nomor . ' (' . $strObj->tgl_expired . ')' : '-';
-
-            $sipObj = $u->sips->first();
-            $sipText = $sipObj ? $sipObj->nomor . ' (' . $sipObj->tgl_expired . ')' : '-';
-
-            // Print Row
-            echo '<tr>';
-            echo '<td>' . ($i + 1) . '</td>';
-            if (in_array('nama', $kolom)) echo '<td>' . $u->name . '</td>';
-            if (in_array('nik', $kolom)) echo '<td>' . ($p->nik ?? '-') . '&nbsp;</td>';
-            if (in_array('nohp', $kolom)) echo '<td>' . ($p->no_hp ?? '-') . '&nbsp;</td>';
-            if (in_array('alamat', $kolom)) echo '<td>' . ($p->alamat ?? '-') . '</td>';
-            if (in_array('ruangan', $kolom)) echo '<td>' . $ruangan . '</td>';
-            if (in_array('status_kepegawaian', $kolom)) echo '<td>' . $statusPegawai . '</td>'; // <-- TAMBAHAN
-            if (in_array('pk', $kolom)) echo '<td>' . $strPk . '</td>';
-            if (in_array('kfk', $kolom)) echo '<td>' . $strKfk . '</td>';
-            if (in_array('str', $kolom)) echo '<td>' . $strText . '</td>';
-            if (in_array('sip', $kolom)) echo '<td>' . $sipText . '</td>';
-            if (in_array('pendidikan', $kolom)) echo '<td>' . $pendidikanText . '</td>';
-            if (in_array('pelatihan_semua', $kolom)) {
-                $daftar = $u->pelatihan->sortByDesc(fn($pl) => $pl->tanggal_mulai ?? $pl->tahun)
-                    ->map(fn($pl) => e(trim($pl->nama_pelatihan)) . (($t = $tglPelatihan($pl)) ? ' (' . $t . ')' : ''))
-                    ->implode('<br style="mso-data-placement:same-cell;">');
-                echo '<td>' . ($daftar ?: '-') . '</td>';
-            }
-            if (in_array('pelatihan_jumlah', $kolom)) echo '<td>' . $u->pelatihan->count() . '</td>';
-            if (in_array('pelatihan_skp', $kolom)) echo '<td>' . (int) $u->pelatihan->sum('skp') . '</td>';
-            foreach ($pelatihanDipilih as $kunci) {
-                $hasil = $cocok($u->pelatihan, $kunci);
-                $tanggal = $hasil->map($tglPelatihan)->filter()->implode(', ');
-                echo '<td>' . ($hasil->isEmpty() ? '-' : 'Ya' . ($tanggal ? ' (' . $tanggal . ')' : '')) . '</td>';
-            }
-            echo '</tr>';
+        // Preview di modal (JSON)
+        if ($request->boolean('preview')) {
+            return response()->json([
+                'judul' => array_merge(['NO'], array_column($kolomAktif, 'judul')),
+                'baris' => $baris->map(fn($r, $i) => array_merge([(string) ($i + 1)], $r)),
+                'total' => $baris->count(),
+            ]);
         }
-        echo '</table>';
 
-        return response(ob_get_clean(), 200, [
+        // File Excel (tabel HTML)
+        $fileName = "Data_Kustom_Perawat_RSUD_SLG_" . date('Ymd_His') . ".xls";
+        $html = '<table border="1"><tr><th style="background-color: #D3D3D3;">NO</th>';
+        foreach ($kolomAktif as $k) $html .= '<th style="background-color: ' . $k['warna'] . ';">' . e($k['judul']) . '</th>';
+        $html .= '</tr>';
+        foreach ($baris as $i => $r) {
+            $html .= '<tr><td>' . ($i + 1) . '</td>';
+            foreach ($r as $j => $nilai) {
+                $isi = str_replace("\n", '<br style="mso-data-placement:same-cell;">', e($nilai));
+                // NIK & no. HP diberi spasi agar Excel tidak mengubahnya menjadi angka ilmiah
+                $html .= '<td>' . $isi . (in_array($kolomAktif[$j]['key'], ['nik', 'nohp']) ? '&nbsp;' : '') . '</td>';
+            }
+            $html .= '</tr>';
+        }
+        $html .= '</table>';
+
+        return response($html, 200, [
             'Content-Type'        => 'application/vnd.ms-excel',
             'Content-Disposition' => "attachment; filename=$fileName",
             'Pragma'              => 'no-cache',

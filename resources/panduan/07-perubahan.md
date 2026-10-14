@@ -9,6 +9,7 @@ Catatan setiap pembaruan DIKSERA, terbaru di atas.
 
 ### Perbaikan
 - Ekspor Excel Kustom tidak lagi gagal bila ada akun perawat yang belum mengisi profil.
+- Ekspor Excel Kustom: daftar pelatihan bisa **dicari dan diklik** (dengan jumlah orang), dan ada **Lihat Preview** hasil ekspor lengkap dengan pencarian sebelum mengunduh.
 
 ### Perbaikan Data
 - RKK Hemodialisa butir *Melakukan program sesuai Prescripe dokter (QB, QD, UF dan Anti Koagulan)*: kolom kewenangan **Lendra Kusdiantoro** diubah menjadi **Dengan Supervisi**. **Kiki Riska Nuraini** sudah *Dengan Supervisi* (PK 1), tidak berubah.

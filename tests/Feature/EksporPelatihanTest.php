@@ -74,6 +74,27 @@ class EksporPelatihanTest extends TestCase
         $admin = User::forceCreate(['name' => 'Admin Saran', 'email' => uniqid() . '@test.local', 'password' => bcrypt('x' . uniqid()), 'role' => 'admin', 'status_akun' => 'active']);
         $this->perawat('PERAWAT DEDI', [['BHD Awam', '2024-01-01', 1]]);
         $this->actingAs($admin)->get(route('admin.perawat.index'))->assertOk()
-            ->assertSee('id="inputPelatihan"', false)->assertSee('<option value="BHD Awam">', false);
+            ->assertSee('id="inputPelatihan"', false)->assertSee('id="daftarPelatihanPilih"', false)
+            ->assertSee('BHD Awam')->assertSee('id="btnPreviewEkspor"', false);
+    }
+
+    public function test_preview_json_sama_dengan_isi_excel()
+    {
+        $admin = User::forceCreate(['name' => 'Admin Preview', 'email' => uniqid() . '@test.local', 'password' => bcrypt('x' . uniqid()), 'role' => 'admin', 'status_akun' => 'active']);
+        $this->perawat('PERAWAT EKA', [['BTCLS Lanjut', '2025-03-03', 4]]);
+        $this->perawat('PERAWAT FANI', [['Komunikasi Efektif', '2025-01-01', 1]]);
+
+        $param = ['kolom' => ['nama', 'nik', 'pelatihan_skp'], 'pelatihan' => ['btcls'], 'filter_pelatihan' => 'salah_satu'];
+        $json = $this->actingAs($admin)->getJson(route('admin.perawat.export_custom', $param + ['preview' => 1]))->assertOk()->json();
+
+        $this->assertSame(['NO', 'NAMA LENGKAP', 'NIK', 'TOTAL SKP PELATIHAN', 'PELATIHAN: BTCLS'], $json['judul']);
+        $this->assertSame(1, $json['total']);
+        $this->assertSame('PERAWAT EKA', $json['baris'][0][1]);
+        $this->assertSame('Ya (03-03-2025)', $json['baris'][0][4]);
+
+        $excel = $this->actingAs($admin)->get(route('admin.perawat.export_custom', $param))->getContent();
+        $this->assertStringContainsString('PERAWAT EKA', $excel);
+        $this->assertStringNotContainsString('PERAWAT FANI', $excel);
+        $this->assertStringContainsString($json['baris'][0][2] . '&nbsp;', $excel, 'NIK tetap diberi spasi agar tidak jadi angka');
     }
 }

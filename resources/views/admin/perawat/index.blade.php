@@ -486,13 +486,13 @@
 
 {{-- MODAL EXPORT KUSTOM --}}
 <div class="modal fade" id="modalExportKustom" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
             <div class="modal-header bg-success text-white border-0 py-3 px-4">
                 <h6 class="modal-title fw-bold mb-0"><i class="bi bi-file-earmark-excel me-2"></i>Ekspor Excel Kustom</h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ route('admin.perawat.export_custom') }}" method="GET">
+            <form action="{{ route('admin.perawat.export_custom') }}" method="GET" id="formEksporKustom">
                 <div class="modal-body p-4">
                     <p class="small text-muted mb-3">Pilih kolom data apa saja yang ingin kamu masukkan ke dalam file Excel.</p>
                     
@@ -571,15 +571,12 @@
 
                     <label class="form-label small fw-semibold mt-2 mb-1">Pelatihan tertentu <span class="text-muted fw-normal">(tiap pelatihan jadi satu kolom: Ya + tanggal / -)</span></label>
                     <div class="input-group input-group-sm">
-                        <input type="text" class="form-control" id="inputPelatihan" list="listPelatihan" placeholder="Ketik, mis. BTCLS, PPGD, PPI…" autocomplete="off">
-                        <button type="button" class="btn btn-outline-success" id="btnTambahPelatihan"><i class="bi bi-plus-lg"></i> Tambah</button>
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" id="inputPelatihan" placeholder="Cari pelatihan, mis. BTCLS, PPGD, PPI…" autocomplete="off">
+                        <button type="button" class="btn btn-outline-success" id="btnTambahPelatihan" title="Tambahkan kata yang diketik sebagai kolom"><i class="bi bi-plus-lg"></i> Tambah</button>
                     </div>
-                    <datalist id="listPelatihan">
-                        @foreach ($daftarPelatihan ?? [] as $pl)
-                            <option value="{{ $pl->nama }}">{{ $pl->jumlah }} orang</option>
-                        @endforeach
-                    </datalist>
-                    <div class="small text-muted mt-1">Cocok bila nama pelatihan <b>mengandung</b> kata yang diketik (huruf besar/kecil diabaikan). Maks. 20.</div>
+                    <div class="border rounded mt-1 bg-white" id="daftarPelatihanPilih" style="max-height: 190px; overflow-y: auto;"></div>
+                    <div class="small text-muted mt-1">Klik nama pelatihan di daftar, atau ketik kata lalu <b>Tambah</b>. Kolom cocok bila nama pelatihan <b>mengandung</b> kata tersebut (huruf besar/kecil diabaikan). Maks. 20.</div>
                     <div id="chipPelatihan" class="d-flex flex-wrap gap-1 mt-2"></div>
 
                     <div class="mt-2" id="wrapFilterPelatihan" style="display: none;">
@@ -589,8 +586,27 @@
                             <option value="semua">Hanya perawat yang punya semua pelatihan terpilih</option>
                         </select>
                     </div>
+
+                    {{-- PREVIEW HASIL --}}
+                    <div id="wrapPreview" class="mt-3" style="display: none;">
+                        <hr class="my-3">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                            <div class="fw-bold small"><i class="bi bi-table text-success me-1"></i> Preview <span id="previewInfo" class="text-muted fw-normal"></span></div>
+                            <div class="input-group input-group-sm" style="max-width: 260px;">
+                                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                                <input type="search" class="form-control" id="cariPreview" placeholder="Cari di preview…">
+                            </div>
+                        </div>
+                        <div class="table-responsive border rounded" style="max-height: 320px;">
+                            <table class="table table-sm table-striped table-hover mb-0" style="font-size: 12px;">
+                                <thead class="table-light" style="position: sticky; top: 0;" id="previewHead"></thead>
+                                <tbody id="previewBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer border-0 bg-light p-3">
+                    <button type="button" class="btn btn-outline-success me-auto" id="btnPreviewEkspor"><i class="bi bi-eye me-1"></i> Lihat Preview</button>
                     <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-success fw-bold px-4">
                         <i class="bi bi-download me-1"></i> Unduh Excel
@@ -865,21 +881,28 @@ function openArsipModal(nama, arsipData) {
 </script>
 
 <script>
-    // Ekspor kustom: pilih pelatihan tertentu sebagai kolom
+    // Ekspor kustom: pilih pelatihan tertentu sebagai kolom + preview hasil
     (function () {
+        const form = document.getElementById('formEksporKustom');
         const input = document.getElementById('inputPelatihan');
         const wadah = document.getElementById('chipPelatihan');
+        const daftar = document.getElementById('daftarPelatihanPilih');
         const filter = document.getElementById('wrapFilterPelatihan');
-        if (!input) return;
+        if (!form || !input) return;
 
-        function perbarui() { filter.style.display = wadah.children.length ? '' : 'none'; }
+        const semuaPelatihan = @json(($daftarPelatihan ?? collect())->map(fn($p) => ['nama' => $p->nama, 'jumlah' => (int) $p->jumlah])->values());
+        const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const terpilih = () => [...wadah.querySelectorAll('input')].map(i => i.value.toLowerCase());
 
-        function tambah() {
-            const v = input.value.trim();
-            input.value = '';
-            if (!v) return;
-            const ada = [...wadah.querySelectorAll('input')].some(i => i.value.toLowerCase() === v.toLowerCase());
-            if (ada || wadah.children.length >= 20) return;
+        function perbarui() {
+            filter.style.display = wadah.children.length ? '' : 'none';
+            tampilkanDaftar();
+        }
+
+        function tambah(nilai) {
+            const v = (nilai ?? input.value).trim();
+            if (nilai === undefined) input.value = '';
+            if (!v || terpilih().includes(v.toLowerCase()) || wadah.children.length >= 20) return;
             const chip = document.createElement('span');
             chip.className = 'badge rounded-pill text-bg-success d-inline-flex align-items-center gap-1 py-2 px-3';
             chip.style.fontSize = '12px';
@@ -895,10 +918,75 @@ function openArsipModal(nama, arsipData) {
             perbarui();
         }
 
-        document.getElementById('btnTambahPelatihan').addEventListener('click', tambah);
+        // Daftar pelatihan yang tersedia, tersaring sesuai ketikan
+        function tampilkanDaftar() {
+            const q = input.value.trim().toLowerCase();
+            const sudah = terpilih();
+            const cocok = semuaPelatihan.filter(p => !q || p.nama.toLowerCase().includes(q));
+            const tampil = cocok.slice(0, 80);
+            daftar.innerHTML = tampil.length
+                ? tampil.map(p => `<button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-1 px-2 border-0 border-bottom small ${sudah.includes(p.nama.toLowerCase()) ? 'disabled text-muted' : ''}" data-nama="${esc(p.nama)}">
+                        <span>${esc(p.nama)}</span><span class="badge text-bg-light border">${p.jumlah} org</span></button>`).join('')
+                  + (cocok.length > tampil.length ? `<div class="small text-muted px-2 py-1">… ${cocok.length - tampil.length} lainnya, perjelas pencarian</div>` : '')
+                : `<div class="small text-muted px-2 py-2">Tidak ada nama pelatihan yang cocok. Klik <b>Tambah</b> untuk memakai kata "${esc(input.value.trim())}".</div>`;
+        }
+        daftar.classList.add('list-group');
+        daftar.addEventListener('click', e => {
+            const b = e.target.closest('[data-nama]');
+            if (b && !b.classList.contains('disabled')) tambah(b.dataset.nama);
+        });
+
+        document.getElementById('btnTambahPelatihan').addEventListener('click', () => tambah());
+        input.addEventListener('input', tampilkanDaftar);
         input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); tambah(); } });
-        // Pilih dari daftar saran langsung ditambahkan
-        input.addEventListener('change', () => { if (document.querySelector('#listPelatihan option[value="' + CSS.escape(input.value) + '"]')) tambah(); });
+        tampilkanDaftar();
+
+        // ---------- Preview hasil ----------
+        const wrapPreview = document.getElementById('wrapPreview');
+        const head = document.getElementById('previewHead');
+        const body = document.getElementById('previewBody');
+        const info = document.getElementById('previewInfo');
+        const cari = document.getElementById('cariPreview');
+        let dataPreview = null;
+
+        function renderPreview() {
+            if (!dataPreview) return;
+            const q = cari.value.trim().toLowerCase();
+            const rows = dataPreview.baris.filter(r => !q || r.some(c => String(c).toLowerCase().includes(q)));
+            const tampil = rows.slice(0, 300);
+            head.innerHTML = '<tr>' + dataPreview.judul.map(j => `<th class="text-nowrap">${esc(j)}</th>`).join('') + '</tr>';
+            body.innerHTML = tampil.length
+                ? tampil.map(r => '<tr>' + r.map(c => `<td>${esc(c).replace(/\n/g, '<br>')}</td>`).join('') + '</tr>').join('')
+                : `<tr><td colspan="${dataPreview.judul.length}" class="text-center text-muted py-3">Tidak ada data yang cocok.</td></tr>`;
+            info.textContent = `· ${dataPreview.total} perawat akan diekspor` + (q ? ` · ${rows.length} cocok pencarian` : '')
+                + (rows.length > tampil.length ? ` · menampilkan ${tampil.length} baris pertama` : '');
+        }
+
+        document.getElementById('btnPreviewEkspor').addEventListener('click', async function () {
+            const btn = this, label = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Memuat…';
+            try {
+                const params = new URLSearchParams(new FormData(form));
+                params.set('preview', '1');
+                const res = await fetch(form.action + '?' + params.toString(), { headers: { 'Accept': 'application/json' } });
+                if (!res.ok) throw new Error('Gagal memuat preview');
+                dataPreview = await res.json();
+                wrapPreview.style.display = '';
+                renderPreview();
+                wrapPreview.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } catch (e) {
+                Swal.fire({ icon: 'error', title: 'Gagal', text: e.message });
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = label;
+            }
+        });
+        cari.addEventListener('input', renderPreview);
+
+        // Preview lama disembunyikan bila pilihan kolom/pelatihan berubah
+        form.addEventListener('change', e => { if (e.target !== cari) { dataPreview = null; wrapPreview.style.display = 'none'; } });
+        new MutationObserver(() => { dataPreview = null; wrapPreview.style.display = 'none'; }).observe(wadah, { childList: true });
     })();
 </script>
 @endsection
