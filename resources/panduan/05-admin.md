@@ -32,8 +32,8 @@ Jabatan struktural diisi oleh yang bersangkutan di **Profil → Identitas**. Set
 
 - Daftar seluruh perawat/bidan, filter, dan **Ekspor Excel Kustom** (pilih kolom).
   - Bagian **Pelatihan**: *Daftar Semua Pelatihan* (nama + tanggal), *Jumlah Pelatihan*, *Total SKP Pelatihan*.
-  - **Pelatihan tertentu**: daftar semua nama pelatihan yang pernah diinput perawat tampil beserta jumlah orangnya. Ketik di kotak cari untuk menyaring (mis. *btc*), lalu **klik** nama pelatihan untuk menambahkannya; atau ketik kata sendiri lalu **Tambah**. Tiap pelatihan menjadi satu kolom berisi *Ya (tanggal)* atau *-*. Pencocokan memakai kata yang **terkandung** di nama pelatihan, jadi "BTCLS" juga cocok dengan "Pelatihan BTCLS 2024".
-  - Pilih **Hanya perawat yang punya salah satu / semua pelatihan terpilih** untuk menyaring daftar, misalnya untuk mendata siapa saja yang sudah BTCLS.
+  - **Pilih pelatihan** (panel kanan): daftar semua nama pelatihan yang pernah diinput perawat tampil beserta jumlah orangnya. Ketik di kotak cari untuk menyaring (mis. *btc*), lalu **centang** satu atau beberapa pelatihan. Untuk mencakup semua variasi penulisan, ketik kata (mis. *btcls*) lalu klik **Pakai kata ini**. Tiap pelatihan menjadi satu kolom berisi *Ya (tanggal)* atau *-*. Pencocokan memakai kata yang **terkandung** di nama pelatihan, jadi "BTCLS" juga cocok dengan "Pelatihan BTCLS 2024".
+  - Di bagian **Perawat yang diekspor** pilih: **Semua perawat**, **Punya salah satu (atau)**, atau **Punya semua (dan)** — misalnya centang *BTCLS* dan *PPGD* lalu pilih *Punya semua* untuk mendata perawat yang sudah memiliki keduanya.
   - Klik **Lihat Preview** untuk melihat tabel hasil (isi sama persis dengan file Excel) sebelum mengunduh. Gunakan kotak **Cari di preview** untuk memeriksa nama tertentu. Preview disembunyikan otomatis bila pilihan kolom diubah — klik lagi untuk memperbarui.
 - **Detail** perawat: DRH lengkap, dokumen, sertifikat, tombol **Riwayat Kredensialing** (timeline setiap pengajuan dari dibuat sampai lisensi terbit).
 - Edit DRH dan dokumen (STR/SIP/lisensi/tambahan) atas nama perawat. Unggahan hanya **PDF/JPG/PNG maks. 5 MB**.

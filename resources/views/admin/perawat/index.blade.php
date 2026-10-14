@@ -486,126 +486,115 @@
 
 {{-- MODAL EXPORT KUSTOM --}}
 <div class="modal fade" id="modalExportKustom" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-success text-white border-0 py-3 px-4">
-                <h6 class="modal-title fw-bold mb-0"><i class="bi bi-file-earmark-excel me-2"></i>Ekspor Excel Kustom</h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form action="{{ route('admin.perawat.export_custom') }}" method="GET" id="formEksporKustom">
-                <div class="modal-body p-4">
-                    <p class="small text-muted mb-3">Pilih kolom data apa saja yang ingin kamu masukkan ke dalam file Excel.</p>
-                    
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="kolom[]" value="nama" id="col_nama" checked readonly onclick="return false;">
-                                <label class="form-check-label fw-bold" for="col_nama">Nama Lengkap</label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="kolom[]" value="nik" id="col_nik" checked>
-                                <label class="form-check-label" for="col_nik">NIK</label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="kolom[]" value="nohp" id="col_nohp" checked>
-                                <label class="form-check-label" for="col_nohp">No. WhatsApp</label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="kolom[]" value="ruangan" id="col_ruangan">
-                                <label class="form-check-label" for="col_ruangan">Ruangan (Unit Kerja)</label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="kolom[]" value="status_kepegawaian" id="col_status">
-                                <label class="form-check-label" for="col_status">Status Kepegawaian</label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="kolom[]" value="pk" id="col_pk">
-                                <label class="form-check-label" for="col_pk">Jenjang PK</label>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="kolom[]" value="kfk" id="col_kfk">
-                                <label class="form-check-label" for="col_kfk">KFK</label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="kolom[]" value="str" id="col_str">
-                                <label class="form-check-label" for="col_str">No. STR & Expired</label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="kolom[]" value="sip" id="col_sip">
-                                <label class="form-check-label" for="col_sip">No. SIP & Expired</label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="kolom[]" value="pendidikan" id="col_pendidikan">
-                                <label class="form-check-label" for="col_pendidikan">Pendidikan Terakhir</label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="kolom[]" value="alamat" id="col_alamat">
-                                <label class="form-check-label" for="col_alamat">Alamat</label>
-                            </div>
-                        </div>
-                    </div>
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+        <div class="modal-content border-0 shadow-lg ek-modal" style="border-radius: 16px;">
+            {{-- display:contents agar body bisa di-scroll & footer selalu terlihat --}}
+            <form action="{{ route('admin.perawat.export_custom') }}" method="GET" id="formEksporKustom" style="display: contents;">
+                <div class="modal-header bg-success text-white border-0 py-3 px-4">
+                    <h6 class="modal-title fw-bold mb-0"><i class="bi bi-file-earmark-excel me-2"></i>Ekspor Excel Kustom</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
 
-                    {{-- PELATIHAN --}}
-                    <hr class="my-3">
-                    <div class="fw-bold small mb-2"><i class="bi bi-mortarboard text-success me-1"></i> Pelatihan</div>
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="kolom[]" value="pelatihan_semua" id="col_pel_semua">
-                                <label class="form-check-label" for="col_pel_semua">Daftar Semua Pelatihan</label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="kolom[]" value="pelatihan_jumlah" id="col_pel_jumlah">
-                                <label class="form-check-label" for="col_pel_jumlah">Jumlah Pelatihan</label>
+                <div class="modal-body p-4 bg-light">
+                    <div class="row g-3">
+                        {{-- KIRI: KOLOM DATA --}}
+                        <div class="col-lg-5">
+                            <div class="ek-card h-100">
+                                <div class="ek-title"><span class="ek-step">1</span> Kolom data</div>
+                                <div class="small text-muted mb-2">Pilih data yang ingin dimasukkan ke Excel.</div>
+                                <div class="row g-0">
+                                    @foreach ([
+                                        'nama' => 'Nama Lengkap', 'nik' => 'NIK', 'nohp' => 'No. WhatsApp', 'ruangan' => 'Ruangan (Unit Kerja)',
+                                        'status_kepegawaian' => 'Status Kepegawaian', 'pk' => 'Jenjang PK', 'kfk' => 'KFK', 'str' => 'No. STR & Expired',
+                                        'sip' => 'No. SIP & Expired', 'pendidikan' => 'Pendidikan Terakhir', 'alamat' => 'Alamat',
+                                    ] as $val => $lbl)
+                                        <div class="col-6">
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" name="kolom[]" value="{{ $val }}" id="col_{{ $val }}"
+                                                    {{ in_array($val, ['nama', 'nik', 'nohp']) ? 'checked' : '' }} {!! $val === 'nama' ? 'onclick="return false;"' : '' !!}>
+                                                <label class="form-check-label small {{ $val === 'nama' ? 'fw-bold' : '' }}" for="col_{{ $val }}">{{ $lbl }}</label>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                                <hr class="my-3">
+                                <div class="ek-title"><i class="bi bi-mortarboard text-success"></i> Ringkasan pelatihan</div>
+                                <div class="row g-0">
+                                    @foreach (['pelatihan_semua' => 'Daftar Semua Pelatihan', 'pelatihan_jumlah' => 'Jumlah Pelatihan', 'pelatihan_skp' => 'Total SKP Pelatihan'] as $val => $lbl)
+                                        <div class="col-6">
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" name="kolom[]" value="{{ $val }}" id="col_{{ $val }}">
+                                                <label class="form-check-label small" for="col_{{ $val }}">{{ $lbl }}</label>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
                             </div>
                         </div>
-                        <div class="col-6">
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="kolom[]" value="pelatihan_skp" id="col_pel_skp">
-                                <label class="form-check-label" for="col_pel_skp">Total SKP Pelatihan</label>
+
+                        {{-- KANAN: PILIH PELATIHAN --}}
+                        <div class="col-lg-7">
+                            <div class="ek-card h-100">
+                                <div class="d-flex justify-content-between align-items-start gap-2">
+                                    <div>
+                                        <div class="ek-title"><span class="ek-step">2</span> Pilih pelatihan <span class="text-muted fw-normal small">(opsional)</span></div>
+                                        <div class="small text-muted mb-2">Centang satu atau beberapa pelatihan. Tiap pelatihan menjadi satu kolom berisi <b>Ya (tanggal)</b> atau <b>-</b>.</div>
+                                    </div>
+                                    <span class="badge rounded-pill text-bg-success" id="jumlahDipilih" style="display: none;"></span>
+                                </div>
+
+                                <div class="input-group input-group-sm mb-2">
+                                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                                    <input type="text" class="form-control" id="inputPelatihan" placeholder="Cari pelatihan, mis. BTCLS, PPGD, PPI…" autocomplete="off">
+                                    <button type="button" class="btn btn-outline-success" id="btnTambahPelatihan" title="Pakai kata yang diketik sebagai kolom (mencakup semua variasi nama)">
+                                        <i class="bi bi-plus-lg"></i> Pakai kata ini
+                                    </button>
+                                </div>
+                                <div class="ek-list" id="daftarPelatihanPilih"></div>
+                                <div class="small text-muted mt-1"><i class="bi bi-lightbulb"></i> Tips: ketik <b>btcls</b> lalu <b>Pakai kata ini</b> untuk mencakup semua penulisan (BTCLS 2024, Pelatihan BTCLS, …).</div>
+
+                                <div id="wrapTerpilih" class="mt-3" style="display: none;">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small fw-semibold">Pelatihan terpilih</span>
+                                        <button type="button" class="btn btn-link btn-sm text-danger p-0 text-decoration-none" id="btnHapusSemua">Hapus semua</button>
+                                    </div>
+                                    <div id="chipPelatihan" class="d-flex flex-wrap gap-1"></div>
+
+                                    <div class="small fw-semibold mt-3 mb-1">Perawat yang diekspor</div>
+                                    <div class="ek-seg" role="group">
+                                        <input type="radio" class="btn-check" name="filter_pelatihan" id="fp_semua_perawat" value="" checked>
+                                        <label class="btn btn-sm btn-outline-secondary" for="fp_semua_perawat"><i class="bi bi-people"></i> Semua perawat</label>
+                                        <input type="radio" class="btn-check" name="filter_pelatihan" id="fp_salah_satu" value="salah_satu">
+                                        <label class="btn btn-sm btn-outline-success" for="fp_salah_satu"><i class="bi bi-check2"></i> Punya <b>salah satu</b> (atau)</label>
+                                        <input type="radio" class="btn-check" name="filter_pelatihan" id="fp_semua" value="semua">
+                                        <label class="btn btn-sm btn-outline-success" for="fp_semua"><i class="bi bi-check2-all"></i> Punya <b>semua</b> (dan)</label>
+                                    </div>
+                                    <div class="small text-muted mt-1" id="ketFilter"></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <label class="form-label small fw-semibold mt-2 mb-1">Pelatihan tertentu <span class="text-muted fw-normal">(tiap pelatihan jadi satu kolom: Ya + tanggal / -)</span></label>
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" id="inputPelatihan" placeholder="Cari pelatihan, mis. BTCLS, PPGD, PPI…" autocomplete="off">
-                        <button type="button" class="btn btn-outline-success" id="btnTambahPelatihan" title="Tambahkan kata yang diketik sebagai kolom"><i class="bi bi-plus-lg"></i> Tambah</button>
-                    </div>
-                    <div class="border rounded mt-1 bg-white" id="daftarPelatihanPilih" style="max-height: 190px; overflow-y: auto;"></div>
-                    <div class="small text-muted mt-1">Klik nama pelatihan di daftar, atau ketik kata lalu <b>Tambah</b>. Kolom cocok bila nama pelatihan <b>mengandung</b> kata tersebut (huruf besar/kecil diabaikan). Maks. 20.</div>
-                    <div id="chipPelatihan" class="d-flex flex-wrap gap-1 mt-2"></div>
-
-                    <div class="mt-2" id="wrapFilterPelatihan" style="display: none;">
-                        <select name="filter_pelatihan" class="form-select form-select-sm">
-                            <option value="">Tampilkan semua perawat</option>
-                            <option value="salah_satu">Hanya perawat yang punya salah satu pelatihan terpilih</option>
-                            <option value="semua">Hanya perawat yang punya semua pelatihan terpilih</option>
-                        </select>
                     </div>
 
                     {{-- PREVIEW HASIL --}}
-                    <div id="wrapPreview" class="mt-3" style="display: none;">
-                        <hr class="my-3">
+                    <div id="wrapPreview" class="ek-card mt-3" style="display: none;">
                         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-                            <div class="fw-bold small"><i class="bi bi-table text-success me-1"></i> Preview <span id="previewInfo" class="text-muted fw-normal"></span></div>
-                            <div class="input-group input-group-sm" style="max-width: 260px;">
+                            <div class="ek-title mb-0"><i class="bi bi-table text-success"></i> Preview <span id="previewInfo" class="text-muted fw-normal small"></span></div>
+                            <div class="input-group input-group-sm" style="max-width: 280px;">
                                 <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
                                 <input type="search" class="form-control" id="cariPreview" placeholder="Cari di preview…">
                             </div>
                         </div>
-                        <div class="table-responsive border rounded" style="max-height: 320px;">
+                        <div class="table-responsive border rounded" style="max-height: 340px;">
                             <table class="table table-sm table-striped table-hover mb-0" style="font-size: 12px;">
-                                <thead class="table-light" style="position: sticky; top: 0;" id="previewHead"></thead>
+                                <thead class="table-light" style="position: sticky; top: 0; z-index: 1;" id="previewHead"></thead>
                                 <tbody id="previewBody"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer border-0 bg-light p-3">
+
+                <div class="modal-footer border-0 bg-white p-3 d-flex">
                     <button type="button" class="btn btn-outline-success me-auto" id="btnPreviewEkspor"><i class="bi bi-eye me-1"></i> Lihat Preview</button>
                     <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-success fw-bold px-4">
@@ -616,6 +605,25 @@
         </div>
     </div>
 </div>
+
+<style>
+    .ek-modal .ek-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 16px 18px; }
+    .ek-modal .ek-title { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .ek-modal .ek-step { width: 22px; height: 22px; border-radius: 50%; background: #198754; color: #fff; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; }
+    .ek-modal .ek-list { border: 1px solid #e5e7eb; border-radius: 10px; max-height: 260px; overflow-y: auto; }
+    .ek-modal .ek-item { display: flex; align-items: flex-start; gap: 10px; padding: 7px 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-size: 13px; margin: 0; }
+    .ek-modal .ek-item:hover { background: #f0fdf4; }
+    .ek-modal .ek-item.dipilih { background: #dcfce7; }
+    .ek-modal .ek-item .form-check-input { margin-top: 3px; flex-shrink: 0; }
+    .ek-modal .ek-item .nm { flex: 1; line-height: 1.35; }
+    .ek-modal .ek-item .jml { flex-shrink: 0; font-size: 11px; color: #475569; background: #f1f5f9; border-radius: 20px; padding: 1px 8px; }
+    .ek-modal .ek-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; background: #198754; color: #fff; border-radius: 20px; padding: 4px 6px 4px 12px; font-size: 12px; }
+    .ek-modal .ek-chip .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; }
+    .ek-modal .ek-chip.kata { background: #0f766e; }
+    .ek-modal .ek-chip button { border: 0; background: rgba(255,255,255,.2); color: #fff; border-radius: 50%; width: 20px; height: 20px; line-height: 1; padding: 0; flex-shrink: 0; }
+    .ek-modal .ek-seg { display: flex; flex-wrap: wrap; gap: 6px; }
+    @media (max-width: 576px) { .ek-modal .ek-chip .t { max-width: 200px; } }
+</style>
 
 <style>
     .modal-chat-custom { max-width: 500px; }
@@ -881,64 +889,83 @@ function openArsipModal(nama, arsipData) {
 </script>
 
 <script>
-    // Ekspor kustom: pilih pelatihan tertentu sebagai kolom + preview hasil
+    // Ekspor kustom: pilih banyak pelatihan (checkbox) sebagai kolom + filter dan/atau + preview hasil
     (function () {
         const form = document.getElementById('formEksporKustom');
         const input = document.getElementById('inputPelatihan');
         const wadah = document.getElementById('chipPelatihan');
         const daftar = document.getElementById('daftarPelatihanPilih');
-        const filter = document.getElementById('wrapFilterPelatihan');
+        const wrapTerpilih = document.getElementById('wrapTerpilih');
+        const badge = document.getElementById('jumlahDipilih');
+        const ket = document.getElementById('ketFilter');
         if (!form || !input) return;
 
         const semuaPelatihan = @json(($daftarPelatihan ?? collect())->map(fn($p) => ['nama' => $p->nama, 'jumlah' => (int) $p->jumlah])->values());
+        const MAKS = 20;
         const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-        const terpilih = () => [...wadah.querySelectorAll('input')].map(i => i.value.toLowerCase());
+        const terpilih = () => [...wadah.querySelectorAll('input[type=hidden]')].map(i => i.value);
+        const sudahDipilih = v => terpilih().some(x => x.toLowerCase() === v.toLowerCase());
 
         function perbarui() {
-            filter.style.display = wadah.children.length ? '' : 'none';
+            const n = terpilih().length;
+            wrapTerpilih.style.display = n ? '' : 'none';
+            badge.style.display = n ? '' : 'none';
+            badge.textContent = n + ' dipilih';
+            const mode = form.querySelector('input[name=filter_pelatihan]:checked').value;
+            ket.textContent = !n ? '' : mode === 'semua'
+                ? `Hanya perawat yang memiliki SEMUA ${n} pelatihan terpilih.`
+                : mode === 'salah_satu' ? 'Hanya perawat yang memiliki minimal satu pelatihan terpilih.'
+                : 'Semua perawat diekspor; kolom pelatihan berisi Ya / -.';
             tampilkanDaftar();
+            sembunyikanPreview();
         }
 
-        function tambah(nilai) {
-            const v = (nilai ?? input.value).trim();
-            if (nilai === undefined) input.value = '';
-            if (!v || terpilih().includes(v.toLowerCase()) || wadah.children.length >= 20) return;
+        function tambah(v, kata = false) {
+            v = v.trim();
+            if (!v || sudahDipilih(v)) return;
+            if (terpilih().length >= MAKS) return Swal.fire({ icon: 'info', text: `Maksimal ${MAKS} pelatihan.` });
             const chip = document.createElement('span');
-            chip.className = 'badge rounded-pill text-bg-success d-inline-flex align-items-center gap-1 py-2 px-3';
-            chip.style.fontSize = '12px';
-            const teks = document.createElement('span');
-            teks.textContent = v;
-            const hidden = document.createElement('input');
-            hidden.type = 'hidden'; hidden.name = 'pelatihan[]'; hidden.value = v;
-            const x = document.createElement('i');
-            x.className = 'bi bi-x-lg'; x.style.cursor = 'pointer'; x.title = 'Hapus';
-            x.addEventListener('click', () => { chip.remove(); perbarui(); });
-            chip.append(teks, hidden, x);
+            chip.className = 'ek-chip' + (kata ? ' kata' : '');
+            chip.title = kata ? `Semua pelatihan yang mengandung "${v}"` : v;
+            chip.innerHTML = `${kata ? '<i class="bi bi-search"></i>' : ''}<span class="t"></span><input type="hidden" name="pelatihan[]"><button type="button" title="Hapus">&times;</button>`;
+            chip.querySelector('.t').textContent = kata ? `mengandung "${v}"` : v;
+            chip.querySelector('input').value = v;
+            chip.querySelector('button').addEventListener('click', () => { chip.remove(); perbarui(); });
             wadah.appendChild(chip);
             perbarui();
         }
 
-        // Daftar pelatihan yang tersedia, tersaring sesuai ketikan
+        function hapus(v) {
+            [...wadah.children].forEach(c => { if (c.querySelector('input').value.toLowerCase() === v.toLowerCase()) c.remove(); });
+            perbarui();
+        }
+
+        // Daftar pelatihan bercentang, tersaring sesuai ketikan
         function tampilkanDaftar() {
             const q = input.value.trim().toLowerCase();
-            const sudah = terpilih();
             const cocok = semuaPelatihan.filter(p => !q || p.nama.toLowerCase().includes(q));
-            const tampil = cocok.slice(0, 80);
+            const tampil = cocok.slice(0, 150);
+            const posisi = daftar.scrollTop; // pertahankan posisi scroll saat mencentang
             daftar.innerHTML = tampil.length
-                ? tampil.map(p => `<button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-1 px-2 border-0 border-bottom small ${sudah.includes(p.nama.toLowerCase()) ? 'disabled text-muted' : ''}" data-nama="${esc(p.nama)}">
-                        <span>${esc(p.nama)}</span><span class="badge text-bg-light border">${p.jumlah} org</span></button>`).join('')
-                  + (cocok.length > tampil.length ? `<div class="small text-muted px-2 py-1">… ${cocok.length - tampil.length} lainnya, perjelas pencarian</div>` : '')
-                : `<div class="small text-muted px-2 py-2">Tidak ada nama pelatihan yang cocok. Klik <b>Tambah</b> untuk memakai kata "${esc(input.value.trim())}".</div>`;
+                ? tampil.map(p => {
+                    const on = sudahDipilih(p.nama);
+                    return `<label class="ek-item ${on ? 'dipilih' : ''}"><input type="checkbox" class="form-check-input" data-nama="${esc(p.nama)}" ${on ? 'checked' : ''}>
+                        <span class="nm">${esc(p.nama)}</span><span class="jml">${p.jumlah} org</span></label>`;
+                }).join('') + (cocok.length > tampil.length ? `<div class="small text-muted px-3 py-2">… ${cocok.length - tampil.length} lainnya, perjelas pencarian</div>` : '')
+                : `<div class="small text-muted px-3 py-3">Tidak ada nama pelatihan yang cocok.${q ? ` Klik <b>Pakai kata ini</b> untuk memakai "${esc(input.value.trim())}".` : ''}</div>`;
+            daftar.scrollTop = posisi;
         }
-        daftar.classList.add('list-group');
-        daftar.addEventListener('click', e => {
-            const b = e.target.closest('[data-nama]');
-            if (b && !b.classList.contains('disabled')) tambah(b.dataset.nama);
-        });
 
-        document.getElementById('btnTambahPelatihan').addEventListener('click', () => tambah());
+        daftar.addEventListener('change', e => {
+            const cb = e.target.closest('input[data-nama]');
+            if (!cb) return;
+            cb.checked ? tambah(cb.dataset.nama) : hapus(cb.dataset.nama);
+        });
+        document.getElementById('btnTambahPelatihan').addEventListener('click', () => { tambah(input.value, true); input.value = ''; tampilkanDaftar(); });
         input.addEventListener('input', tampilkanDaftar);
-        input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); tambah(); } });
+        input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); tambah(input.value, true); input.value = ''; tampilkanDaftar(); } });
+        document.getElementById('btnHapusSemua').addEventListener('click', () => { wadah.innerHTML = ''; perbarui(); });
+        form.querySelectorAll('input[name=filter_pelatihan]').forEach(r => r.addEventListener('change', perbarui));
         tampilkanDaftar();
 
         // ---------- Preview hasil ----------
@@ -948,6 +975,8 @@ function openArsipModal(nama, arsipData) {
         const info = document.getElementById('previewInfo');
         const cari = document.getElementById('cariPreview');
         let dataPreview = null;
+
+        function sembunyikanPreview() { dataPreview = null; wrapPreview.style.display = 'none'; }
 
         function renderPreview() {
             if (!dataPreview) return;
@@ -974,7 +1003,7 @@ function openArsipModal(nama, arsipData) {
                 dataPreview = await res.json();
                 wrapPreview.style.display = '';
                 renderPreview();
-                wrapPreview.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                wrapPreview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } catch (e) {
                 Swal.fire({ icon: 'error', title: 'Gagal', text: e.message });
             } finally {
@@ -983,10 +1012,7 @@ function openArsipModal(nama, arsipData) {
             }
         });
         cari.addEventListener('input', renderPreview);
-
-        // Preview lama disembunyikan bila pilihan kolom/pelatihan berubah
-        form.addEventListener('change', e => { if (e.target !== cari) { dataPreview = null; wrapPreview.style.display = 'none'; } });
-        new MutationObserver(() => { dataPreview = null; wrapPreview.style.display = 'none'; }).observe(wadah, { childList: true });
+        form.querySelectorAll('input[name="kolom[]"]').forEach(c => c.addEventListener('change', sembunyikanPreview));
     })();
 </script>
 @endsection
