@@ -486,7 +486,7 @@
 
 {{-- MODAL EXPORT KUSTOM --}}
 <div class="modal fade" id="modalExportKustom" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
             <div class="modal-header bg-success text-white border-0 py-3 px-4">
                 <h6 class="modal-title fw-bold mb-0"><i class="bi bi-file-earmark-excel me-2"></i>Ekspor Excel Kustom</h6>
@@ -545,6 +545,49 @@
                                 <label class="form-check-label" for="col_alamat">Alamat</label>
                             </div>
                         </div>
+                    </div>
+
+                    {{-- PELATIHAN --}}
+                    <hr class="my-3">
+                    <div class="fw-bold small mb-2"><i class="bi bi-mortarboard text-success me-1"></i> Pelatihan</div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="kolom[]" value="pelatihan_semua" id="col_pel_semua">
+                                <label class="form-check-label" for="col_pel_semua">Daftar Semua Pelatihan</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="kolom[]" value="pelatihan_jumlah" id="col_pel_jumlah">
+                                <label class="form-check-label" for="col_pel_jumlah">Jumlah Pelatihan</label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="kolom[]" value="pelatihan_skp" id="col_pel_skp">
+                                <label class="form-check-label" for="col_pel_skp">Total SKP Pelatihan</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <label class="form-label small fw-semibold mt-2 mb-1">Pelatihan tertentu <span class="text-muted fw-normal">(tiap pelatihan jadi satu kolom: Ya + tanggal / -)</span></label>
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" id="inputPelatihan" list="listPelatihan" placeholder="Ketik, mis. BTCLS, PPGD, PPI…" autocomplete="off">
+                        <button type="button" class="btn btn-outline-success" id="btnTambahPelatihan"><i class="bi bi-plus-lg"></i> Tambah</button>
+                    </div>
+                    <datalist id="listPelatihan">
+                        @foreach ($daftarPelatihan ?? [] as $pl)
+                            <option value="{{ $pl->nama }}">{{ $pl->jumlah }} orang</option>
+                        @endforeach
+                    </datalist>
+                    <div class="small text-muted mt-1">Cocok bila nama pelatihan <b>mengandung</b> kata yang diketik (huruf besar/kecil diabaikan). Maks. 20.</div>
+                    <div id="chipPelatihan" class="d-flex flex-wrap gap-1 mt-2"></div>
+
+                    <div class="mt-2" id="wrapFilterPelatihan" style="display: none;">
+                        <select name="filter_pelatihan" class="form-select form-select-sm">
+                            <option value="">Tampilkan semua perawat</option>
+                            <option value="salah_satu">Hanya perawat yang punya salah satu pelatihan terpilih</option>
+                            <option value="semua">Hanya perawat yang punya semua pelatihan terpilih</option>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer border-0 bg-light p-3">
@@ -819,5 +862,43 @@ function openArsipModal(nama, arsipData) {
             btn.innerHTML = '<i class="bi bi-file-earmark-excel me-1"></i> Semua';
         }
     }
+</script>
+
+<script>
+    // Ekspor kustom: pilih pelatihan tertentu sebagai kolom
+    (function () {
+        const input = document.getElementById('inputPelatihan');
+        const wadah = document.getElementById('chipPelatihan');
+        const filter = document.getElementById('wrapFilterPelatihan');
+        if (!input) return;
+
+        function perbarui() { filter.style.display = wadah.children.length ? '' : 'none'; }
+
+        function tambah() {
+            const v = input.value.trim();
+            input.value = '';
+            if (!v) return;
+            const ada = [...wadah.querySelectorAll('input')].some(i => i.value.toLowerCase() === v.toLowerCase());
+            if (ada || wadah.children.length >= 20) return;
+            const chip = document.createElement('span');
+            chip.className = 'badge rounded-pill text-bg-success d-inline-flex align-items-center gap-1 py-2 px-3';
+            chip.style.fontSize = '12px';
+            const teks = document.createElement('span');
+            teks.textContent = v;
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden'; hidden.name = 'pelatihan[]'; hidden.value = v;
+            const x = document.createElement('i');
+            x.className = 'bi bi-x-lg'; x.style.cursor = 'pointer'; x.title = 'Hapus';
+            x.addEventListener('click', () => { chip.remove(); perbarui(); });
+            chip.append(teks, hidden, x);
+            wadah.appendChild(chip);
+            perbarui();
+        }
+
+        document.getElementById('btnTambahPelatihan').addEventListener('click', tambah);
+        input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); tambah(); } });
+        // Pilih dari daftar saran langsung ditambahkan
+        input.addEventListener('change', () => { if (document.querySelector('#listPelatihan option[value="' + CSS.escape(input.value) + '"]')) tambah(); });
+    })();
 </script>
 @endsection

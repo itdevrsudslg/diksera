@@ -482,7 +482,8 @@ class AdminPerawatController extends Controller
             $ruangan = $pekerjaanAktif ? $pekerjaanAktif->unit_kerja : '-';
 
             // Pisahkan array JSON type_perawat menjadi PK dan KFK
-            $types = is_string($p->type_perawat) ? json_decode($p->type_perawat, true) : ($p->type_perawat ?? []);
+            $tp = optional($p)->type_perawat;
+            $types = is_string($tp) ? json_decode($tp, true) : ($tp ?? []);
             $kfkList = [];
             $pkList = [];
             
@@ -655,28 +656,48 @@ public function index(Request $request, PkRecommendationService $pkService)
         }
 
         // Sertakan semua variabel filter ke compact
+        // Saran nama pelatihan untuk Ekspor Excel Kustom (urut dari yang paling banyak dimiliki)
+        $daftarPelatihan = PerawatPelatihan::whereNotNull('nama_pelatihan')->where('nama_pelatihan', '!=', '')
+            ->selectRaw('TRIM(nama_pelatihan) as nama, COUNT(DISTINCT user_id) as jumlah')
+            ->groupByRaw('TRIM(nama_pelatihan)')->orderByDesc('jumlah')->limit(300)->get();
+
         return view('admin.perawat.index', compact(
-            'perawat', 'search', 'filterPk', 'filterRuangan', 'filterStatus', 'allKfk', 'allPk', 'allRuangan', 'allStatus'
+            'perawat', 'search', 'filterPk', 'filterRuangan', 'filterStatus', 'allKfk', 'allPk', 'allRuangan', 'allStatus', 'daftarPelatihan'
         ));
     }
 public function exportCustom(Request $request)
     {
-        $kolom = $request->input('kolom', ['nama']); 
+        $kolom = $request->input('kolom', ['nama']);
+
+        // Pelatihan tertentu: tiap kata kunci menjadi satu kolom (cocok bila nama pelatihan mengandung kata kunci)
+        $pelatihanDipilih = collect((array) $request->input('pelatihan', []))
+            ->map(fn($v) => trim((string) $v))->filter()->unique(fn($v) => mb_strtolower($v))->take(20)->values();
+        $filterPelatihan = in_array($request->input('filter_pelatihan'), ['salah_satu', 'semua']) ? $request->input('filter_pelatihan') : null;
+        $cocok = fn($pelatihanUser, $kunci) => $pelatihanUser->filter(fn($pl) => mb_stripos((string) $pl->nama_pelatihan, $kunci) !== false);
+        $tglPelatihan = function ($pl) {
+            $tgl = $pl->tanggal_selesai ?: $pl->tanggal_mulai;
+            return $tgl ? \Carbon\Carbon::parse($tgl)->format('d-m-Y') : ($pl->tahun ?: '');
+        }; 
 
         $data = User::where('role', 'perawat')
             ->with([
                 'profile', 'pendidikan', 'perawatPekerjaans', 
-                'strs', 'sips'
+                'strs', 'sips', 'pelatihan'
             ])
             ->get();
 
+        // Filter: hanya perawat yang memiliki salah satu / semua pelatihan terpilih
+        if ($pelatihanDipilih->isNotEmpty() && $filterPelatihan) {
+            $data = $data->filter(function ($u) use ($pelatihanDipilih, $filterPelatihan, $cocok) {
+                $punya = $pelatihanDipilih->filter(fn($k) => $cocok($u->pelatihan, $k)->isNotEmpty())->count();
+                return $filterPelatihan === 'semua' ? $punya === $pelatihanDipilih->count() : $punya > 0;
+            })->values();
+        }
+
         $fileName = "Data_Kustom_Perawat_RSUD_SLG_" . date('Ymd_His') . ".xls";
 
-        header("Content-Type: application/vnd.ms-excel");
-        header("Content-Disposition: attachment; filename=$fileName");
-        header("Pragma: no-cache");
-        header("Expires: 0");
-
+        // Isi file Excel (tabel HTML) dikumpulkan lalu dikirim sebagai response unduhan
+        ob_start();
         echo '<table border="1">';
         
         // --- 1. RENDER HEADER TABEL DINAMIS ---
@@ -693,6 +714,10 @@ public function exportCustom(Request $request)
         if (in_array('str', $kolom)) echo '<th style="background-color: #D3D3D3;">NO. STR (EXPIRED)</th>';
         if (in_array('sip', $kolom)) echo '<th style="background-color: #D3D3D3;">NO. SIP (EXPIRED)</th>';
         if (in_array('pendidikan', $kolom)) echo '<th style="background-color: #D3D3D3;">PENDIDIKAN TERAKHIR</th>';
+        if (in_array('pelatihan_semua', $kolom)) echo '<th style="background-color: #D3D3D3;">DAFTAR PELATIHAN</th>';
+        if (in_array('pelatihan_jumlah', $kolom)) echo '<th style="background-color: #D3D3D3;">JUMLAH PELATIHAN</th>';
+        if (in_array('pelatihan_skp', $kolom)) echo '<th style="background-color: #D3D3D3;">TOTAL SKP PELATIHAN</th>';
+        foreach ($pelatihanDipilih as $kunci) echo '<th style="background-color: #FFE699;">PELATIHAN: ' . e(mb_strtoupper($kunci)) . '</th>';
         echo '</tr>';
 
         // --- 2. RENDER ISI DATA ---
@@ -705,7 +730,8 @@ public function exportCustom(Request $request)
             $statusPegawai = $pekerjaanAktif ? ($pekerjaanAktif->status_kepegawaian ?? '-') : '-'; // <-- TAMBAHAN
 
             // Ekstrak PK & KFK
-            $types = is_string($p->type_perawat) ? json_decode($p->type_perawat, true) : ($p->type_perawat ?? []);
+            $tp = optional($p)->type_perawat;
+            $types = is_string($tp) ? json_decode($tp, true) : ($tp ?? []);
             $kfkList = [];
             $pkList = [];
             if(is_array($types)) {
@@ -742,10 +768,29 @@ public function exportCustom(Request $request)
             if (in_array('str', $kolom)) echo '<td>' . $strText . '</td>';
             if (in_array('sip', $kolom)) echo '<td>' . $sipText . '</td>';
             if (in_array('pendidikan', $kolom)) echo '<td>' . $pendidikanText . '</td>';
+            if (in_array('pelatihan_semua', $kolom)) {
+                $daftar = $u->pelatihan->sortByDesc(fn($pl) => $pl->tanggal_mulai ?? $pl->tahun)
+                    ->map(fn($pl) => e(trim($pl->nama_pelatihan)) . (($t = $tglPelatihan($pl)) ? ' (' . $t . ')' : ''))
+                    ->implode('<br style="mso-data-placement:same-cell;">');
+                echo '<td>' . ($daftar ?: '-') . '</td>';
+            }
+            if (in_array('pelatihan_jumlah', $kolom)) echo '<td>' . $u->pelatihan->count() . '</td>';
+            if (in_array('pelatihan_skp', $kolom)) echo '<td>' . (int) $u->pelatihan->sum('skp') . '</td>';
+            foreach ($pelatihanDipilih as $kunci) {
+                $hasil = $cocok($u->pelatihan, $kunci);
+                $tanggal = $hasil->map($tglPelatihan)->filter()->implode(', ');
+                echo '<td>' . ($hasil->isEmpty() ? '-' : 'Ya' . ($tanggal ? ' (' . $tanggal . ')' : '')) . '</td>';
+            }
             echo '</tr>';
         }
         echo '</table>';
-        exit;
+
+        return response(ob_get_clean(), 200, [
+            'Content-Type'        => 'application/vnd.ms-excel',
+            'Content-Disposition' => "attachment; filename=$fileName",
+            'Pragma'              => 'no-cache',
+            'Expires'             => '0',
+        ]);
     }
 public function exportData()
     {
