@@ -88,6 +88,29 @@ class RkkKhususTest extends TestCase
         $this->assertEquals([12], array_keys($this->detail(226)['rkk']), 'kembali hanya jawaban lama');
     }
 
+    public function test_hd06_lendra_dan_kiki_menjadi_supervisi()
+    {
+        $hd = fn($kw) => collect(['HD-01', 'HD-02', 'HD-03', 'HD-04', 'HD-05', 'HD-06', 'HD-07', 'HD-08'])
+            ->mapWithKeys(fn($k) => [$k => ['jenis' => 'mandiri', 'kewenangan' => $kw]])->all();
+        $this->penilaian(485, 'LENDRA KUSDIANTORO', ['rkk' => ['7' => ['jenis' => 'mandiri', 'kewenangan' => 'sendiri']] + $hd('sendiri'), 'is_hd' => '1'], 2);
+        $this->penilaian(418, 'KIKI RISKA NURAINI, S.Kep.,Ns', ['rkk' => $hd('supervisi'), 'is_hd' => '1'], 2);
+
+        $m = require database_path('migrations/2026_10_14_090000_rkk_hd06_supervisi_lendra_kiki.php');
+        $m = is_object($m) ? $m : new \RkkHd06SupervisiLendraKiki();
+        $m->up();
+
+        $lendra = $this->detail(485);
+        $this->assertSame(['jenis' => 'mandiri', 'kewenangan' => 'supervisi'], $lendra['rkk']['HD-06']);
+        $this->assertSame('sendiri', $lendra['rkk']['HD-05']['kewenangan'], 'butir lain tidak berubah');
+        $this->assertSame('sendiri', $lendra['rkk']['7']['kewenangan'], 'RKK non-HD tidak berubah');
+        $this->assertSame('supervisi', $this->detail(418)['rkk']['HD-06']['kewenangan']);
+        $this->assertIsString(json_decode(DB::table('wawancara_penilaians')->where('id', 485)->value('detail_penilaian'), true), 'format tetap 2 lapis');
+
+        $m->down();
+        $this->assertSame('sendiri', $this->detail(485)['rkk']['HD-06']['kewenangan']);
+        $this->assertSame('supervisi', $this->detail(418)['rkk']['HD-06']['kewenangan']);
+    }
+
     public function test_pdf_rkk_menampilkan_bagian_hemodialisa()
     {
         $detail = ['rkk' => ['HD-01' => ['jenis' => 'mandiri', 'kewenangan' => 'sendiri']], 'is_hd' => '1'];

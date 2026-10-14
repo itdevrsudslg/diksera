@@ -2,6 +2,11 @@
 
 Catatan setiap pembaruan DIKSERA, terbaru di atas.
 
+## 14 Oktober 2026
+
+### Perbaikan Data
+- RKK Hemodialisa butir *Melakukan program sesuai Prescripe dokter (QB, QD, UF dan Anti Koagulan)*: kolom kewenangan **Lendra Kusdiantoro** diubah menjadi **Dengan Supervisi**. **Kiki Riska Nuraini** sudah *Dengan Supervisi* (PK 1), tidak berubah.
+
 ## 13 Oktober 2026
 
 ### Baru
